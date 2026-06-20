@@ -1,3 +1,6 @@
+
+---
+
 # Intercity Cargo Delivery
 
 Веб-платформа для организации междугородних грузоперевозок с системой аукционов.
@@ -36,37 +39,41 @@
 Frontend (Vue 3 + Pinia) ↔ Backend (Express API) ↔ MongoDB
 ```
 
+---
+
 ### Backend
 
 ```
 Backend/
 ├── middleware/
-│   └── auth.js              # JWT проверка и загрузка пользователя
+│   └── auth.js
 ├── models/
-│   ├── Auction.js           # Аукцион и ставки (bids)
-│   ├── User.js              # Пользователи (customer / carrier / admin)
-│   ├── Review.js            # Отзывы
+│   ├── Auction.js
+│   ├── User.js
+│   ├── Review.js
 │   └── ContactRequest.js
 ├── routes/
-│   ├── authRoutes.js        # Регистрация, логин, профиль
-│   ├── auctionRoutes.js     # Аукционы, ставки, завершение
-│   ├── userRoutes.js        # Управление пользователями
-│   ├── reviewRoutes.js      # Отзывы
+│   ├── authRoutes.js
+│   ├── auctionRoutes.js
+│   ├── userRoutes.js
+│   ├── reviewRoutes.js
 │   └── contactRoutes.js
 ├── config.js
 └── server.js
 ```
+
+---
 
 ### Frontend
 
 ```
 frontend/intercity-cargo-delivery/
 ├── src/
-│   ├── pages/               # Home, Login, Auctions, Profile
-│   ├── stores/              # Pinia: user, auctions, chat, toast
-│   ├── router/              # Маршруты (requiresAuth, requiresAdmin)
-│   ├── components/         # UI компоненты
-│   ├── features/           # Доп. функциональность
+│   ├── pages/
+│   ├── stores/
+│   ├── router/
+│   ├── components/
+│   ├── features/
 │   ├── assets/
 │   └── utils/
 ├── index.html
@@ -168,6 +175,8 @@ git clone https://github.com/username/project.git
 cd project
 ```
 
+---
+
 ### Backend
 
 ```bash
@@ -175,6 +184,8 @@ cd Backend
 npm install
 npm start
 ```
+
+---
 
 ### Frontend
 
@@ -187,8 +198,6 @@ npm run dev
 ---
 
 ## Конфигурация
-
-Создайте `.env` в папке `Backend`:
 
 ```env
 PORT=4000
@@ -206,7 +215,6 @@ JWT_SECRET=your_secret_key
 POST /api/auth/register
 POST /api/auth/login
 GET  /api/auth/me
-PUT  /api/auth/me
 ```
 
 ### Auctions
@@ -214,28 +222,15 @@ PUT  /api/auth/me
 ```
 GET    /api/auctions
 GET    /api/auctions/active
-GET    /api/auctions/my
-GET    /api/auctions/:id
 POST   /api/auctions
 POST   /api/auctions/:id/bid
 POST   /api/auctions/:id/complete
-POST   /api/auctions/:id/cancel
-DELETE /api/auctions/:id
 ```
 
-### Reviews
-
-```
-GET  /api/reviews
-POST /api/reviews
-```
-
-### Users (admin)
+### Admin
 
 ```
 GET  /api/users/all
-GET  /api/users/carriers
-PUT  /api/users/:id
 PUT  /api/users/:id/block
 ```
 
