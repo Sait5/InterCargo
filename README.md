@@ -146,7 +146,7 @@ PUT    /api/auctions/:id
 DELETE /api/auctions/:id
 ```
 
-### Отзывы
+### Отзывы 
 
 ```http
 GET  /api/reviews
