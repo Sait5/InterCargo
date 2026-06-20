@@ -1,0 +1,31 @@
+:root {
+  --accent-color: #2DC071;
+  --accent-gradient: linear-gradient(135deg, #2DC071, #1f9b59);
+  --bg-primary: #F3FFFD;
+  --bg-card: #ffffff;
+  --text-primary: #1a1a1a;
+  --text-secondary: #4a4a4a;
+  --text-muted: #888;
+  --border-color: #e0e0e0;
+  --shadow-color: rgba(0,0,0,0.05);
+
+  /* ═══ MOTION SYSTEM ═══ */
+  --motion-duration-fast: 300ms;
+  --motion-duration-base: 500ms;
+  --motion-duration-slow: 700ms;
+  --motion-ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --motion-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --motion-stagger: 100ms;
+  --accent-rgb: 45, 192, 113;
+  --shadow-glow: 0 8px 32px rgba(45, 192, 113, 0.2);
+}
+
+[data-theme="dark"] {
+  --bg-primary: #0a1929;
+  --bg-card: rgba(255,255,255,0.03);
+  --text-primary: #ffffff;
+  --text-secondary: #cbd5e0;
+  --text-muted: #6b7280;
+  --border-color: rgba(255,255,255,0.1);
+  --shadow-color: rgba(0,0,0,0.3);
+}
