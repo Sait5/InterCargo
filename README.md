@@ -10,15 +10,27 @@
 
 ### Главная страница
 
+
 ![Главная страница](/frontend/intercity-cargo-delivery/src/assets/screenshots/home.png)
+
+
 ---
+
+
 ![Главная страница](/frontend/intercity-cargo-delivery/src/assets/screenshots/home-2.png)
+
 
 ### Каталог перевозок
 
+
 ![Каталог перевозок](/frontend/intercity-cargo-delivery/src/assets/screenshots/catalog.png)
+
+
 ---
+
+
 ![Каталог перевозок](/frontend/intercity-cargo-delivery/src/assets/screenshots/catalog-2.png)
+
 
 ### Личный кабинет
 
