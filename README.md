@@ -1,203 +1,217 @@
-Intercity Cargo Delivery
+# Intercity Cargo Delivery
+
 Веб-платформа для организации междугородних грузоперевозок с системой аукционов.
 
-О проекте
+---
+
+## О проекте
+
 Платформа позволяет размещать заявки на перевозку грузов, получать предложения от перевозчиков и выбирать оптимальные условия доставки.
 
-Скриншоты
-Главная страница
-https:///frontend/intercity-cargo-delivery/src/assets/screenshots/home.png
-https:///frontend/intercity-cargo-delivery/src/assets/screenshots/home-2.png
+---
 
-Каталог перевозок
-https:///frontend/intercity-cargo-delivery/src/assets/screenshots/catalog.png
-https:///frontend/intercity-cargo-delivery/src/assets/screenshots/catalog-2.png
+## Скриншоты
 
-Личный кабинет
-https:///frontend/intercity-cargo-delivery/src/assets/screenshots/profile.png
+### Главная страница
 
-Архитектура
-Общая схема
-text
-Frontend (Vue 3 + Pinia) ←→ Backend (Express API) ←→ MongoDB
-Backend
-text
+![Главная страница](/frontend/intercity-cargo-delivery/src/assets/screenshots/home.png)
+![Главная страница](/frontend/intercity-cargo-delivery/src/assets/screenshots/home-2.png)
+
+### Каталог перевозок
+
+![Каталог перевозок](/frontend/intercity-cargo-delivery/src/assets/screenshots/catalog.png)
+![Каталог перевозок](/frontend/intercity-cargo-delivery/src/assets/screenshots/catalog-2.png)
+
+### Личный кабинет
+
+![Личный кабинет](/frontend/intercity-cargo-delivery/src/assets/screenshots/profile.png)
+
+---
+
+## Архитектура
+
+### Общая схема
+
+```
+Frontend (Vue 3 + Pinia) ↔ Backend (Express API) ↔ MongoDB
+```
+
+### Backend
+
+```
 Backend/
 ├── middleware/
-│   └── auth.js          # Проверка JWT, загрузка пользователя
+│   └── auth.js              # JWT проверка и загрузка пользователя
 ├── models/
-│   ├── Auction.js       # Аукцион + вложенные ставки (bids)
-│   ├── User.js          # Пользователи (customer/carrier/admin)
-│   ├── Review.js        # Отзывы
+│   ├── Auction.js           # Аукцион и ставки (bids)
+│   ├── User.js              # Пользователи (customer / carrier / admin)
+│   ├── Review.js            # Отзывы
 │   └── ContactRequest.js
 ├── routes/
-│   ├── authRoutes.js    # Регистрация, логин, профиль
-│   ├── auctionRoutes.js # CRUD аукционов, ставки, завершение
-│   ├── userRoutes.js    # Управление пользователями
-│   ├── reviewRoutes.js
+│   ├── authRoutes.js        # Регистрация, логин, профиль
+│   ├── auctionRoutes.js     # Аукционы, ставки, завершение
+│   ├── userRoutes.js        # Управление пользователями
+│   ├── reviewRoutes.js      # Отзывы
 │   └── contactRoutes.js
 ├── config.js
 └── server.js
-Frontend
-text
+```
+
+### Frontend
+
+```
 frontend/intercity-cargo-delivery/
 ├── src/
-│   ├── pages/           # Home, Login, AuctionList, Profile...
-│   ├── stores/          # Pinia: user, auctions, chat, toast...
-│   ├── router/          # Маршруты с meta (requiresAuth, requiresAdmin)
-│   ├── components/      # Header, Footer, Toast
-│   ├── features/        # Analytics, VerifiedCarriers...
+│   ├── pages/               # Home, Login, Auctions, Profile
+│   ├── stores/              # Pinia: user, auctions, chat, toast
+│   ├── router/              # Маршруты (requiresAuth, requiresAdmin)
+│   ├── components/         # UI компоненты
+│   ├── features/           # Доп. функциональность
 │   ├── assets/
 │   └── utils/
 ├── index.html
 └── vite.config.js
-Как работает система
-Полный цикл аукциона
-Заказчик (customer) создаёт аукцион через POST /api/auctions
+```
 
-Статус: active
+---
 
-Указывает маршрут, груз, цену, даты
+## Как работает система
 
-Может сделать аукцион private (только для приглашённых перевозчиков)
+### Цикл аукциона
 
-Перевозчик (carrier) видит активные аукционы через GET /api/auctions/active
+1. **Customer** создаёт аукцион (`POST /api/auctions`)
 
-Перевозчик делает ставку через POST /api/auctions/:id/bid
+   * статус: `active`
+   * маршрут, груз, цена, сроки
+   * может быть `private`
 
-Система проверяет:
+2. **Carrier** просматривает активные аукционы (`GET /api/auctions/active`)
 
-Аукцион активен
+3. **Carrier** делает ставку (`POST /api/auctions/:id/bid`)
 
-Ставка меньше текущей цены
+   * проверяется:
 
-Перевозчик не создатель аукциона
+     * аукцион активен
+     * ставка ниже текущей цены
+     * не владелец аукциона
+     * доступ для private-аукционов
+   * обновляется `currentPrice` и `winnerId`
 
-Для private: перевозчик в списке приглашённых
+4. **Customer** завершает аукцион (`POST /api/auctions/:id/complete`)
 
-Обновляется currentPrice и winnerId
+   * статус: `completed`
+   * фиксируется победитель
 
-Заказчик завершает аукцион через POST /api/auctions/:id/complete
+5. Участники связываются через чат для обсуждения доставки
 
-Статус: completed
+---
 
-Фиксируется победитель (winnerId)
+## Роли
 
-Заказчик и перевозчик связываются через чат для обсуждения деталей
+| Роль     | Возможности                                  |
+| -------- | -------------------------------------------- |
+| customer | создание аукционов, выбор победителя, отзывы |
+| carrier  | участие в аукционах, ставки                  |
+| admin    | управление пользователями и аукционами       |
 
-Роли в системе
-Роль	Возможности
-customer	Создание аукционов, выбор победителя, отзывы
-carrier	Просмотр аукционов, ставки, получение заказов
-admin	Управление пользователями (блокировка, редактирование), завершение любых аукционов
-Статусы аукциона
-text
+---
+
+## Статусы аукциона
+
+```
 draft → active → completed
               ↘ cancelled
-Возможности
-Регистрация и авторизация пользователей
+```
 
-Три роли: customer / carrier / admin
+---
 
-Создание и просмотр заявок
+## Возможности
 
-Система аукционов со ставками
+* регистрация и авторизация (JWT)
+* 3 роли пользователей
+* создание и управление аукционами
+* система ставок
+* приватные аукционы
+* отзывы
+* обратная связь
+* админ-панель
+* защищённые маршруты
 
-Приватные тендеры (только для приглашённых)
+---
 
-Отзывы пользователей
+## Технологии
 
-Форма обратной связи
+### Frontend
 
-Защищенные маршруты (requiresAuth, requiresAdmin)
+* Vue 3
+* Vue Router
+* Pinia
+* Vite
+* SCSS
 
-Админ-панель для управления пользователями
+### Backend
 
-Технологии
-Frontend
-Vue 3
+* Node.js
+* Express.js
+* MongoDB
+* Mongoose
+* JWT
 
-Vue Router
+---
 
-Pinia
+## Установка
 
-Vite
+### Клонирование
 
-SCSS
-
-Backend
-Node.js
-
-Express.js
-
-MongoDB
-
-Mongoose
-
-JWT
-
-Структура проекта
-text
-Backend/
-├── middleware/
-│   └── auth.js
-├── models/
-│   ├── Auction.js
-│   ├── User.js
-│   ├── Review.js
-│   └── ContactRequest.js
-├── routes/
-│   ├── authRoutes.js
-│   ├── auctionRoutes.js
-│   ├── userRoutes.js
-│   ├── reviewRoutes.js
-│   └── contactRoutes.js
-├── server.js
-└── config.js
-
-frontend/
-└── intercity-cargo-delivery/
-    ├── src/
-    │   ├── pages/
-    │   ├── stores/
-    │   ├── router/
-    │   ├── components/
-    │   ├── features/
-    │   ├── assets/
-    │   └── utils/
-    ├── index.html
-    └── vite.config.js
-Установка
-Клонирование репозитория
-bash
+```bash
 git clone https://github.com/username/project.git
 cd project
-Backend
-bash
+```
+
+### Backend
+
+```bash
 cd Backend
 npm install
 npm start
-Frontend
-bash
+```
+
+### Frontend
+
+```bash
 cd frontend/intercity-cargo-delivery
 npm install
 npm run dev
-Конфигурация
-Создайте файл .env в папке Backend:
+```
 
-env
+---
+
+## Конфигурация
+
+Создайте `.env` в папке `Backend`:
+
+```env
 PORT=4000
 MONGO_URI=mongodb://localhost:27017/intercity_cargo
 JWT_SECRET=your_secret_key
-API
-Аутентификация
-http
+```
+
+---
+
+## API
+
+### Auth
+
+```
 POST /api/auth/register
 POST /api/auth/login
 GET  /api/auth/me
 PUT  /api/auth/me
-Аукционы
-http
+```
+
+### Auctions
+
+```
 GET    /api/auctions
 GET    /api/auctions/active
 GET    /api/auctions/my
@@ -207,15 +221,26 @@ POST   /api/auctions/:id/bid
 POST   /api/auctions/:id/complete
 POST   /api/auctions/:id/cancel
 DELETE /api/auctions/:id
-Отзывы
-http
+```
+
+### Reviews
+
+```
 GET  /api/reviews
 POST /api/reviews
-Пользователи (админ)
-http
+```
+
+### Users (admin)
+
+```
 GET  /api/users/all
 GET  /api/users/carriers
 PUT  /api/users/:id
 PUT  /api/users/:id/block
-Лицензия
+```
+
+---
+
+## Лицензия
+
 MIT
