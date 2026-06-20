@@ -15,7 +15,7 @@
 
 
 ---
-
+ 
 
 ![Главная страница](/frontend/intercity-cargo-delivery/src/assets/screenshots/home-2.png)
 
