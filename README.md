@@ -238,6 +238,22 @@ PUT  /api/users/:id/block
 
 ---
 
+## Тестирование
+
+### Frontend
+
+```bash
+cd frontend/intercity-cargo-delivery
+npm install -D vitest @vue/test-utils jsdom
+npm run test
+
+cd Backend
+npm install -D jest supertest
+npm run test
+
+
+---
+
 ## Лицензия
 
 MIT
