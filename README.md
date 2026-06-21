@@ -1,17 +1,31 @@
-
----
-
 # Intercity Cargo Delivery
 
-Веб-платформа для организации междугородних грузоперевозок с системой аукционов.
+Веб-платформа для организации междугородних грузоперевозок с системой аукционов между заказчиками и перевозчиками.
 
-🔗 **Живое демо:** [https://inter-cargo-6ag6.vercel.app](https://inter-cargo-6ag6.vercel.app)
+🔗 **Демо:** https://inter-cargo-6ag6.vercel.app
 
 ---
 
 ## О проекте
 
-Платформа позволяет размещать заявки на перевозку грузов, получать предложения от перевозчиков и выбирать оптимальные условия доставки.
+Intercity Cargo Delivery — fullstack веб-приложение для организации междугородних грузоперевозок.
+
+Заказчики публикуют заявки на перевозку грузов, перевозчики участвуют в аукционах и предлагают свои условия доставки, после чего заказчик выбирает победителя.
+
+---
+
+## Основные возможности
+
+* Регистрация и авторизация пользователей (JWT)
+* Ролевая модель доступа (Customer, Carrier, Admin)
+* Создание и управление аукционами
+* Система ставок
+* Приватные аукционы
+* Личный кабинет пользователя
+* Отзывы пользователей
+* Форма обратной связи
+* Административная панель
+* Защищённые маршруты и API
 
 ---
 
@@ -20,11 +34,13 @@
 ### Главная страница
 
 ![Главная страница](/frontend/intercity-cargo-delivery/src/assets/screenshots/home.png)
+
 ![Главная страница](/frontend/intercity-cargo-delivery/src/assets/screenshots/home-2.png)
 
 ### Каталог перевозок
 
 ![Каталог перевозок](/frontend/intercity-cargo-delivery/src/assets/screenshots/catalog.png)
+
 ![Каталог перевозок](/frontend/intercity-cargo-delivery/src/assets/screenshots/catalog-2.png)
 
 ### Личный кабинет
@@ -33,19 +49,43 @@
 
 ---
 
+## Технологический стек
+
+### Frontend
+
+* Vue 3
+* Vue Router
+* Pinia
+* Vite
+* SCSS
+
+### Backend
+
+* Node.js
+* Express.js
+* MongoDB
+* Mongoose
+* JWT Authentication
+
+---
+
 ## Архитектура
 
 ### Общая схема
 
+```text
+Frontend (Vue 3 + Pinia)
+           │
+           ▼
+     Express REST API
+           │
+           ▼
+        MongoDB
 ```
-Frontend (Vue 3 + Pinia) ↔ Backend (Express API) ↔ MongoDB
-```
-
----
 
 ### Backend
 
-```
+```text
 Backend/
 ├── middleware/
 │   └── auth.js
@@ -64,11 +104,9 @@ Backend/
 └── server.js
 ```
 
----
-
 ### Frontend
 
-```
+```text
 frontend/intercity-cargo-delivery/
 ├── src/
 │   ├── pages/
@@ -84,100 +122,68 @@ frontend/intercity-cargo-delivery/
 
 ---
 
-## Как работает система
-
-### Цикл аукциона
-
-1. **Customer** создаёт аукцион (`POST /api/auctions`)
-
-   * статус: `active`
-   * маршрут, груз, цена, сроки
-   * может быть `private`
-
-2. **Carrier** просматривает активные аукционы (`GET /api/auctions/active`)
-
-3. **Carrier** делает ставку (`POST /api/auctions/:id/bid`)
-
-   * проверяется:
-
-     * аукцион активен
-     * ставка ниже текущей цены
-     * не владелец аукциона
-     * доступ для private-аукционов
-   * обновляется `currentPrice` и `winnerId`
-
-4. **Customer** завершает аукцион (`POST /api/auctions/:id/complete`)
-
-   * статус: `completed`
-   * фиксируется победитель
-
-5. Участники связываются через чат для обсуждения доставки
-
----
-
-## Роли
+## Роли пользователей
 
 | Роль     | Возможности                                  |
 | -------- | -------------------------------------------- |
-| customer | создание аукционов, выбор победителя, отзывы |
-| carrier  | участие в аукционах, ставки                  |
-| admin    | управление пользователями и аукционами       |
+| Customer | Создание аукционов, выбор победителя, отзывы |
+| Carrier  | Просмотр аукционов, участие в торгах, ставки |
+| Admin    | Управление пользователями и аукционами       |
 
 ---
 
-## Статусы аукциона
+## Жизненный цикл аукциона
 
-```
+```text
 draft → active → completed
               ↘ cancelled
 ```
 
----
+### Создание аукциона
 
-## Возможности
+Customer создаёт заявку:
 
-* регистрация и авторизация (JWT)
-* 3 роли пользователей
-* создание и управление аукционами
-* система ставок
-* приватные аукционы
-* отзывы
-* обратная связь
-* админ-панель
-* защищённые маршруты
+* маршрут
+* описание груза
+* стартовая цена
+* сроки доставки
+* тип аукциона (public/private)
 
----
+### Размещение ставок
 
-## Технологии
+Carrier может:
 
-### Frontend
+* просматривать активные аукционы
+* делать ставки
+* участвовать в приватных аукционах при наличии доступа
 
-* Vue 3
-* Vue Router
-* Pinia
-* Vite
-* SCSS
+Перед созданием ставки выполняются проверки:
 
-### Backend
+* аукцион активен
+* пользователь не является владельцем аукциона
+* ставка ниже текущей цены
+* есть доступ к приватному аукциону
 
-* Node.js
-* Express.js
-* MongoDB
-* Mongoose
-* JWT
+### Завершение аукциона
+
+Customer выбирает победителя и завершает аукцион.
+
+После завершения:
+
+* фиксируется победитель
+* статус меняется на `completed`
+* пользователи могут связаться через чат
 
 ---
 
 ## Установка
 
-### Клонирование
+### Клонирование репозитория
 
 ```bash
-git clone https://github.com/username/project.git
-cd project
+git clone https://github.com/Sait5/Intercity-Cargo.git
+cd Intercity-Cargo
 ```
-
----
 
 ### Backend
 
@@ -186,8 +192,6 @@ cd Backend
 npm install
 npm start
 ```
-
----
 
 ### Frontend
 
@@ -201,6 +205,8 @@ npm run dev
 
 ## Конфигурация
 
+Создайте файл `.env` в папке `Backend`.
+
 ```env
 PORT=4000
 MONGO_URI=mongodb://localhost:27017/intercity_cargo
@@ -211,28 +217,45 @@ JWT_SECRET=your_secret_key
 
 ## API
 
-### Auth
+### Authentication
 
-```
+```http
 POST /api/auth/register
 POST /api/auth/login
 GET  /api/auth/me
+PUT  /api/auth/me
 ```
 
 ### Auctions
 
-```
+```http
 GET    /api/auctions
 GET    /api/auctions/active
+GET    /api/auctions/my
+GET    /api/auctions/:id
+
 POST   /api/auctions
 POST   /api/auctions/:id/bid
 POST   /api/auctions/:id/complete
+POST   /api/auctions/:id/cancel
+
+DELETE /api/auctions/:id
 ```
 
-### Admin
+### Reviews
 
+```http
+GET  /api/reviews
+POST /api/reviews
 ```
+
+### Users (Admin)
+
+```http
 GET  /api/users/all
+GET  /api/users/carriers
+
+PUT  /api/users/:id
 PUT  /api/users/:id/block
 ```
 
@@ -244,11 +267,13 @@ PUT  /api/users/:id/block
 
 ```bash
 cd frontend/intercity-cargo-delivery
-npm install -D vitest @vue/test-utils jsdom
 npm run test
+```
 
+### Backend
+
+```bash
 cd Backend
-npm install -D jest supertest
 npm run test
 ```
 
