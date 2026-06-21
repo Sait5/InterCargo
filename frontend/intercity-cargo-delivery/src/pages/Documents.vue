@@ -147,20 +147,20 @@ class="gallery-item"
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
-
+	
 import dokument2 from '@/assets/images/dokument2.jpg';
 import dokument3 from '@/assets/images/dokument3.jpg';
 import dokument4 from '@/assets/images/dokument4.jpg';
-import dokument2 from '@/assets/images/dokument5.jpg';
+import dokument5 from '@/assets/images/dokument5.jpg';
 
 const router = useRouter();
 const userStore = useUserStore();
 
 const documents = ref([
-	{ id: 1, title: 'Сертификат соответствия ISO 9001', image: dokument5 },
-	{ id: 2, title: 'Лицензия на международные перевозки', image: dokument2 },
-	{ id: 3, title: 'Свидетельство о регистрации ИНН', image: dokument3 },
-	{ id: 4, title: 'Полис страхования ответственности', image: dokument4 }
+	{ id: 1, title: 'Сертификат соответствия ISO 9001', image: dokument2 },
+	{ id: 2, title: 'Лицензия на международные перевозки', image: dokument3 },
+	{ id: 3, title: 'Свидетельство о регистрации ИНН', image: dokument4 },
+	{ id: 4, title: 'Полис страхования ответственности', image: dokument5 }
 ]);
 
 const previewDoc = ref(null);
