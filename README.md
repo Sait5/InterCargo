@@ -5,7 +5,7 @@
 🔗 **Демо:** https://inter-cargo-6ag6.vercel.app
 
 ---
-
+ 
 ## О проекте
 
 Intercity Cargo Delivery — fullstack веб-приложение для организации междугородних грузоперевозок.
