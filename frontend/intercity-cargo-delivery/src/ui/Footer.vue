@@ -48,7 +48,7 @@
           <a href="#">Спот-аукционы</a>
           <a href="#">TMS система</a>
           <a href="#">Трекинг грузов</a>
-          <a href="#">AI аналитика</a>
+          <a href="#">Аналитика</a>
         </div>
 
         <div class="footer-column">
