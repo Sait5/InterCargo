@@ -4,8 +4,8 @@
 
     <main>
       <section class="hero">
+        <HeroBackdrop view="overview" side="left" />
         <div class="hero-glow"></div>
-        <div class="hero-grid-bg"></div>
 
         <div class="container">
           <div class="hero-grid">
@@ -459,6 +459,7 @@
 </template>
 
 <script>
+import HeroBackdrop from '@/ui/HeroBackdrop.vue'
 import Header from '@/ui/Header.vue'
 import Footer from '@/ui/Footer.vue'
 import { useOrderStore } from '@/stores/order'
@@ -467,7 +468,7 @@ import { useToastStore } from '@/stores/toast'
 
 export default {
   name: 'TransportTender',
-  components: { Header, Footer },
+  components: { HeroBackdrop,  Header, Footer },
   data() {
     return {
       search: '',
@@ -615,7 +616,6 @@ export default {
     })
   },
   mounted() {
-    this.initTheme()
     this.initScrollAnimations()
     this.initCountUp()
     this.scrollToTop()
@@ -633,10 +633,6 @@ export default {
           document.body.scrollTop = 0
         }, 100)
       })
-    },
-    initTheme() {
-      const savedTheme = localStorage.getItem('theme') || 'dark'
-      document.documentElement.setAttribute('data-theme', savedTheme)
     },
     openCreateOrder() {
       if (!this.userStore.isAuthenticated) {
@@ -718,7 +714,7 @@ export default {
           customerEmail: this.userStore.user?.email || ''
         }
 
-const result = this.orderStore.createOrder(orderData)
+const result = await this.orderStore.createOrder(orderData)
 
       if (result.success) {
         if (this.newOrder.accessType === 'private') {
@@ -747,18 +743,11 @@ async applyToOrder(order) {
     this.$router.push('/login')
     return
   }
-  
-      const applicantInfo = {
-        userId: this.userStore.user.id,
-        name: `${this.userStore.user?.firstName || ''} ${this.userStore.user?.lastName || ''}`.trim(),
-        phone: this.userStore.user?.phone || '',
-        company: this.userStore.user?.company || ''
-      }
-      
-      const result = this.orderStore.applyToOrder(order.id, applicantInfo)
+
+      const result = await this.orderStore.applyToOrder(order.id)
       
       if (result.success) {
-        this.toast.success('Заявка отправлена! Администратор рассмотрит её в ближайшее время.')
+        this.toast.success('Заявка отправлена! Заказчик рассмотрит её — ответ придёт в уведомления.')
       } else {
         this.toast.error(result.message || 'Ошибка отправки заявки')
       }
@@ -855,11 +844,13 @@ async applyToOrder(order) {
 
 
 <style scoped>
+.hero > .container { position: relative; z-index: 2; width: 100%; }
+.hero-glow { z-index: 1; opacity: 0.6; }
 .saas-landing {
   background: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100vh;
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.5s ease;
@@ -879,7 +870,7 @@ async applyToOrder(order) {
 
 .date-input:focus {
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(45, 192, 113, 0.1);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1);
 }
 
 .date-input::-webkit-calendar-picker-indicator {
@@ -956,11 +947,11 @@ async applyToOrder(order) {
   gap: 6px;
   padding: 8px 18px;
   border-radius: 10px;
-  background: rgba(45, 192, 113, 0.15);
+  background: rgba(var(--accent-rgb), 0.15);
   color: var(--accent-color);
   font-weight: 600;
   font-size: 13px;
-  border: 1px solid rgba(45, 192, 113, 0.3);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
 }
 
 .white-text {
@@ -972,7 +963,7 @@ async applyToOrder(order) {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: linear-gradient(135deg, #2DC071, #28a45e);
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-strong));
   color: white;
   border: none;
   border-radius: 12px;
@@ -1056,7 +1047,7 @@ async applyToOrder(order) {
 }
 
 .btn--accent {
-  background: rgba(45, 192, 113, 0.12);
+  background: rgba(var(--accent-rgb), 0.12);
   color: var(--accent-color);
   padding: 8px 18px;
   border-radius: 10px;
@@ -1072,7 +1063,7 @@ async applyToOrder(order) {
 }
 
 .btn--accent:hover {
-  background: rgba(45, 192, 113, 0.2);
+  background: rgba(var(--accent-rgb), 0.2);
   transform: translateY(-2px);
 }
 
@@ -1139,9 +1130,9 @@ async applyToOrder(order) {
   background: linear-gradient(
     135deg,
     var(--accent-color) 0%,
-    #4ECDC4 25%,
+    var(--accent-2) 25%,
     #2DD4BF 50%,
-    #4ECDC4 75%,
+    var(--accent-2) 75%,
     var(--accent-color) 100%
   );
   background-size: 300% 300%;
@@ -1183,10 +1174,13 @@ async applyToOrder(order) {
 }
 
 .hero {
-  padding: 140px 0 80px;
+  padding: 104px 0 96px;
+  min-height: min(720px, 88vh);
+  display: flex;
+  align-items: center;
   position: relative;
   overflow: hidden;
-  background: #000000;
+  background: var(--hero-bg);
 }
 
 .hero-glow {
@@ -1292,7 +1286,8 @@ async applyToOrder(order) {
   display: flex;
   flex-direction: column;
   padding: 16px 20px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(8, 13, 18, 0.78);
+  backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   min-width: 120px;
@@ -1321,7 +1316,8 @@ async applyToOrder(order) {
 }
 
 .dashboard-card {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(8, 13, 18, 0.8);
+  backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
   padding: 28px;
@@ -1463,7 +1459,7 @@ async applyToOrder(order) {
 .dashboard-progress-bar {
   height: 100%;
   width: 72%;
-  background: linear-gradient(90deg, var(--accent-color), #4ECDC4);
+  background: linear-gradient(90deg, var(--accent-color), var(--accent-2));
   border-radius: 2px;
 }
 
@@ -1518,7 +1514,7 @@ async applyToOrder(order) {
 
 .live-orders {
   padding: 80px 0;
-  background: #000000;
+  background: var(--hero-bg);
 }
 
 .process {
@@ -1527,12 +1523,12 @@ async applyToOrder(order) {
 
 .faq {
   padding: 80px 0;
-  background: #000000;
+  background: var(--hero-bg);
 }
 
 .cta-fullwidth {
   width: 100%;
-  background: #000000;
+  background: var(--hero-bg);
   padding: 80px 0;
   margin: 0;
   position: relative;
@@ -1545,7 +1541,7 @@ async applyToOrder(order) {
 }
 
 [data-theme="dark"] .features {
-  background: #000000;
+  background: var(--hero-bg);
 }
 
 [data-theme="light"] .process {
@@ -1553,7 +1549,7 @@ async applyToOrder(order) {
 }
 
 [data-theme="dark"] .process {
-  background: #000000;
+  background: var(--hero-bg);
 }
 
 .features-grid {
@@ -1680,7 +1676,7 @@ async applyToOrder(order) {
 }
 
 .filter-chip.active {
-  background: rgba(45, 192, 113, 0.15);
+  background: rgba(var(--accent-rgb), 0.15);
   border-color: var(--accent-color);
   color: var(--accent-color);
 }
@@ -1711,7 +1707,7 @@ async applyToOrder(order) {
 
 .search-input:focus {
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(45, 192, 113, 0.08);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.08);
 }
 
 .live-orders__grid {
@@ -1747,7 +1743,7 @@ async applyToOrder(order) {
 
 .order-card:hover {
   transform: translateY(-5px);
-  border-color: rgba(45, 192, 113, 0.3);
+  border-color: rgba(var(--accent-rgb), 0.3);
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
 }
 
@@ -1761,17 +1757,17 @@ async applyToOrder(order) {
 }
 
 .badge--high {
-  background: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
+  background: rgba(var(--danger-rgb), 0.2);
+  color: var(--danger);
 }
 
 .badge--medium {
   background: rgba(245, 158, 11, 0.2);
-  color: #f59e0b;
+  color: var(--warm);
 }
 
 .badge--low {
-  background: rgba(45, 192, 113, 0.2);
+  background: rgba(var(--accent-rgb), 0.2);
   color: var(--accent-color);
 }
 
@@ -1853,7 +1849,7 @@ async applyToOrder(order) {
 .bid-avatar {
   width: 28px;
   height: 28px;
-  background: rgba(45, 192, 113, 0.15);
+  background: rgba(var(--accent-rgb), 0.15);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1943,7 +1939,7 @@ async applyToOrder(order) {
 .step-number {
   width: 56px;
   height: 56px;
-  background: linear-gradient(135deg, #2DC071, #28a45e);
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-strong));
   color: white;
   border-radius: 16px;
   display: flex;
@@ -2131,14 +2127,14 @@ async applyToOrder(order) {
 
 .cta-badge {
   display: inline-block;
-  background: rgba(45, 192, 113, 0.15);
+  background: rgba(var(--accent-rgb), 0.15);
   color: var(--accent-color);
   padding: 6px 16px;
   border-radius: 100px;
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 24px;
-  border: 1px solid rgba(45, 192, 113, 0.3);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
 }
 
 .cta-title {
@@ -2172,13 +2168,13 @@ async applyToOrder(order) {
 }
 
 .cta-inner .btn-primary {
-  background: linear-gradient(135deg, #2DC071, #1f9b59);
-  box-shadow: 0 8px 24px rgba(45, 192, 113, 0.3);
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-strong));
+  box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.3);
 }
 
 .cta-inner .btn-primary:hover {
   transform: translateY(-3px);
-  box-shadow: 0 12px 32px rgba(45, 192, 113, 0.4);
+  box-shadow: 0 12px 32px rgba(var(--accent-rgb), 0.4);
 }
 
 .modal-overlay {
@@ -2276,7 +2272,7 @@ async applyToOrder(order) {
 .form-group input:focus,
 .form-group select:focus {
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(45, 192, 113, 0.1);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1);
 }
 
 .form-group select {
@@ -2313,12 +2309,12 @@ async applyToOrder(order) {
 }
 
 .access-type-card:hover {
-  border-color: rgba(45, 192, 113, 0.3);
+  border-color: rgba(var(--accent-rgb), 0.3);
 }
 
 .access-type-card.active {
   border-color: var(--accent-color);
-  background: rgba(45, 192, 113, 0.05);
+  background: rgba(var(--accent-rgb), 0.05);
 }
 
 .access-type-card svg {
@@ -2366,7 +2362,7 @@ async applyToOrder(order) {
 .btn-submit {
   flex: 1;
   padding: 14px;
-  background: linear-gradient(135deg, #2DC071, #28a45e);
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-strong));
   border: none;
   border-radius: 12px;
   color: white;
@@ -2374,12 +2370,12 @@ async applyToOrder(order) {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 15px rgba(45, 192, 113, 0.2);
+  box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.2);
 }
 
 .btn-submit:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(45, 192, 113, 0.3);
+  box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3);
 }
 
 @media (max-width: 1024px) {
@@ -2523,11 +2519,11 @@ async applyToOrder(order) {
   gap: 6px;
   padding: 8px 18px;
   border-radius: 10px;
-  background: rgba(45, 192, 113, 0.15);
+  background: rgba(var(--accent-rgb), 0.15);
   color: var(--accent-color);
   font-weight: 600;
   font-size: 13px;
-  border: 1px solid rgba(45, 192, 113, 0.3);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
 }
 .cta-layout-text {
   text-align: center;
@@ -2550,7 +2546,7 @@ async applyToOrder(order) {
 
 .modal-form select:focus {
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(45, 192, 113, 0.1);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1);
 }
 
 .modal-form select option {
@@ -2572,7 +2568,7 @@ async applyToOrder(order) {
 
 .modal-form input[type="date"]:focus {
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(45, 192, 113, 0.1);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1);
 }
 
 .modal-form input[type="date"]::-webkit-calendar-picker-indicator {
@@ -2594,7 +2590,7 @@ async applyToOrder(order) {
 
 .modal-form input[type="number"]:focus {
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(45, 192, 113, 0.1);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1);
 }
 
 .modal-form input[type="number"]::-webkit-inner-spin-button,

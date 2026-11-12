@@ -1,33 +1,58 @@
-// stores/theme.js
 import { defineStore } from 'pinia'
 
+const STORAGE_KEY = 'theme'
+const media = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+  ? window.matchMedia('(prefers-color-scheme: light)')
+  : null
+
+// Применить тему к документу. 'auto' следует настройке системы.
+export function applyTheme(preference) {
+  const pref = ['light', 'dark', 'auto'].includes(preference) ? preference : 'dark'
+  const resolved = pref === 'auto' ? (media && media.matches ? 'light' : 'dark') : pref
+  document.documentElement.setAttribute('data-theme', resolved)
+  return resolved
+}
+
+export function savedThemePreference() {
+  try {
+    return localStorage.getItem(STORAGE_KEY) || 'dark'
+  } catch {
+    return 'dark'
+  }
+}
+
 export const useThemeStore = defineStore('theme', {
-  // State - данные
   state: () => ({
-    isDark: true
+    preference: savedThemePreference(),
+    resolved: 'dark',
   }),
 
-  // Getters - вычисляемые значения (как computed)
   getters: {
-    themeName: (state) => state.isDark ? 'Темная' : 'Светлая',
-    currentTheme: (state) => state.isDark ? 'dark' : 'light'
+    isDark: (state) => state.resolved === 'dark',
   },
 
-  // Actions - методы для изменения state
   actions: {
-    toggleTheme() {
-      this.isDark = !this.isDark
-      const theme = this.currentTheme
-      
-      // Сохраняем в DOM и localStorage
-      document.documentElement.setAttribute('data-theme', theme)
-      localStorage.setItem('theme', theme)
-    },
-    
     initTheme() {
-      const savedTheme = localStorage.getItem('theme') || 'dark'
-      this.isDark = savedTheme === 'dark'
-      document.documentElement.setAttribute('data-theme', savedTheme)
-    }
-  }
+      this.resolved = applyTheme(this.preference)
+      if (media) {
+        media.addEventListener('change', () => {
+          if (this.preference === 'auto') this.resolved = applyTheme('auto')
+        })
+      }
+    },
+
+    setTheme(preference) {
+      this.preference = preference
+      try {
+        localStorage.setItem(STORAGE_KEY, preference)
+      } catch {
+        /* приватный режим — просто не запоминаем */
+      }
+      this.resolved = applyTheme(preference)
+    },
+
+    toggleTheme() {
+      this.setTheme(this.isDark ? 'light' : 'dark')
+    },
+  },
 })

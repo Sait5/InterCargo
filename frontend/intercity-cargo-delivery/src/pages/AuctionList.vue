@@ -159,8 +159,6 @@ return new Date(dateStr).toLocaleDateString('ru-RU', { day: '2-digit', month: '2
 
 onMounted(async () => {
 window.scrollTo({ top: 0, behavior: 'instant' });
-const savedTheme = localStorage.getItem('theme') || 'dark';
-document.documentElement.setAttribute('data-theme', savedTheme);
 await auctionStore.fetchAll();
 });
 </script>
@@ -169,7 +167,7 @@ await auctionStore.fetchAll();
 .saas-landing { background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
 .auction-list-page { padding: 60px 0 100px; }
 .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
-.gradient-text { background: linear-gradient(135deg, var(--accent-color) 0%, #4ECDC4 50%, var(--accent-color) 100%); background-size: 300% 300%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.gradient-text { background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-2) 50%, var(--accent-color) 100%); background-size: 300% 300%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .page-header { text-align: center; margin-bottom: 40px; }
 .page-title { font-size: clamp(32px, 4vw, 48px); font-weight: 800; margin-bottom: 12px; }
 .page-subtitle { font-size: 17px; color: var(--text-muted); }
@@ -177,12 +175,12 @@ await auctionStore.fetchAll();
 .filter-tabs { display: flex; gap: 12px; margin-bottom: 32px; justify-content: center; flex-wrap: wrap; }
 .filter-tab { display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-secondary); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
 .filter-tab:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); }
-.filter-tab.active { background: rgba(45, 192, 113, 0.1); border-color: var(--accent-color); color: var(--accent-color); }
+.filter-tab.active { background: rgba(var(--accent-rgb), 0.1); border-color: var(--accent-color); color: var(--accent-color); }
 .tab-count { background: rgba(255, 255, 255, 0.1); padding: 2px 8px; border-radius: 8px; font-size: 12px; }
-.filter-tab.active .tab-count { background: rgba(45, 192, 113, 0.2); }
+.filter-tab.active .tab-count { background: rgba(var(--accent-rgb), 0.2); }
 
 .loading-state { text-align: center; padding: 80px 20px; }
-.spinner { width: 40px; height: 40px; border: 3px solid rgba(45, 192, 113, 0.2); border-top-color: #2DC071; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+.spinner { width: 40px; height: 40px; border: 3px solid rgba(var(--accent-rgb), 0.2); border-top-color: var(--accent-color); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-state p { color: var(--text-muted); }
 
@@ -190,20 +188,20 @@ await auctionStore.fetchAll();
 .empty-state svg { color: var(--text-muted); opacity: 0.3; margin-bottom: 20px; }
 .empty-state h3 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
 .empty-state p { font-size: 15px; color: var(--text-muted); margin-bottom: 24px; }
-.btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: linear-gradient(135deg, #2DC071, #28a45e); color: white; border: none; border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.3s ease; }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(45, 192, 113, 0.3); }
+.btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); color: white; border: none; border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.3s ease; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); }
 
 .auctions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; }
 .auction-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; padding: 24px; cursor: pointer; transition: all 0.3s ease; display: flex; flex-direction: column; gap: 16px; }
-.auction-card:hover { border-color: rgba(45, 192, 113, 0.3); transform: translateY(-4px); box-shadow: 0 10px 30px var(--shadow-color); }
+.auction-card:hover { border-color: rgba(var(--accent-rgb), 0.3); transform: translateY(-4px); box-shadow: 0 10px 30px var(--shadow-color); }
 
 .auction-card-header { display: flex; justify-content: space-between; align-items: center; }
 .auction-status { padding: 6px 14px; border-radius: 100px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
-.auction-status.active { background: rgba(45, 192, 113, 0.15); color: #2DC071; border: 1px solid rgba(45, 192, 113, 0.3); }
+.auction-status.active { background: rgba(var(--accent-rgb), 0.15); color: var(--accent-color); border: 1px solid rgba(var(--accent-rgb), 0.3); }
 .auction-status.completed { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
-.auction-status.cancelled { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+.auction-status.cancelled { background: rgba(var(--danger-rgb), 0.15); color: var(--danger); border: 1px solid rgba(var(--danger-rgb), 0.3); }
 .auction-timer { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; padding: 6px 12px; background: rgba(255, 255, 255, 0.03); border-radius: 8px; }
-.auction-timer.urgent { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+.auction-timer.urgent { color: var(--danger); background: rgba(var(--danger-rgb), 0.1); }
 
 .auction-route { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; }
 .auction-route svg { color: var(--accent-color); flex-shrink: 0; }
@@ -216,7 +214,7 @@ await auctionStore.fetchAll();
 
 .auction-pricing { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .price-block { padding: 12px; background: rgba(255, 255, 255, 0.02); border-radius: 10px; }
-.price-block.current { background: rgba(45, 192, 113, 0.08); border: 1px solid rgba(45, 192, 113, 0.2); }
+.price-block.current { background: rgba(var(--accent-rgb), 0.08); border: 1px solid rgba(var(--accent-rgb), 0.2); }
 .price-label { display: block; font-size: 11px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
 .price-value { font-size: 16px; font-weight: 800; }
 .price-block.current .price-value { color: var(--accent-color); }

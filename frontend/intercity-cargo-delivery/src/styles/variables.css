@@ -1,31 +1,101 @@
-:root {
-  --accent-color: #2DC071;
-  --accent-gradient: linear-gradient(135deg, #2DC071, #1f9b59);
-  --bg-primary: #F3FFFD;
-  --bg-card: #ffffff;
-  --text-primary: #1a1a1a;
-  --text-secondary: #4a4a4a;
-  --text-muted: #888;
-  --border-color: #e0e0e0;
-  --shadow-color: rgba(0,0,0,0.05);
+/* ═══════════════════════════════════════════
+   InterCargo — дизайн-токены
+   Тёмная тема по умолчанию, светлая — через [data-theme="light"]
+   ═══════════════════════════════════════════ */
 
-  /* ═══ MOTION SYSTEM ═══ */
-  --motion-duration-fast: 300ms;
-  --motion-duration-base: 500ms;
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Бренд */
+  --accent-color: #2DC071;
+  --accent-strong: #1FA65C;
+  --accent-soft: #7BE3A8;
+  --accent-rgb: 45, 192, 113;
+  --accent-gradient: linear-gradient(135deg, #34D27E 0%, #1FA65C 100%);
+  --accent-2: #3CC8D8;          /* бирюза — маршруты, второстепенные акценты */
+  --accent-2-rgb: 60, 200, 216;
+  --warm: #F2B84B;              /* янтарь — предупреждения, метки */
+  --danger: #EF4444;
+  --danger-rgb: 239, 68, 68;
+  --info: #5B8CFF;
+
+  /* Поверхности */
+  --bg-deep: #04070B;
+  --bg-primary: #070B11;
+  --bg-elevated: #0D141C;
+  --bg-card: rgba(255, 255, 255, 0.035);
+  --bg-card-solid: #0F1720;
+  --bg-input: rgba(255, 255, 255, 0.04);
+  --surface-hover: rgba(255, 255, 255, 0.06);
+
+  /* Текст */
+  --text-primary: #EEF3F1;
+  --text-secondary: #A9B5B0;
+  --text-muted: #6E7B76;
+  --text-on-accent: #04130A;
+
+  /* Линии и тени */
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --shadow-color: rgba(0, 0, 0, 0.45);
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 20px 50px -24px rgba(0, 0, 0, 0.8);
+  --shadow-glow: 0 10px 40px -10px rgba(45, 192, 113, 0.45);
+  --grid-line: rgba(255, 255, 255, 0.035);
+
+  /* Тёмные блоки-герои остаются тёмными в обеих темах */
+  --hero-bg: #04070B;
+  --hero-text: #F2F6F4;
+  --hero-muted: rgba(242, 246, 244, 0.68);
+
+  /* Типографика */
+  --font-display: 'Unbounded', 'Manrope', system-ui, sans-serif;
+  --font-body: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Формы */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --header-h: 72px;
+  --container: 1240px;
+
+  /* Движение */
+  --motion-duration-fast: 200ms;
+  --motion-duration-base: 400ms;
   --motion-duration-slow: 700ms;
   --motion-ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   --motion-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --motion-stagger: 100ms;
-  --accent-rgb: 45, 192, 113;
-  --shadow-glow: 0 8px 32px rgba(45, 192, 113, 0.2);
+  --motion-stagger: 80ms;
 }
 
-[data-theme="dark"] {
-  --bg-primary: #0a1929;
-  --bg-card: rgba(255,255,255,0.03);
-  --text-primary: #ffffff;
-  --text-secondary: #cbd5e0;
-  --text-muted: #6b7280;
-  --border-color: rgba(255,255,255,0.1);
-  --shadow-color: rgba(0,0,0,0.3);
+[data-theme="light"] {
+  color-scheme: light;
+
+  --accent-color: #18A65A;
+  --accent-strong: #128848;
+  --accent-rgb: 24, 166, 90;
+  --accent-gradient: linear-gradient(135deg, #22B866 0%, #128848 100%);
+  --accent-2: #1597A8;
+  --accent-2-rgb: 21, 151, 168;
+
+  --bg-deep: #E9EFEC;
+  --bg-primary: #F4F7F5;
+  --bg-elevated: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-solid: #FFFFFF;
+  --bg-input: #F1F5F3;
+  --surface-hover: rgba(10, 30, 20, 0.05);
+
+  --text-primary: #0E1A15;
+  --text-secondary: #42524B;
+  --text-muted: #7A8882;
+  --text-on-accent: #FFFFFF;
+
+  --border-color: rgba(14, 26, 21, 0.1);
+  --border-strong: rgba(14, 26, 21, 0.2);
+  --shadow-color: rgba(14, 26, 21, 0.08);
+  --shadow-card: 0 1px 2px rgba(14, 26, 21, 0.05), 0 16px 40px -24px rgba(14, 26, 21, 0.25);
+  --shadow-glow: 0 10px 30px -10px rgba(24, 166, 90, 0.4);
+  --grid-line: rgba(14, 26, 21, 0.05);
 }

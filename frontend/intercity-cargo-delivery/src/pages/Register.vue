@@ -6,7 +6,7 @@
           <header class="top-header">
             <div class="logo-area" @click="$router.push('/')" style="cursor: pointer;">
               <div class="logo-icon">
-                <img src="@/assets/icons/logotip.png" alt="InterCargo">
+                <img src="@/assets/icons/logotip.webp" alt="InterCargo">
               </div>
               <div class="logo-text-wrap">
                 <div class="logo-text">
@@ -316,11 +316,13 @@
 
 <script setup>
 import { reactive, ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
+import { api } from '@/api/client';
 import { useUserStore } from '@/stores/user';
 import { useToastStore } from '@/stores/toast';
 
 const router = useRouter();
+const route = useRoute();
 const userStore = useUserStore();
 const toast = useToastStore();
 
@@ -335,7 +337,8 @@ const form = reactive({
   lastName: '',
   email: '',
   phone: '',
-  accountType: 'carrier',
+  // ?type=carrier с главной сразу выбирает «Перевозчик»; по умолчанию — заказчик
+  accountType: route.query.type === 'carrier' ? 'carrier' : 'customer',
   company: '',
   password: '',
   confirmPassword: '',
@@ -454,13 +457,10 @@ const handleRegister = async () => {
   Object.keys(errors).forEach(key => errors[key] = '');
   
   try {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
-    const response = await fetch(`${apiUrl}/api/auth/register`, {
+    const res = await api('/auth/register', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
+      auth: false,
+      body: {
         firstName: form.firstName,
         lastName: form.lastName,
         patronymic: '',
@@ -470,17 +470,16 @@ const handleRegister = async () => {
         confirmPassword: form.confirmPassword,
         accountType: form.accountType,
         company: form.company
-      })
+      }
     });
+    const data = res.data || {};
     
-    const data = await response.json();
-    
-    if (response.ok) {
+    if (res.ok) {
       userStore.login(data.token, data.user);
       toast.success('Регистрация прошла успешно!');
-      router.push('/');
+      router.push('/profile');
     } else {
-      const message = data.message || 'Ошибка регистрации';
+      const message = res.message || 'Ошибка регистрации';
       toast.error(message);
       
       const lowerMessage = message.toLowerCase();
@@ -511,9 +510,9 @@ const handleRegister = async () => {
 }
 
 .register-page {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-body);
   min-height: 100vh;
-  background: url('@/assets/images/fonregister.png') no-repeat center center / cover;
+  background: url('@/assets/images/fonregister.webp') no-repeat center center / cover;
   background-color: #0a0f0d;
   background-position: center 20%;
   color: #ffffff;
@@ -608,7 +607,7 @@ const handleRegister = async () => {
 .logo-express {
   font-size: 24px;
   font-weight: 800;
-  color: #2DC071;
+  color: var(--accent-color);
   letter-spacing: 1.5px;
 }
 
@@ -634,7 +633,7 @@ const handleRegister = async () => {
 }
 
 .text-green {
-  color: #2DC071;
+  color: var(--accent-color);
 }
 
 .main-subtitle {
@@ -661,7 +660,7 @@ const handleRegister = async () => {
 .feature-icon {
   width: 42px;
   height: 42px;
-  color: #2DC071;
+  color: var(--accent-color);
   flex-shrink: 0;
 }
 
@@ -686,7 +685,7 @@ const handleRegister = async () => {
 }
 
 .login-link a {
-  color: #2DC071;
+  color: var(--accent-color);
   text-decoration: none;
 }
 
@@ -736,9 +735,9 @@ const handleRegister = async () => {
 }
 
 .step-item.active .step-circle {
-  background: #2DC071;
+  background: var(--accent-color);
   color: #ffffff;
-  box-shadow: 0 0 0 4px rgba(45, 192, 113, 0.2);
+  box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.2);
 }
 
 .step-label {
@@ -819,7 +818,7 @@ const handleRegister = async () => {
 }
 
 .input-wrapper input:focus {
-  border-color: #2DC071;
+  border-color: var(--accent-color);
 }
 
 .input-icon-right {
@@ -856,7 +855,7 @@ const handleRegister = async () => {
 
 .error-message {
   font-size: 13px;
-  color: #ef4444;
+  color: var(--danger);
   margin-top: 4px;
 }
 
@@ -880,8 +879,8 @@ const handleRegister = async () => {
 }
 
 .type-card.active {
-  border-color: #2DC071;
-  background: rgba(45, 192, 113, 0.08);
+  border-color: var(--accent-color);
+  background: rgba(var(--accent-rgb), 0.08);
 }
 
 .type-card:hover {
@@ -898,7 +897,7 @@ const handleRegister = async () => {
 .type-icon {
   width: 32px;
   height: 32px;
-  color: #2DC071;
+  color: var(--accent-color);
   flex-shrink: 0;
 }
 
@@ -964,8 +963,8 @@ const handleRegister = async () => {
 }
 
 .custom-checkbox input:checked + .checkmark {
-  background: #2DC071;
-  border-color: #2DC071;
+  background: var(--accent-color);
+  border-color: var(--accent-color);
 }
 
 .custom-checkbox input:checked + .checkmark::after {
@@ -981,7 +980,7 @@ const handleRegister = async () => {
 }
 
 .checkbox-text a {
-  color: #2DC071;
+  color: var(--accent-color);
   text-decoration: none;
 }
 
@@ -991,7 +990,7 @@ const handleRegister = async () => {
 
 .submit-btn {
   width: 100%;
-  background: #2DC071;
+  background: var(--accent-color);
   color: #ffffff;
   border: none;
   border-radius: 10px;
@@ -1009,7 +1008,7 @@ const handleRegister = async () => {
 }
 
 .submit-btn:hover:not(:disabled) {
-  background: #28a45e;
+  background: var(--accent-strong);
 }
 
 .submit-btn:disabled {
@@ -1062,7 +1061,7 @@ const handleRegister = async () => {
 .stat-icon {
   width: 42px;
   height: 42px;
-  color: #2DC071;
+  color: var(--accent-color);
   flex-shrink: 0;
 }
 
@@ -1074,7 +1073,7 @@ const handleRegister = async () => {
 .stat-value {
   font-size: 22px;
   font-weight: 800;
-  color: #2DC071;
+  color: var(--accent-color);
 }
 
 .stat-label {
@@ -1108,7 +1107,7 @@ const handleRegister = async () => {
 .feature-box-icon {
   width: 42px;
   height: 42px;
-  color: #2DC071;
+  color: var(--accent-color);
   flex-shrink: 0;
 }
 
@@ -1120,7 +1119,7 @@ const handleRegister = async () => {
 .feature-box-title {
   font-size: 22px;
   font-weight: 800;
-  color: #2DC071;
+  color: var(--accent-color);
   margin-bottom: 3px;
 }
 

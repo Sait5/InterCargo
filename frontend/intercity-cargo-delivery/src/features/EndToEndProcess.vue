@@ -1,16 +1,12 @@
 <template>
   <div class="page-wrapper">
     <Header />
+    <PageHero view="west" eyebrow="Сквозной процесс">
+      <template #title>Единый цикл управления <span class="ic-accent">от заявки до оплаты</span></template>
+      Исключение разрозненных инструментов. Все этапы логистической закупки связаны в непрерывную цепочку, где статус на одном этапе автоматически инициирует действия на следующем.
+    </PageHero>
     <main class="article-container">
       <div class="article-content">
-        <header class="article-header">
-          <span class="article-badge">Сквозной процесс</span>
-          <h1 class="article-title">Единый цикл управления <span class="text-accent">от заявки до оплаты</span></h1>
-          <p class="article-lead">
-            Исключение разрозненных инструментов. Все этапы логистической закупки связаны в непрерывную цепочку,
-            где статус на одном этапе автоматически инициирует действия на следующем.
-          </p>
-        </header>
 
         <section class="content-block">
           <h2 class="block-title">Жизненный цикл тендера</h2>
@@ -49,12 +45,13 @@
 </template>
 
 <script>
+import PageHero from '@/ui/PageHero.vue'
 import Header from "@/ui/Header.vue";
 import Footer from "@/ui/Footer.vue";
 
 export default {
   name: "EndToEndProcess",
-  components: { Header, Footer },
+  components: { PageHero,  Header, Footer },
   data() {
     return {
       steps: [
@@ -112,7 +109,7 @@ export default {
   background: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100vh;
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
   width: 100%;
   overflow-x: hidden;
 }

@@ -1,43 +1,31 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+import { api } from '@/api/client';
 
 export const useReviewStore = defineStore('review', () => {
-	const loading = ref(false);
+  const loading = ref(false);
+  const myReviews = ref([]);
 
-	const getAuthHeaders = () => {
-		const token = localStorage.getItem('token');
-		return {
-			'Content-Type': 'application/json',
-			'Authorization': `Bearer ${token}`
-		};
-	};
+  const submitReview = async (carrierId, rating, text) => {
+    loading.value = true;
+    const res = await api('/reviews', { method: 'POST', body: { carrierId, rating, text } });
+    loading.value = false;
+    return { success: res.ok, message: res.message || (res.ok ? 'Отзыв отправлен' : 'Ошибка отправки отзыва') };
+  };
 
-	const submitReview = async (carrierId, rating, text) => {
-		loading.value = true;
-		try {
-			const response = await fetch(`${API_URL}/api/reviews`, {
-				method: 'POST',
-				headers: getAuthHeaders(),
-				body: JSON.stringify({ carrierId, rating, text })
-			});
-			const data = await response.json();
-			if (response.ok) {
-				return { success: true, message: data.message };
-			} else {
-				return { success: false, message: data.message || 'Ошибка отправки отзыва' };
-			}
-		} catch (error) {
-			console.error('Submit review error:', error);
-			return { success: false, message: 'Ошибка соединения' };
-		} finally {
-			loading.value = false;
-		}
-	};
+  // Отзывы о текущем перевозчике
+  const fetchMyReviews = async () => {
+    loading.value = true;
+    const res = await api('/reviews/my');
+    loading.value = false;
+    if (res.ok) myReviews.value = res.data;
+    return { success: res.ok, message: res.message };
+  };
 
-	return {
-		loading,
-		submitReview
-	};
+  const fetchCarrierReviews = async (carrierId) => {
+    const res = await api(`/reviews/carrier/${carrierId}`, { auth: false });
+    return res.ok ? res.data : [];
+  };
+
+  return { loading, myReviews, submitReview, fetchMyReviews, fetchCarrierReviews };
 });

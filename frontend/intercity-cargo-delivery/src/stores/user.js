@@ -1,32 +1,22 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+import { api } from '@/api/client';
 
 export const useUserStore = defineStore('user', () => {
   const user = ref(null);
   const isAuthenticated = ref(false);
   const loading = ref(false);
+  let readyPromise = null;
 
-  const ADMIN_EMAILS = ['admin@intercargo.ru', 'balaev0540@mail.ru'];
-
-  const isAdmin = computed(() => {
-    if (!user.value) return false;
-    return ADMIN_EMAILS.includes(user.value.email);
-  });
-
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    };
-  };
+  const isAdmin = computed(() => user.value?.role === 'admin');
+  const isCustomer = computed(() => user.value?.accountType === 'customer');
+  const isCarrier = computed(() => user.value?.accountType === 'carrier');
 
   const login = (token, userData) => {
-    isAuthenticated.value = true;
-    user.value = userData;
     localStorage.setItem('token', token);
+    user.value = userData;
+    isAuthenticated.value = true;
+    readyPromise = Promise.resolve();
   };
 
   const logout = () => {
@@ -38,154 +28,59 @@ export const useUserStore = defineStore('user', () => {
   };
 
   const fetchUser = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
+    if (!localStorage.getItem('token')) {
       logout();
       return { success: false, message: 'Нет токена' };
     }
-
     loading.value = true;
+    const res = await api('/auth/me');
+    loading.value = false;
 
-    try {
-      const response = await fetch(`${API_URL}/api/auth/me`, {
-        headers: getAuthHeaders()
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        user.value = data;
-        isAuthenticated.value = true;
-        return { success: true, user: data };
-      } else {
-        logout();
-        return { success: false, message: 'Сессия истекла' };
-      }
-    } catch (error) {
-      console.error('Ошибка загрузки профиля:', error);
-      logout();
-      return { success: false, message: 'Ошибка соединения' };
-    } finally {
-      loading.value = false;
+    if (res.ok) {
+      user.value = res.data;
+      isAuthenticated.value = true;
+      return { success: true, user: res.data };
     }
+    // Разлогиниваем только если сервер отверг токен, а не при сбое сети
+    if (res.status === 401 || res.status === 403) logout();
+    return { success: false, message: res.message };
+  };
+
+  // Дождаться загрузки пользователя (нужно роутеру при открытии страницы по прямой ссылке)
+  const ensureLoaded = () => {
+    if (!readyPromise) readyPromise = fetchUser();
+    return readyPromise;
   };
 
   const updateUser = async (userData) => {
-    try {
-      const response = await fetch(`${API_URL}/api/auth/me`, {
-        method: 'PUT',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(userData)
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        user.value = data;
-        return { success: true, user: data };
-      } else {
-        return { success: false, message: data.message || 'Ошибка обновления' };
-      }
-    } catch (error) {
-      console.error('Ошибка обновления:', error);
-      return { success: false, message: 'Ошибка соединения' };
-    }
+    const res = await api('/auth/me', { method: 'PUT', body: userData });
+    if (res.ok) user.value = res.data;
+    return { success: res.ok, user: res.data, message: res.message };
   };
 
   const changePassword = async (passwords) => {
-    try {
-      const response = await fetch(`${API_URL}/api/auth/me/password`, {
-        method: 'PUT',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(passwords)
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        return { success: true, message: data.message };
-      } else {
-        return { success: false, message: data.message || 'Ошибка смены пароля' };
-      }
-    } catch (error) {
-      console.error('Ошибка смены пароля:', error);
-      return { success: false, message: 'Ошибка соединения' };
-    }
+    const res = await api('/auth/me/password', { method: 'PUT', body: passwords });
+    return { success: res.ok, message: res.message };
   };
 
   const fetchCarriers = async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/users/carriers`, {
-        headers: getAuthHeaders()
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        return { success: true, carriers: data };
-      } else {
-        return { success: false, message: 'Ошибка загрузки перевозчиков' };
-      }
-    } catch (error) {
-      console.error('Ошибка загрузки перевозчиков:', error);
-      return { success: false, message: 'Ошибка соединения' };
-    }
+    const res = await api('/users/carriers');
+    return { success: res.ok, carriers: res.ok ? res.data : [], message: res.message };
   };
 
   const fetchAllUsers = async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/users/all`, {
-        headers: getAuthHeaders()
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        return { success: true, users: data };
-      } else {
-        return { success: false, message: 'Ошибка загрузки пользователей' };
-      }
-    } catch (error) {
-      console.error('Ошибка загрузки пользователей:', error);
-      return { success: false, message: 'Ошибка соединения' };
-    }
+    const res = await api('/users/all');
+    return { success: res.ok, users: res.ok ? res.data : [], message: res.message };
   };
 
   const blockUser = async (userId) => {
-    try {
-      const response = await fetch(`${API_URL}/api/users/${userId}/block`, {
-        method: 'PUT',
-        headers: getAuthHeaders()
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        return { success: true, message: data.message, isBlocked: data.isBlocked };
-      } else {
-        return { success: false, message: 'Ошибка блокировки' };
-      }
-    } catch (error) {
-      console.error('Ошибка блокировки:', error);
-      return { success: false, message: 'Ошибка соединения' };
-    }
+    const res = await api(`/users/${userId}/block`, { method: 'PUT' });
+    return { success: res.ok, message: res.message, isBlocked: res.data?.isBlocked };
   };
 
   const updateUserById = async (userId, userData) => {
-    try {
-      const response = await fetch(`${API_URL}/api/users/${userId}`, {
-        method: 'PUT',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(userData)
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        return { success: true, user: data.user };
-      } else {
-        const data = await response.json();
-        return { success: false, message: data.message || 'Ошибка обновления' };
-      }
-    } catch (error) {
-      console.error('Ошибка обновления:', error);
-      return { success: false, message: 'Ошибка соединения' };
-    }
+    const res = await api(`/users/${userId}`, { method: 'PUT', body: userData });
+    return { success: res.ok, user: res.data?.user, message: res.message };
   };
 
   return {
@@ -193,14 +88,17 @@ export const useUserStore = defineStore('user', () => {
     isAuthenticated,
     loading,
     isAdmin,
+    isCustomer,
+    isCarrier,
     login,
     logout,
     fetchUser,
+    ensureLoaded,
     updateUser,
     changePassword,
     fetchCarriers,
     fetchAllUsers,
     blockUser,
-    updateUserById
+    updateUserById,
   };
 });

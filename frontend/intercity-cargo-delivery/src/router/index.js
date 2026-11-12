@@ -1,209 +1,79 @@
-import { createRouter, createWebHistory } from "vue-router"
-import Home from "../pages/Home.vue"
-import Login from "../pages/Login.vue"
-import Register from "../pages/Register.vue"
-import Profile from "../pages/Profile.vue"
-import Settings from "../pages/Settings.vue"
-import AdminPanel from "../pages/AdminPanel.vue"
-import MyApplications from "../pages/MyApplications.vue"
+import { createRouter, createWebHistory } from 'vue-router'
+import Home from '../pages/Home.vue'
 import { useUserStore } from '@/stores/user'
 
-const routes = [
-  { 
-    path: "/", 
-    name: "Home", 
-    component: Home 
-  },
-  { 
-    path: "/login", 
-    name: "Login", 
-    component: Login 
-  },
-  { 
-    path: "/register", 
-    name: "Register", 
-    component: Register 
-  },
-  { 
-    path: "/profile",
-    name: "Profile",
-    component: Profile,
-    meta: { requiresAuth: true }
-  },
-  { 
-    path: "/settings", 
-    name: "Settings", 
-    component: Settings,
-    meta: { requiresAuth: true }
-  },
-  { 
-    path: "/admin",
-    name: "AdminPanel",
-    component: AdminPanel,
-    meta: { requiresAuth: true, requiresAdmin: true }
-  },
-  { 
-    path: "/transport-tender", 
-    name: "TransportTender", 
-    component: () => import("../pages/TransportTender.vue") 
-  },
-  { 
-    path: "/services", 
-    name: "Services", 
-    component: () => import("../fallback/Services.vue") 
-  },
-  { 
-    path: "/orders", 
-    name: "Orders", 
-    component: () => import("../pages/Orders.vue"),
-    meta: { requiresAuth: true }
-  },
-  { 
-    path: "/carriers", 
-    name: "Carriers", 
-    component: () => import("../pages/Carriers.vue"),
-    meta: { requiresAuth: true }
-  },
-  {
-    path: "/my-applications",
-    name: "MyApplications",
-    component: MyApplications,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: "/documents",
-    name: "Documents",
-    component: () => import("../pages/Documents.vue"),
-    meta: { requiresAuth: true }
-  },
-  {
-    path: "/reviews",
-    name: "Reviews",
-    component: () => import("../pages/Reviews.vue"),
-    meta: { requiresAuth: true }
-  },
-  { 
-    path: "/feature/analytics", 
-    name: "AnalyticsModule", 
-    component: () => import("../features/AnalyticsModule.vue") 
-  },
-  { 
-    path: "/feature/end-to-end", 
-    name: "EndToEndProcess", 
-    component: () => import("../features/EndToEndProcess.vue") 
-  },
-  { 
-    path: "/feature/independence", 
-    name: "IndependenceModule", 
-    component: () => import("../features/IndependenceModule.vue") 
-  },
-    {
-    path: "/chat",
-    name: "Chat",
-    component: () => import("../pages/Chat.vue"),
-    meta: { requiresAuth: true }
-  },
-  {
-path: "/spot-auctions",
-name: "SpotAuctions",
-component: () => import("../pages/SpotAuctions.vue"),
-meta: { requiresAuth: true }
-},
-{
-  path: "/spot-auctions",
-  name: "SpotAuctions",
-  component: () => import("../pages/SpotAuctions.vue"),
-  meta: { requiresAuth: true }
-},
-{
-  path: "/create-auction",
-  name: "CreateAuction",
-  component: () => import("../pages/CreateAuction.vue"),
-  meta: { requiresAuth: true }
-},
-{
-  path: "/auction/:id",
-  name: "AuctionBidding",
-  component: () => import("../pages/AuctionBidding.vue"),
-  meta: { requiresAuth: true }
-},
-{
-  path: "/auctions",
-  name: "AuctionList",
-  component: () => import("../pages/AuctionList.vue"),
-  meta: { requiresAuth: true }
-},
-{
-  path: "/services",
-  name: "Services",
-  component: () => import("../pages/Services.vue")
-},
-{
-  path: "/about",
-  name: "About",
-  component: () => import("../pages/About.vue")
-},
-{
-  path: "/contacts",
-  name: "Contacts",
-  component: () => import("../pages/Contacts.vue")
-},
+const page = (title, extra = {}) => ({ title, ...extra })
 
-  { 
-    path: "/feature/verified", 
-    name: "VerifiedCarriers", 
-    component: () => import("../features/VerifiedCarriers.vue") 
-  },
-  {
-  path: "/tms",
-  name: "TMS",
-  component: () => import("../pages/TMS.vue")
-},
-{
-  path: "/tracking",
-  name: "Tracking",
-  component: () => import("../pages/Tracking.vue")
-},
-  { 
-    path: "/:pathMatch(.*)*", 
-    name: "NotFound",
-    component: () => import("../fallback/NotFound.vue")
-  }
+const routes = [
+  { path: '/', name: 'Home', component: Home, meta: page('Грузоперевозки по России') },
+  { path: '/login', name: 'Login', component: () => import('../pages/Login.vue'), meta: page('Вход', { guestOnly: true }) },
+  { path: '/register', name: 'Register', component: () => import('../pages/Register.vue'), meta: page('Регистрация', { guestOnly: true }) },
+
+  // Публичные страницы
+  { path: '/services', name: 'Services', component: () => import('../pages/Services.vue'), meta: page('Услуги') },
+  { path: '/transport-tender', name: 'TransportTender', component: () => import('../pages/TransportTender.vue'), meta: page('Транспортные тендеры') },
+  { path: '/about', name: 'About', component: () => import('../pages/About.vue'), meta: page('О компании') },
+  { path: '/contacts', name: 'Contacts', component: () => import('../pages/Contacts.vue'), meta: page('Контакты') },
+  { path: '/tms', name: 'TMS', component: () => import('../pages/TMS.vue'), meta: page('TMS-система') },
+  { path: '/tracking', name: 'Tracking', component: () => import('../pages/Tracking.vue'), meta: page('Трекинг грузов') },
+  { path: '/news', name: 'News', component: () => import('../pages/News.vue'), meta: page('Новости') },
+  { path: '/privacy', name: 'Privacy', component: () => import('../pages/Privacy.vue'), meta: page('Политика и условия') },
+  { path: '/feature/analytics', name: 'AnalyticsModule', component: () => import('../features/AnalyticsModule.vue'), meta: page('Аналитика') },
+  { path: '/feature/end-to-end', name: 'EndToEndProcess', component: () => import('../features/EndToEndProcess.vue'), meta: page('Сквозной процесс') },
+  { path: '/feature/independence', name: 'IndependenceModule', component: () => import('../features/IndependenceModule.vue'), meta: page('Независимость решений') },
+  { path: '/feature/verified', name: 'VerifiedCarriers', component: () => import('../features/VerifiedCarriers.vue'), meta: page('Проверенные перевозчики') },
+
+  // Личный кабинет
+  { path: '/profile', name: 'Profile', component: () => import('../pages/Profile.vue'), meta: page('Профиль', { requiresAuth: true }) },
+  { path: '/settings', name: 'Settings', component: () => import('../pages/Settings.vue'), meta: page('Настройки', { requiresAuth: true }) },
+  { path: '/orders', name: 'Orders', component: () => import('../pages/Orders.vue'), meta: page('Заказы', { requiresAuth: true }) },
+  { path: '/carriers', name: 'Carriers', component: () => import('../pages/Carriers.vue'), meta: page('Перевозчики', { requiresAuth: true }) },
+  { path: '/my-applications', name: 'MyApplications', component: () => import('../pages/MyApplications.vue'), meta: page('Мои заявки', { requiresAuth: true }) },
+  { path: '/documents', name: 'Documents', component: () => import('../pages/Documents.vue'), meta: page('Документы', { requiresAuth: true }) },
+  { path: '/reviews', name: 'Reviews', component: () => import('../pages/Reviews.vue'), meta: page('Отзывы', { requiresAuth: true }) },
+  { path: '/chat', name: 'Chat', component: () => import('../pages/Chat.vue'), meta: page('Чат', { requiresAuth: true }) },
+  { path: '/admin', name: 'AdminPanel', component: () => import('../pages/AdminPanel.vue'), meta: page('Админ-панель', { requiresAuth: true, requiresAdmin: true }) },
+
+  // Аукционы
+  { path: '/spot-auctions', name: 'SpotAuctions', component: () => import('../pages/SpotAuctions.vue'), meta: page('Спот-аукционы') },
+  { path: '/auctions', name: 'AuctionList', component: () => import('../pages/AuctionList.vue'), meta: page('Аукционы', { requiresAuth: true }) },
+  { path: '/create-auction', name: 'CreateAuction', component: () => import('../pages/CreateAuction.vue'), meta: page('Новый аукцион', { requiresAuth: true }) },
+  { path: '/auction/:id', name: 'AuctionBidding', component: () => import('../pages/AuctionBidding.vue'), meta: page('Аукцион', { requiresAuth: true }) },
+
+  { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('../fallback/NotFound.vue'), meta: page('Страница не найдена') },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
   scrollBehavior(to, from, savedPosition) {
-    if (savedPosition) {
-      return savedPosition
-    } else {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve({ top: 0, behavior: "instant" })
-        }, 50)
-      })
-    }
-  }
+    if (savedPosition) return savedPosition
+    if (to.hash) return { el: to.hash, top: 90, behavior: 'smooth' }
+    return { top: 0 }
+  },
 })
 
-router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token')
-  
-  if (to.meta.requiresAuth && !token) {
-    next('/login')
-    return
+router.beforeEach(async (to) => {
+  const userStore = useUserStore()
+  const hasToken = Boolean(localStorage.getItem('token'))
+
+  // При открытии по прямой ссылке сначала дожидаемся профиля, иначе права проверяются по пустым данным
+  if (hasToken) await userStore.ensureLoaded()
+
+  if (to.meta.requiresAuth && !userStore.isAuthenticated) {
+    return { path: '/login', query: { redirect: to.fullPath } }
   }
-  
-  if (to.meta.requiresAdmin && token) {
-    const userStore = useUserStore()
-    if (!userStore.isAdmin) {
-      next('/profile')
-      return
-    }
+  if (to.meta.requiresAdmin && !userStore.isAdmin) {
+    return { path: '/profile' }
   }
-  
-  next()
+  if (to.meta.guestOnly && userStore.isAuthenticated) {
+    return { path: '/profile' }
+  }
+  return true
+})
+
+router.afterEach((to) => {
+  document.title = to.meta.title ? `${to.meta.title} — InterCargo` : 'InterCargo'
 })
 
 export default router

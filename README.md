@@ -1,199 +1,69 @@
-# Intercity Cargo Delivery
+# InterCargo
 
-Веб-платформа для организации междугородних грузоперевозок с системой аукционов между заказчиками и перевозчиками.
+Fullstack-платформа междугородних грузоперевозок: заказчики публикуют заказы и аукционы,
+перевозчики откликаются и торгуются, стороны договариваются в чате. На главной — интерактивная
+3D-карта России с рельефом, реками, федеральными трассами и маршрутами компании.
 
-🔗 **Демо:** https://inter-cargo-6ag6.vercel.app
-
----
- 
-## О проекте
-
-Intercity Cargo Delivery — fullstack веб-приложение для организации междугородних грузоперевозок.
-
-Заказчики публикуют заявки на перевозку грузов, перевозчики участвуют в аукционах и предлагают свои условия доставки, после чего заказчик выбирает победителя.
+![Главная — 3D-карта маршрутов](docs/screenshots/home.webp)
 
 ---
 
-## Основные возможности
+## Возможности
 
-* Регистрация и авторизация пользователей (JWT)
-* Ролевая модель доступа (Customer, Carrier, Admin)
-* Создание и управление аукционами
-* Система ставок
-* Приватные аукционы
-* Личный кабинет пользователя
-* Отзывы пользователей
-* Форма обратной связи
-* Административная панель
-* Защищённые маршруты и API
+* **3D-карта маршрутов** (three.js): рельеф по реальным высотам, реки, трассы, границы регионов,
+  50+ городов, анимированные маршруты с грузовиками, подсветка маршрутов города при наведении
+* Регистрация и вход (JWT), роли: заказчик, перевозчик, администратор
+* **Заказы**: создание, модерация публичных заказов, отклики перевозчиков, выбор исполнителя
+* **Аукционы**: публичные и закрытые (по приглашению), ставки на понижение, автозавершение по времени
+* **Чат** между заказчиком и выбранным перевозчиком: текст и голосовые сообщения
+* **Уведомления**: новые заявки, перебитые ставки, решения по заказам, сообщения
+* Отзывы о перевозчиках, админ-панель с блокировкой пользователей
+* Заявка на расчёт и подписка на новости (письма — если настроен SMTP)
+* Тёмная и светлая тема, адаптивная вёрстка
 
----
-
-## Скриншоты
-
-### Главная страница
-
-![Главная страница](/frontend/intercity-cargo-delivery/src/assets/screenshots/home.png)
-
-![Главная страница](/frontend/intercity-cargo-delivery/src/assets/screenshots/home-2.png)
-
-### Каталог перевозок
-
-![Каталог перевозок](/frontend/intercity-cargo-delivery/src/assets/screenshots/catalog.png)
-
-![Каталог перевозок](/frontend/intercity-cargo-delivery/src/assets/screenshots/catalog-2.png)
-
-### Личный кабинет
-
-![Личный кабинет](/frontend/intercity-cargo-delivery/src/assets/screenshots/profile.png)
+| | |
+|---|---|
+| ![Продукты](docs/screenshots/products.webp) | ![Трекинг](docs/screenshots/tracking.webp) |
+| ![Аукционы](docs/screenshots/auctions.webp) | ![Заказы](docs/screenshots/orders.webp) |
 
 ---
 
-## Технологический стек
+## Стек
 
-### Frontend
-
-* Vue 3
-* Vue Router
-* Pinia
-* Vite
-* SCSS
-
-### Backend
-
-* Node.js
-* Express.js
-* MongoDB
-* Mongoose
-* JWT Authentication
-
----
-
-## Архитектура
-
-### Общая схема
-
-```text
-Frontend (Vue 3 + Pinia)
-           │
-           ▼
-     Express REST API
-           │
-           ▼
-        MongoDB
-```
-
-### Backend
+**Frontend:** Vue 3, Vue Router, Pinia, Vite, three.js, lucide-vue-next, Vitest
+**Backend:** Node.js, Express, MongoDB, Mongoose, JWT, Jest + Supertest + mongodb-memory-server
 
 ```text
 Backend/
-├── middleware/
-│   └── auth.js
-├── models/
-│   ├── Auction.js
-│   ├── User.js
-│   ├── Review.js
-│   └── ContactRequest.js
-├── routes/
-│   ├── authRoutes.js
-│   ├── auctionRoutes.js
-│   ├── userRoutes.js
-│   ├── reviewRoutes.js
-│   └── contactRoutes.js
-├── config.js
-└── server.js
-```
+├── app.js              Express-приложение (маршруты, CORS, обработка ошибок)
+├── server.js           подключение к MongoDB и запуск
+├── middleware/         auth, requireAdmin
+├── models/             User, Order, Auction, Chat, Review, Notification, ...
+├── routes/             auth, orders, auctions, chats, notifications, reviews, users, contact
+├── scripts/make-admin.js
+└── __tests__/
 
-### Frontend
-
-```text
-frontend/intercity-cargo-delivery/
-├── src/
-│   ├── pages/
-│   ├── stores/
-│   ├── router/
-│   ├── components/
-│   ├── features/
-│   ├── assets/
-│   └── utils/
-├── index.html
-└── vite.config.js
+frontend/intercity-cargo-delivery/src/
+├── api/client.js       единая точка запросов к API
+├── components/         3D-карта, форма заявки
+├── data/               подготовленные данные карты, новости
+├── pages/ features/    страницы
+├── stores/             Pinia
+└── ui/                 шапка, подвал, макет кабинета
 ```
 
 ---
 
-## Роли пользователей
+## Запуск локально
 
-| Роль     | Возможности                                  |
-| -------- | -------------------------------------------- |
-| Customer | Создание аукционов, выбор победителя, отзывы |
-| Carrier  | Просмотр аукционов, участие в торгах, ставки |
-| Admin    | Управление пользователями и аукционами       |
-
----
-
-## Жизненный цикл аукциона
-
-```text
-draft → active → completed
-              ↘ cancelled
-```
-
-### Создание аукциона
-
-Customer создаёт заявку:
-
-* маршрут
-* описание груза
-* стартовая цена
-* сроки доставки
-* тип аукциона (public/private)
-
-### Размещение ставок
-
-Carrier может:
-
-* просматривать активные аукционы
-* делать ставки
-* участвовать в приватных аукционах при наличии доступа
-
-Перед созданием ставки выполняются проверки:
-
-* аукцион активен
-* пользователь не является владельцем аукциона
-* ставка ниже текущей цены
-* есть доступ к приватному аукциону
-
-### Завершение аукциона
-
-Customer выбирает победителя и завершает аукцион.
-
-После завершения:
-
-* фиксируется победитель
-* статус меняется на `completed`
-* пользователи могут связаться через чат
-
----
-
-## Установка
-
-### Клонирование репозитория
-
-```bash
-git clone https://github.com/Sait5/Intercity-Cargo.git
-cd Intercity-Cargo
-```
-
-### Backend
+Нужны Node.js 20+ и MongoDB.
 
 ```bash
 cd Backend
+cp .env.example .env      # укажите MONGO_URI и JWT_SECRET
 npm install
-npm start
+npm run dev
 ```
-
-### Frontend
 
 ```bash
 cd frontend/intercity-cargo-delivery
@@ -201,83 +71,61 @@ npm install
 npm run dev
 ```
 
----
+Фронтенд по умолчанию ходит на `http://localhost:4000`. Другой адрес API задаётся переменной
+`VITE_API_URL` (например, в `frontend/intercity-cargo-delivery/.env.local`).
 
-## Конфигурация
+### Администратор
 
-Создайте файл `.env` в папке `Backend`.
-
-```env
-PORT=4000
-MONGO_URI=mongodb://localhost:27017/intercity_cargo
-JWT_SECRET=your_secret_key
-```
-
----
-
-## API
-
-### Authentication
-
-```http
-POST /api/auth/register
-POST /api/auth/login
-GET  /api/auth/me
-PUT  /api/auth/me
-```
-
-### Auctions
-
-```http
-GET    /api/auctions
-GET    /api/auctions/active
-GET    /api/auctions/my
-GET    /api/auctions/:id
-
-POST   /api/auctions
-POST   /api/auctions/:id/bid
-POST   /api/auctions/:id/complete
-POST   /api/auctions/:id/cancel
-
-DELETE /api/auctions/:id
-```
-
-### Reviews
-
-```http
-GET  /api/reviews
-POST /api/reviews
-```
-
-### Users (Admin)
-
-```http
-GET  /api/users/all
-GET  /api/users/carriers
-
-PUT  /api/users/:id
-PUT  /api/users/:id/block
-```
-
----
-
-## Тестирование
-
-### Frontend
-
-```bash
-cd frontend/intercity-cargo-delivery
-npm run test
-```
-
-### Backend
+Роль администратора не выдаётся при регистрации. Зарегистрируйтесь обычным способом, затем:
 
 ```bash
 cd Backend
-npm run test
+npm run make-admin -- you@example.com
+```
+
+### Тесты
+
+```bash
+cd Backend && npm test
+cd frontend/intercity-cargo-delivery && npm test
 ```
 
 ---
+
+## Деплой
+
+* **API** — `render.yaml` в корне описывает бесплатный веб-сервис Render. Нужны переменные
+  `MONGO_URI` (например, бесплатный кластер MongoDB Atlas) и `CLIENT_URL` — адрес фронтенда.
+* **Фронтенд** — Vercel, корневая папка `frontend/intercity-cargo-delivery`. В настройках проекта
+  задайте `VITE_API_URL` = адрес API. `vercel.json` отдаёт `index.html` для всех путей,
+  поэтому прямые ссылки и обновление страницы работают.
+
+---
+
+## API (основное)
+
+```http
+POST /api/auth/register      POST /api/auth/login       GET/PUT /api/auth/me
+GET  /api/orders             POST /api/orders           POST /api/orders/:id/apply
+POST /api/orders/:id/approve|reject                     (админ)
+POST /api/orders/:id/applicants/:applicantId/approve|reject
+GET  /api/auctions[/active|/my|/:id]                    POST /api/auctions
+POST /api/auctions/:id/bid|complete|cancel              DELETE /api/auctions/:id
+GET  /api/chats              POST /api/chats/:id/messages  POST /api/chats/:id/close
+GET  /api/notifications      POST /api/notifications/read-all
+GET  /api/reviews/my         GET /api/reviews/carrier/:id  POST /api/reviews
+POST /api/contact/offer-request   POST /api/contact/subscribe
+```
+
+---
+
+## Данные карты
+
+* Границы, береговая линия, реки, озёра, трассы, регионы — [Natural Earth](https://www.naturalearthdata.com/) (общественное достояние)
+* Рельеф — [Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) на AWS Open Data
+  (источники: SRTM, GMTED, ETOPO1 и др.)
+
+Данные заранее спроецированы и упакованы в `src/data/russia-map.json` и `src/assets/map/`.
 
 ## Лицензия
 

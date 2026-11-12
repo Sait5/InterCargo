@@ -3,6 +3,8 @@ const router = express.Router();
 const Review = require('../models/Review');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
+const notify = require('../utils/notify');
+const { isValidId } = require('../utils/http');
 
 router.post('/', auth, async (req, res) => {
 	try {
@@ -13,6 +15,7 @@ router.post('/', auth, async (req, res) => {
 			return res.status(400).json({ message: 'Все поля обязательны' });
 		}
 
+		if (!isValidId(carrierId)) return res.status(404).json({ message: 'Перевозчик не найден' });
 		const carrier = await User.findById(carrierId);
 		if (!carrier || carrier.accountType !== 'carrier') {
 			return res.status(404).json({ message: 'Перевозчик не найден' });
@@ -35,9 +38,23 @@ router.post('/', auth, async (req, res) => {
 		});
 
 		await review.save();
+		await notify(carrier._id, 'Новый отзыв', `Вам поставили оценку ${rating} из 5.`);
 		res.status(201).json({ message: 'Отзыв успешно отправлен', review });
 	} catch (err) {
 		console.error('Create review error:', err);
+		res.status(500).json({ message: 'Ошибка сервера' });
+	}
+});
+
+// Отзывы о текущем перевозчике (страница «Отзывы» в кабинете)
+router.get('/my', auth, async (req, res) => {
+	try {
+		const reviews = await Review.find({ carrierId: req.user._id })
+			.populate('reviewerId', 'firstName lastName company')
+			.sort({ createdAt: -1 });
+		res.json(reviews);
+	} catch (err) {
+		console.error('Get my reviews error:', err);
 		res.status(500).json({ message: 'Ошибка сервера' });
 	}
 });

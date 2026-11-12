@@ -6,7 +6,7 @@
           <header class="top-header">
             <div class="logo-area" @click="$router.push('/')" style="cursor: pointer;">
               <div class="logo-icon">
-                <img src="@/assets/icons/logotip.png" alt="InterCargo">
+                <img src="@/assets/icons/logotip.webp" alt="InterCargo">
               </div>
               <div class="logo-text-wrap">
                 <div class="logo-text">
@@ -184,11 +184,13 @@
 
 <script setup>
 import { reactive, ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
+import { api } from '@/api/client';
 import { useUserStore } from '@/stores/user';
 import { useToastStore } from '@/stores/toast';
 
 const router = useRouter();
+const route = useRoute();
 const userStore = useUserStore();
 const toast = useToastStore();
 
@@ -248,29 +250,19 @@ const handleLogin = async () => {
   errors.password = '';
   
   try {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
-    const response = await fetch(`${apiUrl}/api/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        email: form.email,
-        password: form.password
-      })
-    });
+    const res = await api('/auth/login', { method: 'POST', auth: false, body: { email: form.email, password: form.password } });
+    const data = res.data || {};
     
-    const data = await response.json();
-    
-    if (response.ok) {
+    if (res.ok) {
       userStore.login(data.token, data.user);
       if (form.remember) {
         localStorage.setItem('rememberMe', 'true');
       }
       toast.success('Успешный вход в аккаунт!');
-      router.push('/');
+      const redirect = typeof route.query.redirect === 'string' && route.query.redirect.startsWith('/') ? route.query.redirect : '/profile';
+      router.push(redirect);
     } else {
-      const message = data.message || 'Ошибка входа';
+      const message = res.message || 'Ошибка входа';
       toast.error(message);
       
       const lowerMessage = message.toLowerCase();
@@ -291,7 +283,8 @@ const handleLogin = async () => {
 };
 
 const forgotPassword = () => {
-  toast.success('Инструкция по восстановлению пароля отправлена на почту');
+  toast.success('Чтобы восстановить пароль, напишите нам — поможем в течение часа');
+  router.push('/contacts');
 };
 </script>
 
@@ -303,9 +296,9 @@ const forgotPassword = () => {
 }
 
 .login-page {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-body);
   min-height: 100vh;
-  background: url('@/assets/images/fonregister.png') no-repeat center center / cover;
+  background: url('@/assets/images/fonregister.webp') no-repeat center center / cover;
   background-color: #0a0f0d;
   background-position: center 20%;
   color: #ffffff;
@@ -398,7 +391,7 @@ const forgotPassword = () => {
 .logo-express {
   font-size: 24px;
   font-weight: 800;
-  color: #2DC071;
+  color: var(--accent-color);
   letter-spacing: 1.5px;
 }
 
@@ -424,7 +417,7 @@ const forgotPassword = () => {
 }
 
 .text-green {
-  color: #2DC071;
+  color: var(--accent-color);
 }
 
 .main-subtitle {
@@ -451,7 +444,7 @@ const forgotPassword = () => {
 .feature-icon {
   width: 42px;
   height: 42px;
-  color: #2DC071;
+  color: var(--accent-color);
   flex-shrink: 0;
 }
 
@@ -475,7 +468,7 @@ const forgotPassword = () => {
 }
 
 .login-link a {
-  color: #2DC071;
+  color: var(--accent-color);
   text-decoration: none;
 }
 
@@ -548,7 +541,7 @@ const forgotPassword = () => {
 }
 
 .input-wrapper input:focus {
-  border-color: #2DC071;
+  border-color: var(--accent-color);
 }
 
 .input-icon-right {
@@ -585,7 +578,7 @@ const forgotPassword = () => {
 
 .error-message {
   font-size: 13px;
-  color: #ef4444;
+  color: var(--danger);
   margin-top: 4px;
 }
 
@@ -622,8 +615,8 @@ const forgotPassword = () => {
 }
 
 .custom-checkbox input:checked + .checkmark {
-  background: #2DC071;
-  border-color: #2DC071;
+  background: var(--accent-color);
+  border-color: var(--accent-color);
 }
 
 .custom-checkbox input:checked + .checkmark::after {
@@ -643,7 +636,7 @@ const forgotPassword = () => {
 }
 
 .forgot-link {
-  color: #2DC071;
+  color: var(--accent-color);
   text-decoration: none;
   font-size: 14px;
 }
@@ -654,7 +647,7 @@ const forgotPassword = () => {
 
 .submit-btn {
   width: 100%;
-  background: #2DC071;
+  background: var(--accent-color);
   color: #ffffff;
   border: none;
   border-radius: 10px;
@@ -672,7 +665,7 @@ const forgotPassword = () => {
 }
 
 .submit-btn:hover:not(:disabled) {
-  background: #28a45e;
+  background: var(--accent-strong);
 }
 
 .submit-btn:disabled {
@@ -725,14 +718,14 @@ const forgotPassword = () => {
 .stat-icon, .feature-box-icon {
   width: 42px;
   height: 42px;
-  color: #2DC071;
+  color: var(--accent-color);
   flex-shrink: 0;
 }
 
 .stat-value, .feature-box-title {
   font-size: 22px;
   font-weight: 800;
-  color: #2DC071;
+  color: var(--accent-color);
   margin-bottom: 3px;
 }
 

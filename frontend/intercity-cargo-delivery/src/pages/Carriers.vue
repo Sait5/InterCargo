@@ -1,95 +1,6 @@
 <template>
-<div class="profile-layout">
-<aside class="sidebar">
-<div class="sidebar-header">
-<router-link to="/" class="logo-area">
-<div class="logo-icon">
-<img src="@/assets/icons/logotip.png" alt="InterCargo">
-</div>
-<div class="logo-text">
-<span class="logo-cargo">Inter</span>
-<span class="logo-express">Cargo</span>
-</div>
-</router-link>
-</div>
-<div class="user-card">
-<div class="user-avatar-lg">{{ initials }}</div>
-<div class="user-info">
-<div class="user-name-lg">{{ fullName }}</div>
-<div class="user-role">{{ roleLabel }}</div>
-<div class="user-email">{{ userStore.user?.email }}</div>
-</div>
-</div>
-<nav class="sidebar-nav">
-<router-link to="/profile" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-<span>Профиль</span>
-</router-link>
-<template v-if="userStore.isAdmin">
-<router-link to="/orders" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"></path></svg>
-<span>Заказы</span>
-</router-link>
-<router-link to="/carriers" class="nav-link active">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-<span>Перевозчики</span>
-</router-link>
-<router-link to="/documents" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-<span>Документы</span>
-</router-link>
-<router-link to="/admin" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-<span>Админ-панель</span>
-</router-link>
-</template>
-<template v-else-if="isCustomer">
-<router-link to="/orders" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"></path></svg>
-<span>Мои заказы</span>
-</router-link>
-<router-link to="/carriers" class="nav-link active">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-<span>Перевозчики</span>
-</router-link>
-<router-link to="/documents" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-<span>Документы</span>
-</router-link>
-<router-link to="/chat" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-<span>Чат</span>
-</router-link>
-</template>
-<template v-else>
-<router-link to="/orders" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"></path></svg>
-<span>Доступные заказы</span>
-</router-link>
-<router-link to="/my-applications" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-<span>Мои заявки</span>
-</router-link>
-<router-link to="/reviews" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-<span>Отзывы</span>
-</router-link>
-<router-link to="/chat" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-<span>Чат</span>
-</router-link>
-</template>
-<router-link to="/settings" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06-.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-<span>Настройки</span>
-</router-link>
-<a class="nav-link logout" @click="handleLogout">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-<span>Выход</span>
-</a>
-</nav>
-</aside>
-<main class="main-content">
+<DashboardLayout>
+<div class="main-content">
 <header class="content-header">
 <div class="header-left">
 <h1>Перевозчики</h1>
@@ -194,7 +105,7 @@ class="btn-block"
 </div>
 </div>
 </div>
-</main>
+</div>
 <div class="modal-overlay" v-if="showEditModal" @click="closeEditModal">
 <div class="modal-content" @click.stop>
 <div class="modal-header">
@@ -284,10 +195,11 @@ class="star"
 </form>
 </div>
 </div>
-</div>
+</DashboardLayout>
 </template>
 
 <script setup>
+import DashboardLayout from '@/ui/DashboardLayout.vue';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
@@ -456,8 +368,8 @@ loadCarriers();
 .logo-cargo { font-size: 28px; font-weight: 800; letter-spacing: 1.5px; color: var(--text-primary); }
 .logo-express { font-size: 28px; font-weight: 800; color: var(--accent-color); letter-spacing: 1.5px; }
 .user-card { display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; transition: all 0.3s ease; }
-.user-card:hover { border-color: rgba(45, 192, 113, 0.3); }
-.user-avatar-lg { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #2DC071, #28a45e); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: 700; flex-shrink: 0; }
+.user-card:hover { border-color: rgba(var(--accent-rgb), 0.3); }
+.user-avatar-lg { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: 700; flex-shrink: 0; }
 .user-info { overflow: hidden; flex: 1; }
 .user-name-lg { font-size: 15px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .user-role { font-size: 12px; color: var(--accent-color); font-weight: 600; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -467,31 +379,31 @@ loadCarriers();
 .nav-link svg { width: 20px; height: 20px; flex-shrink: 0; }
 .nav-link span { flex: 1; }
 .nav-link:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); transform: translateX(2px); }
-.nav-link.active { background: rgba(45, 192, 113, 0.1); color: var(--accent-color); font-weight: 600; }
+.nav-link.active { background: rgba(var(--accent-rgb), 0.1); color: var(--accent-color); font-weight: 600; }
 .nav-link.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 60%; background: var(--accent-color); border-radius: 0 3px 3px 0; }
-.nav-link.logout { color: #ef4444; margin-top: auto; }
-.nav-link.logout:hover { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.nav-link.logout { color: var(--danger); margin-top: auto; }
+.nav-link.logout:hover { background: rgba(var(--danger-rgb), 0.1); color: var(--danger); }
 .main-content { flex: 1; padding: 40px; max-width: 1200px; width: 100%; margin: 0 auto; }
 .content-header { margin-bottom: 32px; display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
 .content-header h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-color) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .content-header p { font-size: 16px; color: var(--text-muted); }
 .search-bar { display: flex; align-items: center; gap: 12px; padding: 14px 20px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; margin-bottom: 24px; transition: all 0.2s ease; }
-.search-bar:focus-within { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(45, 192, 113, 0.1); }
+.search-bar:focus-within { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1); }
 .search-bar svg { color: var(--text-muted); flex-shrink: 0; }
 .search-bar input { flex: 1; background: none; border: none; color: var(--text-primary); font-size: 15px; outline: none; }
 .search-bar input::placeholder { color: var(--text-muted); }
 .loading-state { text-align: center; padding: 80px 20px; }
-.spinner { width: 40px; height: 40px; border: 3px solid rgba(45, 192, 113, 0.2); border-top-color: #2DC071; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+.spinner { width: 40px; height: 40px; border: 3px solid rgba(var(--accent-rgb), 0.2); border-top-color: var(--accent-color); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-state p { color: var(--text-muted); font-size: 15px; }
 .carriers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
 .carrier-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; padding: 24px; transition: all 0.3s ease; }
-.carrier-card:hover { border-color: rgba(45, 192, 113, 0.3); transform: translateY(-4px); box-shadow: 0 10px 30px var(--shadow-color); }
+.carrier-card:hover { border-color: rgba(var(--accent-rgb), 0.3); transform: translateY(-4px); box-shadow: 0 10px 30px var(--shadow-color); }
 .carrier-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.carrier-avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #2DC071, #28a45e); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 700; }
+.carrier-avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 700; }
 .carrier-status-badge { padding: 6px 14px; border-radius: 100px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-.carrier-status-badge.active { background: rgba(45, 192, 113, 0.15); color: #2DC071; border: 1px solid rgba(45, 192, 113, 0.3); }
-.carrier-status-badge.blocked { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+.carrier-status-badge.active { background: rgba(var(--accent-rgb), 0.15); color: var(--accent-color); border: 1px solid rgba(var(--accent-rgb), 0.3); }
+.carrier-status-badge.blocked { background: rgba(var(--danger-rgb), 0.15); color: var(--danger); border: 1px solid rgba(var(--danger-rgb), 0.3); }
 .carrier-info { text-align: center; margin-bottom: 20px; }
 .carrier-name { font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
 .carrier-company { font-size: 14px; color: var(--text-muted); }
@@ -500,15 +412,15 @@ loadCarriers();
 .detail-row svg { color: var(--accent-color); flex-shrink: 0; }
 .carrier-actions { display: flex; flex-direction: column; gap: 8px; }
 .btn-review, .btn-edit, .btn-block, .reviewed-badge { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; border: none; width: 100%; }
-.btn-review { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+.btn-review { background: rgba(245, 158, 11, 0.15); color: var(--warm); }
 .btn-review:hover { background: rgba(245, 158, 11, 0.25); transform: translateY(-2px); }
-.reviewed-badge { background: rgba(45, 192, 113, 0.15); color: #2DC071; border: 1px solid rgba(45, 192, 113, 0.3); cursor: default; }
+.reviewed-badge { background: rgba(var(--accent-rgb), 0.15); color: var(--accent-color); border: 1px solid rgba(var(--accent-rgb), 0.3); cursor: default; }
 .btn-edit { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
 .btn-edit:hover { background: rgba(59, 130, 246, 0.25); transform: translateY(-2px); }
-.btn-block.block { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
-.btn-block.block:hover { background: rgba(239, 68, 68, 0.25); transform: translateY(-2px); }
-.btn-block.unblock { background: rgba(45, 192, 113, 0.15); color: #2DC071; }
-.btn-block.unblock:hover { background: rgba(45, 192, 113, 0.25); transform: translateY(-2px); }
+.btn-block.block { background: rgba(var(--danger-rgb), 0.15); color: var(--danger); }
+.btn-block.block:hover { background: rgba(var(--danger-rgb), 0.25); transform: translateY(-2px); }
+.btn-block.unblock { background: rgba(var(--accent-rgb), 0.15); color: var(--accent-color); }
+.btn-block.unblock:hover { background: rgba(var(--accent-rgb), 0.25); transform: translateY(-2px); }
 .empty-state { grid-column: 1 / -1; text-align: center; padding: 80px 20px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; }
 .empty-state svg { color: var(--text-muted); opacity: 0.3; margin-bottom: 20px; }
 .empty-state h3 { font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
@@ -526,21 +438,21 @@ loadCarriers();
 .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
 .form-group label { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
 .form-group input, .form-group textarea { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 14px; color: var(--text-primary); font-size: 14px; outline: none; transition: all 0.2s ease; font-family: inherit; resize: vertical; }
-.form-group input:focus, .form-group textarea:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(45, 192, 113, 0.1); }
+.form-group input:focus, .form-group textarea:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1); }
 .form-actions { display: flex; gap: 12px; margin-top: 8px; }
 .btn-cancel { flex: 1; padding: 14px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-primary); font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
 .btn-cancel:hover { background: rgba(255, 255, 255, 0.08); }
-.btn-submit { flex: 1; padding: 14px; background: linear-gradient(135deg, #2DC071, #28a45e); border: none; border-radius: 12px; color: white; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(45, 192, 113, 0.2); }
-.btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(45, 192, 113, 0.3); }
+.btn-submit { flex: 1; padding: 14px; background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); border: none; border-radius: 12px; color: white; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.2); }
+.btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); }
 .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 .review-carrier-info { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; padding: 16px; background: rgba(255, 255, 255, 0.02); border-radius: 12px; }
-.review-carrier-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #2DC071, #28a45e); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: 700; flex-shrink: 0; }
+.review-carrier-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: 700; flex-shrink: 0; }
 .review-carrier-name { font-size: 16px; font-weight: 600; color: var(--text-primary); }
 .review-carrier-company { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
 .star-rating { display: flex; gap: 8px; }
 .star { font-size: 32px; color: rgba(255, 255, 255, 0.2); cursor: pointer; transition: all 0.2s ease; }
 .star:hover { transform: scale(1.2); }
-.star.active { color: #f59e0b; }
+.star.active { color: var(--warm); }
 @media (max-width: 1024px) { .sidebar { display: none; } .carriers-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); } }
 @media (max-width: 768px) { .main-content { padding: 24px 16px; } .content-header h1 { font-size: 26px; } .carriers-grid { grid-template-columns: 1fr; } .modal-content { padding: 30px 20px; } .form-row { grid-template-columns: 1fr; } }
 </style>

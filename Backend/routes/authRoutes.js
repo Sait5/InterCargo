@@ -1,21 +1,18 @@
 const express = require('express');
-const router = express.Router();
 const jwt = require('jsonwebtoken');
-const config = require('../config');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
+const config = require('../config');
+const { validationMessage } = require('../utils/http');
+
+const router = express.Router();
+
+const signToken = (user) => jwt.sign({ user: { id: user.id } }, config.jwtSecret, { expiresIn: '7d' });
 
 router.post('/register', async (req, res) => {
   const {
-    firstName,
-    lastName,
-    patronymic,
-    email,
-    phone,
-    password,
-    confirmPassword,
-    accountType,
-    company
+    firstName, lastName, patronymic, email, phone,
+    password, confirmPassword, accountType, company,
   } = req.body;
 
   if (password !== confirmPassword) {
@@ -23,49 +20,33 @@ router.post('/register', async (req, res) => {
   }
 
   try {
-    let user = await User.findOne({ $or: [{ email }, { phone }] });
-    if (user) {
+    const normalizedEmail = String(email || '').toLowerCase().trim();
+    const existing = await User.findOne({ $or: [{ email: normalizedEmail }, { phone }] });
+    if (existing) {
       return res.status(400).json({
-        message: user.email === email
+        message: existing.email === normalizedEmail
           ? 'Пользователь с таким email уже существует'
-          : 'Пользователь с таким номером телефона уже существует'
+          : 'Пользователь с таким номером телефона уже существует',
       });
     }
 
-    user = new User({
+    // Роль администратора через регистрацию не выдаётся — только скриптом scripts/make-admin.js
+    const user = new User({
       firstName,
       lastName,
       patronymic: patronymic || '',
-      email,
+      email: normalizedEmail,
       phone,
       password,
-      accountType: accountType || 'customer',
-      company: company || ''
+      accountType: accountType === 'carrier' ? 'carrier' : 'customer',
+      company: company || '',
     });
-
     await user.save();
 
-    const payload = { user: { id: user.id } };
-    const token = jwt.sign(payload, config.jwtSecret, { expiresIn: '7d' });
-
-    res.json({
-      token,
-      user: {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        patronymic: user.patronymic,
-        email: user.email,
-        phone: user.phone,
-        accountType: user.accountType,
-        company: user.company
-      }
-    });
+    res.status(201).json({ token: signToken(user), user });
   } catch (err) {
-    if (err.name === 'ValidationError') {
-      const messages = Object.values(err.errors).map(e => e.message);
-      return res.status(400).json({ message: messages[0] });
-    }
+    const message = validationMessage(err);
+    if (message) return res.status(400).json({ message });
     console.error('Register error:', err);
     res.status(500).json({ message: 'Ошибка сервера' });
   }
@@ -73,71 +54,44 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Введите email и пароль' });
+  }
 
   try {
-    const user = await User.findOne({ email });
-    if (!user) {
+    const user = await User.findOne({ email: String(email).toLowerCase().trim() });
+    if (!user || !(await user.comparePassword(password))) {
       return res.status(400).json({ message: 'Неверный email или пароль' });
     }
-
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Неверный email или пароль' });
+    if (user.isBlocked) {
+      return res.status(403).json({ message: 'Аккаунт заблокирован. Обратитесь в поддержку.' });
     }
 
-    const payload = { user: { id: user.id } };
-    const token = jwt.sign(payload, config.jwtSecret, { expiresIn: '7d' });
-
-    res.json({
-      token,
-      user: {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        patronymic: user.patronymic,
-        email: user.email,
-        phone: user.phone,
-        accountType: user.accountType,
-        company: user.company
-      }
-    });
+    res.json({ token: signToken(user), user });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ message: 'Ошибка сервера' });
   }
 });
 
-router.get('/me', auth, async (req, res) => {
-  try {
-    res.json(req.user);
-  } catch (err) {
-    console.error('Get profile error:', err);
-    res.status(500).json({ message: 'Ошибка сервера' });
-  }
+router.get('/me', auth, (req, res) => {
+  res.json(req.user);
 });
 
 router.put('/me', auth, async (req, res) => {
   try {
     const { firstName, lastName, patronymic, email, phone } = req.body;
-    const user = await User.findById(req.user.id);
+    const user = req.user;
 
-    if (!user) {
-      return res.status(404).json({ message: 'Пользователь не найден' });
-    }
-
-    if (email && email !== user.email) {
-      const existing = await User.findOne({ email, _id: { $ne: req.user.id } });
-      if (existing) {
-        return res.status(400).json({ message: 'Email уже используется другим пользователем' });
-      }
+    if (email && email.toLowerCase() !== user.email) {
+      const taken = await User.findOne({ email: email.toLowerCase(), _id: { $ne: user._id } });
+      if (taken) return res.status(400).json({ message: 'Email уже используется другим пользователем' });
       user.email = email;
     }
 
     if (phone && phone !== user.phone) {
-      const existing = await User.findOne({ phone, _id: { $ne: req.user.id } });
-      if (existing) {
-        return res.status(400).json({ message: 'Телефон уже используется другим пользователем' });
-      }
+      const taken = await User.findOne({ phone, _id: { $ne: user._id } });
+      if (taken) return res.status(400).json({ message: 'Телефон уже используется другим пользователем' });
       user.phone = phone;
     }
 
@@ -146,22 +100,10 @@ router.put('/me', auth, async (req, res) => {
     if (patronymic !== undefined) user.patronymic = patronymic;
 
     await user.save();
-
-    res.json({
-      id: user.id,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      patronymic: user.patronymic,
-      email: user.email,
-      phone: user.phone,
-      accountType: user.accountType,
-      company: user.company
-    });
+    res.json(user);
   } catch (err) {
-    if (err.name === 'ValidationError') {
-      const messages = Object.values(err.errors).map(e => e.message);
-      return res.status(400).json({ message: messages[0] });
-    }
+    const message = validationMessage(err);
+    if (message) return res.status(400).json({ message });
     console.error('Update profile error:', err);
     res.status(500).json({ message: 'Ошибка сервера' });
   }
@@ -170,31 +112,21 @@ router.put('/me', auth, async (req, res) => {
 router.put('/me/password', auth, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
-
     if (!currentPassword || !newPassword) {
       return res.status(400).json({ message: 'Текущий и новый пароль обязательны' });
     }
 
-    if (newPassword.length < 8) {
-      return res.status(400).json({ message: 'Новый пароль должен быть не менее 8 символов' });
-    }
-
-    const user = await User.findById(req.user.id);
-    const isMatch = await user.comparePassword(currentPassword);
-
-    if (!isMatch) {
+    const user = await User.findById(req.user._id);
+    if (!(await user.comparePassword(currentPassword))) {
       return res.status(400).json({ message: 'Неверный текущий пароль' });
     }
 
     user.password = newPassword;
     await user.save();
-
-    res.json({ message: 'Пароль успешно изменен' });
+    res.json({ message: 'Пароль успешно изменён' });
   } catch (err) {
-    if (err.name === 'ValidationError') {
-      const messages = Object.values(err.errors).map(e => e.message);
-      return res.status(400).json({ message: messages[0] });
-    }
+    const message = validationMessage(err);
+    if (message) return res.status(400).json({ message });
     console.error('Change password error:', err);
     res.status(500).json({ message: 'Ошибка сервера' });
   }

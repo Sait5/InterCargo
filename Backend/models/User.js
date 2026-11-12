@@ -61,6 +61,11 @@ const userSchema = new mongoose.Schema({
     maxlength: [100, 'Название компании не может быть длиннее 100 символов'],
     default: ''
   },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
+  },
   isBlocked: {
     type: Boolean,
     default: false
@@ -68,6 +73,18 @@ const userSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
+  }
+});
+
+// Наружу отдаём id вместо _id и никогда не отдаём пароль
+userSchema.set('toJSON', {
+  virtuals: true,
+  versionKey: false,
+  transform(doc, ret) {
+    ret.id = String(ret._id);
+    delete ret._id;
+    delete ret.password;
+    return ret;
   }
 });
 

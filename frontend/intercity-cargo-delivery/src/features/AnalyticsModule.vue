@@ -1,16 +1,12 @@
 <template>
   <div class="page-wrapper">
     <Header />
+    <PageHero view="siberia" eyebrow="Аналитический модуль">
+      <template #title>Данные для принятия <span class="ic-accent">обоснованных решений</span></template>
+      Система агрегирует информацию на каждом этапе закупки, превращая разрозненные данные в структурированные отчеты. Это позволяет оптимизировать бюджет и минимизировать логистические риски на основе фактов, а не интуиции.
+    </PageHero>
     <main class="article-container">
       <div class="article-content">
-        <header class="article-header">
-          <span class="article-badge">Аналитический модуль</span>
-          <h1 class="article-title">Данные для принятия <span class="text-accent">обоснованных решений</span></h1>
-          <p class="article-lead">
-            Система агрегирует информацию на каждом этапе закупки, превращая разрозненные данные в структурированные отчеты. 
-            Это позволяет оптимизировать бюджет и минимизировать логистические риски на основе фактов, а не интуиции.
-          </p>
-        </header>
 
         <section class="content-block">
           <h2 class="block-title">Источники данных для анализа</h2>
@@ -63,12 +59,13 @@
 </template>
 
 <script>
+import PageHero from '@/ui/PageHero.vue'
 import Header from "@/ui/Header.vue";
 import Footer from "@/ui/Footer.vue";
 
 export default {
   name: "AnalyticsModule",
-  components: { Header, Footer },
+  components: { PageHero,  Header, Footer },
   beforeRouteEnter(to, from, next) {
     next(vm => {
       setTimeout(() => {
@@ -95,7 +92,7 @@ export default {
   background: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100vh;
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
   width: 100%;
   overflow-x: hidden;
 }

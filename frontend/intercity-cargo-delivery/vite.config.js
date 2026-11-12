@@ -10,6 +10,14 @@ export default defineConfig({
     vue(),
     vueDevTools(),
   ],
+  test: {
+    environment: 'jsdom',
+    include: ['src/__tests__/**/*.test.js'],
+  },
+  build: {
+    // three.js для 3D-карты грузится отдельным файлом только на главной
+    chunkSizeWarningLimit: 1000,
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))

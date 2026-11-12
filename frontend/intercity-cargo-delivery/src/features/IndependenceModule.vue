@@ -1,16 +1,12 @@
 <template>
   <div class="page-wrapper">
     <Header />
+    <PageHero view="overview" eyebrow="Независимость решений">
+      <template #title>Объективность, встроенная <span class="ic-accent">в алгоритм</span></template>
+      Человеческий фактор и субъективные предпочтения исключены из процесса выбора. Система оценивает участников строго по заранее утвержденным и прозрачным критериям.
+    </PageHero>
     <main class="article-container">
       <div class="article-content">
-        <header class="article-header">
-          <span class="article-badge">Независимость решений</span>
-          <h1 class="article-title">Объективность, встроенная <span class="text-accent">в алгоритм</span></h1>
-          <p class="article-lead">
-            Человеческий фактор и субъективные предпочтения исключены из процесса выбора.
-            Система оценивает участников строго по заранее утвержденным и прозрачным критериям.
-          </p>
-        </header>
 
         <section class="content-block">
           <h2 class="block-title">Критерии оценки</h2>
@@ -62,12 +58,13 @@
 </template>
 
 <script>
+import PageHero from '@/ui/PageHero.vue'
 import Header from "@/ui/Header.vue";
 import Footer from "@/ui/Footer.vue";
 
 export default {
   name: "IndependenceModule",
-  components: { Header, Footer },
+  components: { PageHero,  Header, Footer },
   beforeRouteEnter(to, from, next) {
     next(vm => {
       setTimeout(() => {
@@ -94,7 +91,7 @@ export default {
   background: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100vh;
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
   width: 100%;
   overflow-x: hidden;
 }

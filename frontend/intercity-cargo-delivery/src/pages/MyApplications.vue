@@ -1,58 +1,6 @@
 <template>
-  <div class="profile-layout">
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <router-link to="/" class="logo-area">
-          <div class="logo-icon">
-            <img src="@/assets/icons/logotip.png" alt="InterCargo">
-          </div>
-          <div class="logo-text">
-            <span class="logo-cargo">Inter</span>
-            <span class="logo-express">Cargo</span>
-          </div>
-        </router-link>
-      </div>
-      <div class="user-card">
-        <div class="user-avatar-lg">{{ initials }}</div>
-        <div class="user-info">
-          <div class="user-name-lg">{{ fullName }}</div>
-          <div class="user-role">{{ roleLabel }}</div>
-          <div class="user-email">{{ userStore.user?.email }}</div>
-        </div>
-      </div>
-      <nav class="sidebar-nav">
-        <router-link to="/profile" class="nav-link">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          <span>Профиль</span>
-        </router-link>
-        <router-link to="/orders" class="nav-link">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"></path></svg>
-          <span>Доступные заказы</span>
-        </router-link>
-        <router-link to="/my-applications" class="nav-link active">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          <span>Мои заявки</span>
-        </router-link>
-        <router-link to="/reviews" class="nav-link">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-          <span>Отзывы</span>
-        </router-link>
-        <router-link to="/chat" class="nav-link">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                <span>Чат</span>
-                </router-link>
-        <router-link to="/settings" class="nav-link">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-          <span>Настройки</span>
-        </router-link>
-        <a class="nav-link logout" @click="handleLogout">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-          <span>Выход</span>
-        </a>
-      </nav>
-    </aside>
-
-    <main class="main-content">
+  <DashboardLayout>
+        <div class="main-content">
       <header class="content-header">
         <div class="header-left">
           <h1>Мои заявки</h1>
@@ -141,11 +89,12 @@
           </div>
         </div>
       </div>
-    </main>
-  </div>
+    </div>
+  </DashboardLayout>
 </template>
 
 <script setup>
+import DashboardLayout from '@/ui/DashboardLayout.vue';
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
@@ -175,7 +124,7 @@ const fullName = computed(() => {
 
 const myApplications = computed(() => {
   if (!userStore.user) return [];
-  return orderStore.getUserApplications(userStore.user.id);
+  return userStore.user ? orderStore.getUserApplications(userStore.user.id) : [];
 });
 
 const pendingCount = computed(() => myApplications.value.filter(a => a.myApplication.status === 'pending').length);
@@ -238,8 +187,8 @@ onMounted(() => {
 .logo-cargo { font-size: 28px; font-weight: 800; letter-spacing: 1.5px; color: var(--text-primary); }
 .logo-express { font-size: 28px; font-weight: 800; color: var(--accent-color); letter-spacing: 1.5px; }
 .user-card { display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; transition: all 0.3s ease; }
-.user-card:hover { border-color: rgba(45, 192, 113, 0.3); }
-.user-avatar-lg { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #2DC071, #28a45e); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: 700; flex-shrink: 0; }
+.user-card:hover { border-color: rgba(var(--accent-rgb), 0.3); }
+.user-avatar-lg { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: 700; flex-shrink: 0; }
 .user-info { overflow: hidden; flex: 1; }
 .user-name-lg { font-size: 15px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .user-role { font-size: 12px; color: var(--accent-color); font-weight: 600; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -249,34 +198,34 @@ onMounted(() => {
 .nav-link svg { width: 20px; height: 20px; flex-shrink: 0; }
 .nav-link span { flex: 1; }
 .nav-link:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); transform: translateX(2px); }
-.nav-link.active { background: rgba(45, 192, 113, 0.1); color: var(--accent-color); font-weight: 600; }
+.nav-link.active { background: rgba(var(--accent-rgb), 0.1); color: var(--accent-color); font-weight: 600; }
 .nav-link.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 60%; background: var(--accent-color); border-radius: 0 3px 3px 0; }
-.nav-link.logout { color: #ef4444; margin-top: auto; }
-.nav-link.logout:hover { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.nav-link.logout { color: var(--danger); margin-top: auto; }
+.nav-link.logout:hover { background: rgba(var(--danger-rgb), 0.1); color: var(--danger); }
 .main-content { flex: 1; padding: 40px; max-width: 1200px; width: 100%; margin: 0 auto; }
 .content-header { margin-bottom: 32px; display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; flex-wrap: wrap; }
 .content-header h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-color) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .content-header p { font-size: 16px; color: var(--text-muted); }
-.btn-find-orders { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: linear-gradient(135deg, #2DC071, #28a45e); color: white; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; text-decoration: none; box-shadow: 0 4px 15px rgba(45, 192, 113, 0.2); }
-.btn-find-orders:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(45, 192, 113, 0.3); }
+.btn-find-orders { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); color: white; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; text-decoration: none; box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.2); }
+.btn-find-orders:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); }
 .filter-tabs { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
 .filter-tab { display: flex; align-items: center; gap: 8px; padding: 10px 18px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-secondary); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
 .filter-tab:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); }
-.filter-tab.active { background: rgba(45, 192, 113, 0.1); border-color: var(--accent-color); color: var(--accent-color); }
+.filter-tab.active { background: rgba(var(--accent-rgb), 0.1); border-color: var(--accent-color); color: var(--accent-color); }
 .filter-count { background: rgba(255, 255, 255, 0.1); padding: 2px 8px; border-radius: 8px; font-size: 12px; }
-.filter-tab.active .filter-count { background: rgba(45, 192, 113, 0.2); }
+.filter-tab.active .filter-count { background: rgba(var(--accent-rgb), 0.2); }
 .empty-state { text-align: center; padding: 80px 20px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; }
 .empty-state svg { color: var(--text-muted); opacity: 0.3; margin-bottom: 20px; }
 .empty-state h3 { font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
 .empty-state p { font-size: 15px; color: var(--text-muted); margin-bottom: 24px; }
 .applications-list { display: flex; flex-direction: column; gap: 16px; }
 .application-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; padding: 24px; transition: all 0.3s ease; }
-.application-card:hover { border-color: rgba(45, 192, 113, 0.3); transform: translateY(-2px); box-shadow: 0 10px 30px var(--shadow-color); }
+.application-card:hover { border-color: rgba(var(--accent-rgb), 0.3); transform: translateY(-2px); box-shadow: 0 10px 30px var(--shadow-color); }
 .app-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
 .app-status { padding: 6px 14px; border-radius: 100px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-.app-status.pending { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
-.app-status.approved { background: rgba(45, 192, 113, 0.15); color: #2DC071; border: 1px solid rgba(45, 192, 113, 0.3); }
-.app-status.rejected { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+.app-status.pending { background: rgba(245, 158, 11, 0.15); color: var(--warm); border: 1px solid rgba(245, 158, 11, 0.3); }
+.app-status.approved { background: rgba(var(--accent-rgb), 0.15); color: var(--accent-color); border: 1px solid rgba(var(--accent-rgb), 0.3); }
+.app-status.rejected { background: rgba(var(--danger-rgb), 0.15); color: var(--danger); border: 1px solid rgba(var(--danger-rgb), 0.3); }
 .app-date { font-size: 13px; color: var(--text-muted); }
 .app-route { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 20px; }
 .app-route svg { color: var(--accent-color); flex-shrink: 0; }
@@ -290,9 +239,9 @@ onMounted(() => {
 .app-type-badge.public { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
 .app-type-badge.private { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); }
 .app-order-status { font-size: 14px; color: var(--text-muted); }
-.app-order-status strong.pending { color: #f59e0b; }
-.app-order-status strong.active { color: #2DC071; }
-.app-order-status strong.rejected { color: #ef4444; }
+.app-order-status strong.pending { color: var(--warm); }
+.app-order-status strong.active { color: var(--accent-color); }
+.app-order-status strong.rejected { color: var(--danger); }
 @media (max-width: 1024px) { .sidebar { display: none; } .app-details { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 768px) { .main-content { padding: 24px 16px; } .content-header h1 { font-size: 26px; } .filter-tabs { flex-direction: column; } .app-details { grid-template-columns: 1fr; } .app-footer { flex-direction: column; align-items: flex-start; } }
 </style>

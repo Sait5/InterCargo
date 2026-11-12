@@ -16,6 +16,12 @@ const contactRequestSchema = new mongoose.Schema({
     trim: true,
     lowercase: true
   },
+  message: {
+    type: String,
+    trim: true,
+    maxlength: 2000,
+    default: ''
+  },
   createdAt: {
     type: Date,
     default: Date.now

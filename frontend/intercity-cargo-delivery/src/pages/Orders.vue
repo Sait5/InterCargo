@@ -1,91 +1,6 @@
 <template>
-<div class="profile-layout">
-<aside class="sidebar">
-<div class="sidebar-header">
-<router-link to="/" class="logo-area">
-<div class="logo-icon">
-<img src="@/assets/icons/logotip.png" alt="InterCargo">
-</div>
-<div class="logo-text">
-<span class="logo-cargo">Inter</span>
-<span class="logo-express">Cargo</span>
-</div>
-</router-link>
-</div>
-<div class="user-card">
-<div class="user-avatar-lg">{{ initials }}</div>
-<div class="user-info">
-<div class="user-name-lg">{{ fullName }}</div>
-<div class="user-role">{{ roleLabel }}</div>
-<div class="user-email">{{ userStore.user?.email }}</div>
-</div>
-</div>
-<nav class="sidebar-nav">
-<router-link to="/profile" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-<span>Профиль</span>
-</router-link>
-<template v-if="userStore.isAdmin">
-<router-link to="/orders" class="nav-link active">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"></path></svg>
-<span>Заказы</span>
-</router-link>
-<router-link to="/carriers" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-<span>Перевозчики</span>
-</router-link>
-<router-link to="/documents" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-<span>Документы</span>
-</router-link>
-<router-link to="/admin" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-<span>Админ-панель</span>
-</router-link>
-</template>
-<template v-else-if="isCustomer">
-<router-link to="/orders" class="nav-link active">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"></path></svg>
-<span>Мои заказы</span>
-</router-link>
-<router-link to="/carriers" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-<span>Перевозчики</span>
-</router-link>
-<router-link to="/documents" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-<span>Документы</span>
-</router-link>
-</template>
-<template v-else>
-<router-link to="/orders" class="nav-link active">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"></path></svg>
-<span>Доступные заказы</span>
-</router-link>
-<router-link to="/my-applications" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-<span>Мои заявки</span>
-</router-link>
-<router-link to="/reviews" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-<span>Отзывы</span>
-</router-link>
-</template>
-<router-link to="/chat" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-<span>Чат</span>
-</router-link>
-<router-link to="/settings" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-<span>Настройки</span>
-</router-link>
-<a class="nav-link logout" @click="handleLogout">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-<span>Выход</span>
-</a>
-</nav>
-</aside>
-<main class="main-content">
+<DashboardLayout>
+<div class="main-content">
 <header class="content-header">
 <div class="header-left">
 <h1>
@@ -227,11 +142,12 @@
 </div>
 </div>
 </div>
-</main>
 </div>
+</DashboardLayout>
 </template>
 
 <script setup>
+import DashboardLayout from '@/ui/DashboardLayout.vue';
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
@@ -303,7 +219,8 @@ const getStatusLabel = (status) => {
 	const labels = {
 		pending: 'Ожидает подтверждения',
 		active: 'Активный',
-		rejected: 'Отклонён'
+		rejected: 'Отклонён',
+		completed: 'Выполнен'
 	};
 	return labels[status] || status;
 };
@@ -337,8 +254,8 @@ const formatDate = (dateStr) => {
 	return date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
 };
 
-const approveOrder = (orderId) => {
-	const result = orderStore.approveOrder(orderId);
+const approveOrder = async (orderId) => {
+	const result = await orderStore.approveOrder(orderId);
 	if (result.success) {
 		toast.success('Заказ активирован и опубликован');
 	} else {
@@ -346,8 +263,8 @@ const approveOrder = (orderId) => {
 	}
 };
 
-const rejectOrder = (orderId) => {
-	const result = orderStore.rejectOrder(orderId);
+const rejectOrder = async (orderId) => {
+	const result = await orderStore.rejectOrder(orderId);
 	if (result.success) {
 		toast.success('Заказ отклонён');
 	} else {
@@ -355,9 +272,9 @@ const rejectOrder = (orderId) => {
 	}
 };
 
-const deleteOrder = (orderId) => {
+const deleteOrder = async (orderId) => {
 	if (!confirm('Вы уверены, что хотите удалить этот заказ?')) return;
-	const result = orderStore.deleteOrder(orderId);
+	const result = await orderStore.deleteOrder(orderId);
 	if (result.success) {
 		toast.success('Заказ успешно удалён');
 	} else {
@@ -368,17 +285,15 @@ const deleteOrder = (orderId) => {
 const approveApplicant = async (orderId, applicantId) => {
 	const result = await orderStore.approveApplicant(orderId, applicantId);
 	if (result.success) {
-		const order = orderStore.getOrderById(orderId);
-		const applicant = order.applicants.find(a => a.id === applicantId);
-		chatStore.createChat(orderId, order.createdBy, applicant.userId);
+		chatStore.fetchChats();
 		toast.success('Заявка перевозчика одобрена, чат создан');
 	} else {
 		toast.error(result.message || 'Ошибка одобрения');
 	}
 };
 
-const rejectApplicant = (orderId, applicantId) => {
-	const result = orderStore.rejectApplicant(orderId, applicantId);
+const rejectApplicant = async (orderId, applicantId) => {
+	const result = await orderStore.rejectApplicant(orderId, applicantId);
 	if (result.success) {
 		toast.success('Заявка перевозчика отклонена');
 	} else {
@@ -386,14 +301,8 @@ const rejectApplicant = (orderId, applicantId) => {
 	}
 };
 
-const applyToOrder = (orderId) => {
-	const applicantInfo = {
-		userId: userStore.user.id,
-		name: `${userStore.user?.firstName || ''} ${userStore.user?.lastName || ''}`.trim(),
-		phone: userStore.user?.phone || '',
-		company: userStore.user?.company || ''
-	};
-	const result = orderStore.applyToOrder(orderId, applicantInfo);
+const applyToOrder = async (orderId) => {
+	const result = await orderStore.applyToOrder(orderId);
 	if (result.success) {
 		toast.success('Заявка отправлена');
 	} else {
@@ -423,8 +332,8 @@ onMounted(() => {
 .logo-cargo { font-size: 28px; font-weight: 800; letter-spacing: 1.5px; color: var(--text-primary); }
 .logo-express { font-size: 28px; font-weight: 800; color: var(--accent-color); letter-spacing: 1.5px; }
 .user-card { display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; transition: all 0.3s ease; }
-.user-card:hover { border-color: rgba(45, 192, 113, 0.3); }
-.user-avatar-lg { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #2DC071, #28a45e); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: 700; flex-shrink: 0; }
+.user-card:hover { border-color: rgba(var(--accent-rgb), 0.3); }
+.user-avatar-lg { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: 700; flex-shrink: 0; }
 .user-info { overflow: hidden; flex: 1; }
 .user-name-lg { font-size: 15px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .user-role { font-size: 12px; color: var(--accent-color); font-weight: 600; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -434,29 +343,29 @@ onMounted(() => {
 .nav-link svg { width: 20px; height: 20px; flex-shrink: 0; }
 .nav-link span { flex: 1; }
 .nav-link:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); transform: translateX(2px); }
-.nav-link.active { background: rgba(45, 192, 113, 0.1); color: var(--accent-color); font-weight: 600; }
+.nav-link.active { background: rgba(var(--accent-rgb), 0.1); color: var(--accent-color); font-weight: 600; }
 .nav-link.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 60%; background: var(--accent-color); border-radius: 0 3px 3px 0; }
-.nav-link.logout { color: #ef4444; margin-top: auto; }
-.nav-link.logout:hover { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.nav-link.logout { color: var(--danger); margin-top: auto; }
+.nav-link.logout:hover { background: rgba(var(--danger-rgb), 0.1); color: var(--danger); }
 .main-content { flex: 1; padding: 40px; max-width: 1200px; width: 100%; margin: 0 auto; }
 .content-header { margin-bottom: 32px; display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; flex-wrap: wrap; }
 .content-header h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-color) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .content-header p { font-size: 16px; color: var(--text-muted); }
-.btn-create { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: linear-gradient(135deg, #2DC071, #28a45e); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(45, 192, 113, 0.2); }
-.btn-create:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(45, 192, 113, 0.3); }
+.btn-create { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.2); }
+.btn-create:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); }
 .search-bar { display: flex; align-items: center; gap: 12px; padding: 14px 20px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; margin-bottom: 24px; transition: all 0.2s ease; }
-.search-bar:focus-within { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(45, 192, 113, 0.1); }
+.search-bar:focus-within { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1); }
 .search-bar svg { color: var(--text-muted); flex-shrink: 0; }
 .search-bar input { flex: 1; background: none; border: none; color: var(--text-primary); font-size: 15px; outline: none; }
 .search-bar input::placeholder { color: var(--text-muted); }
 .orders-list { display: flex; flex-direction: column; gap: 16px; }
 .order-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; padding: 24px; transition: all 0.3s ease; }
-.order-card:hover { border-color: rgba(45, 192, 113, 0.3); transform: translateY(-2px); box-shadow: 0 10px 30px var(--shadow-color); }
+.order-card:hover { border-color: rgba(var(--accent-rgb), 0.3); transform: translateY(-2px); box-shadow: 0 10px 30px var(--shadow-color); }
 .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .order-status { padding: 6px 14px; border-radius: 100px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-.order-status.pending { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
-.order-status.active { background: rgba(45, 192, 113, 0.15); color: #2DC071; border: 1px solid rgba(45, 192, 113, 0.3); }
-.order-status.rejected { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+.order-status.pending { background: rgba(245, 158, 11, 0.15); color: var(--warm); border: 1px solid rgba(245, 158, 11, 0.3); }
+.order-status.active { background: rgba(var(--accent-rgb), 0.15); color: var(--accent-color); border: 1px solid rgba(var(--accent-rgb), 0.3); }
+.order-status.rejected { background: rgba(var(--danger-rgb), 0.15); color: var(--danger); border: 1px solid rgba(var(--danger-rgb), 0.3); }
 .order-type-badge { padding: 6px 14px; border-radius: 100px; font-size: 12px; font-weight: 600; }
 .order-type-badge.public { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
 .order-type-badge.private { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); }
@@ -468,16 +377,16 @@ onMounted(() => {
 .detail-value { font-size: 15px; font-weight: 600; color: var(--text-primary); }
 .detail-value.price { color: var(--accent-color); font-size: 18px; }
 .admin-order-actions { margin-bottom: 20px; padding: 16px; background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 12px; }
-.admin-actions-title { font-size: 14px; font-weight: 700; color: #f59e0b; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+.admin-actions-title { font-size: 14px; font-weight: 700; color: var(--warm); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
 .admin-actions-row { display: flex; gap: 10px; flex-wrap: wrap; }
 .btn-approve-order, .btn-reject-order, .btn-delete-order { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; border: none; }
-.btn-approve-order { background: rgba(45, 192, 113, 0.15); color: #2DC071; }
-.btn-approve-order:hover { background: rgba(45, 192, 113, 0.25); transform: translateY(-2px); }
-.btn-reject-order { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
-.btn-reject-order:hover { background: rgba(239, 68, 68, 0.25); transform: translateY(-2px); }
+.btn-approve-order { background: rgba(var(--accent-rgb), 0.15); color: var(--accent-color); }
+.btn-approve-order:hover { background: rgba(var(--accent-rgb), 0.25); transform: translateY(-2px); }
+.btn-reject-order { background: rgba(var(--danger-rgb), 0.15); color: var(--danger); }
+.btn-reject-order:hover { background: rgba(var(--danger-rgb), 0.25); transform: translateY(-2px); }
 .btn-delete-order { background: rgba(255, 255, 255, 0.05); color: var(--text-secondary); border: 1px solid var(--border-color); }
-.btn-delete-order:hover { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: #ef4444; transform: translateY(-2px); }
-.applicants-section { margin-bottom: 20px; padding: 16px; background: rgba(45, 192, 113, 0.05); border: 1px solid rgba(45, 192, 113, 0.2); border-radius: 12px; }
+.btn-delete-order:hover { background: rgba(var(--danger-rgb), 0.1); color: var(--danger); border-color: var(--danger); transform: translateY(-2px); }
+.applicants-section { margin-bottom: 20px; padding: 16px; background: rgba(var(--accent-rgb), 0.05); border: 1px solid rgba(var(--accent-rgb), 0.2); border-radius: 12px; }
 .applicants-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; }
 .applicants-list { display: flex; flex-direction: column; gap: 12px; }
 .applicant-card { display: flex; align-items: center; gap: 16px; padding: 12px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; flex-wrap: wrap; }
@@ -489,21 +398,21 @@ onMounted(() => {
 .applicant-phone { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
 .applicant-date { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 .applicant-status { padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-.applicant-status.pending { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
-.applicant-status.approved { background: rgba(45, 192, 113, 0.15); color: #2DC071; }
-.applicant-status.rejected { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.applicant-status.pending { background: rgba(245, 158, 11, 0.15); color: var(--warm); }
+.applicant-status.approved { background: rgba(var(--accent-rgb), 0.15); color: var(--accent-color); }
+.applicant-status.rejected { background: rgba(var(--danger-rgb), 0.15); color: var(--danger); }
 .applicant-actions { display: flex; gap: 8px; }
 .order-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 1px solid var(--border-color); gap: 16px; flex-wrap: wrap; }
 .applicants-info { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 14px; }
 .order-actions { display: flex; gap: 10px; }
 .btn-approve, .btn-reject, .btn-apply { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; border: none; }
-.btn-approve { background: rgba(45, 192, 113, 0.15); color: #2DC071; }
-.btn-approve:hover { background: rgba(45, 192, 113, 0.25); transform: translateY(-2px); }
-.btn-reject { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
-.btn-reject:hover { background: rgba(239, 68, 68, 0.25); transform: translateY(-2px); }
-.btn-apply { background: linear-gradient(135deg, #2DC071, #28a45e); color: white; box-shadow: 0 4px 15px rgba(45, 192, 113, 0.2); }
-.btn-apply:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(45, 192, 113, 0.3); }
-.applied-badge { padding: 10px 18px; background: rgba(45, 192, 113, 0.15); color: var(--accent-color); border-radius: 10px; font-size: 13px; font-weight: 600; border: 1px solid rgba(45, 192, 113, 0.3); }
+.btn-approve { background: rgba(var(--accent-rgb), 0.15); color: var(--accent-color); }
+.btn-approve:hover { background: rgba(var(--accent-rgb), 0.25); transform: translateY(-2px); }
+.btn-reject { background: rgba(var(--danger-rgb), 0.15); color: var(--danger); }
+.btn-reject:hover { background: rgba(var(--danger-rgb), 0.25); transform: translateY(-2px); }
+.btn-apply { background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); color: white; box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.2); }
+.btn-apply:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); }
+.applied-badge { padding: 10px 18px; background: rgba(var(--accent-rgb), 0.15); color: var(--accent-color); border-radius: 10px; font-size: 13px; font-weight: 600; border: 1px solid rgba(var(--accent-rgb), 0.3); }
 .my-order-badge { padding: 10px 18px; background: rgba(59, 130, 246, 0.15); color: #3b82f6; border-radius: 10px; font-size: 13px; font-weight: 600; border: 1px solid rgba(59, 130, 246, 0.3); }
 .empty-state { text-align: center; padding: 80px 20px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; }
 .empty-state svg { color: var(--text-muted); opacity: 0.3; margin-bottom: 20px; }

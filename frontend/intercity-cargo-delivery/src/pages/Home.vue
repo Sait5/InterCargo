@@ -1,1339 +1,1093 @@
 <template>
-  <div class="main">
-  <Header />
-    <div class="content-section">
-      <div class="foreground-layer">
-        <div class="info-section">
-          <h2 class="section-title">Продукты платформы</h2>
-          <div class="features-grid">
-            <div class="feature-card" ref="card1">
-              <div class="card-content">
-                <div class="icon-wrapper">
-                  <img src="@/assets/icons/analytics.png" alt="Транспортные тендеры" class="feature-icon" loading="lazy" @error="onImageError" />
-                </div>
-                <h3>Транспортные тендеры</h3>
-                <p class="feature-subtitle">Обеспечим контроль и исполнение бюджета в ТМС</p>
-                <div class="feature-list">
-                  <div class="feature-item"><span class="feature-dot"></span>Сильнейший аналитический модуль</div>
-                  <div class="feature-item"><span class="feature-dot"></span>Единый сквозной процесс «Закупки-исполнение»</div>
-                  <div class="feature-item"><span class="feature-dot"></span>Независимость принятых решений</div>
-                  <div class="feature-item"><span class="feature-dot"></span>Работа только с проверенными перевозчиками</div>
-                </div>
-                <button @click="$router.push('/transport-tender')" class="card-btn">Перейти →</button>
-              </div>
-            </div>
-            <div class="feature-card" ref="card2">
-              <div class="card-content">
-                <div class="icon-wrapper">
-                  <img src="@/assets/icons/automation.png" alt="Спот-аукционы" class="feature-icon" loading="lazy" @error="onImageError" />
-                </div>
-                <h3>Спот-аукционы</h3>
-                <p class="feature-subtitle">Заменяем почту и мессенджеры</p>
-                <div class="feature-list">
-                  <div class="feature-item"><span class="feature-dot"></span>Все торги организации в одном окне</div>
-                  <div class="feature-item"><span class="feature-dot"></span>Закройте горящий рейс в пару кликов</div>
-                  <div class="feature-item"><span class="feature-dot"></span>Четкий контроль круга участников</div>
-                  <div class="feature-item"><span class="feature-dot"></span>Разные типы аукционов под любую ситуацию</div>
-                </div>
-                <button @click="$router.push('/spot-auctions')" class="card-btn">Перейти →</button>
-              </div>
-            </div>
-            <div class="feature-card" ref="card3">
-              <div class="card-content">
-                <div class="icon-wrapper">
-                  <img src="@/assets/icons/security.png" alt="TMS система" class="feature-icon" loading="lazy" @error="onImageError" />
-                </div>
-                <h3>TMS / Система управления перевозками</h3>
-                <p class="feature-subtitle">Интеграция с ERP-системой клиентов</p>
-                <div class="feature-list">
-                  <div class="feature-item"><span class="feature-dot"></span>Автоматизация распределения заказов</div>
-                  <div class="feature-item"><span class="feature-dot"></span>Отслеживание изменения статусов</div>
-                  <div class="feature-item"><span class="feature-dot"></span>Возможность гибкой настройки</div>
-                  <div class="feature-item"><span class="feature-dot"></span>Аудит логистических процессов</div>
-                </div>
-                <button @click="$router.push('/tms')" class="card-btn">Перейти →</button>
-              </div>
-            </div>
-            <div class="feature-card" ref="card4">
-              <div class="card-content">
-                <div class="icon-wrapper">
-                  <img src="@/assets/icons/speed.png" alt="Трекинг грузов" class="feature-icon" loading="lazy" @error="onImageError" />
-                </div>
-                <h3>Трекинг грузов</h3>
-                <p class="feature-subtitle">Полный контроль доставки в реальном времени</p>
-                <div class="feature-list">
-                  <div class="feature-item"><span class="feature-dot"></span>Бортовые блоки GPS-мониторинга</div>
-                  <div class="feature-item"><span class="feature-dot"></span>GSM-связь для стабильного соединения</div>
-                  <div class="feature-item"><span class="feature-dot"></span>Мобильное приложение для клиентов</div>
-                  <div class="feature-item"><span class="feature-dot"></span>Уведомления о статусе доставки</div>
-                </div>
-                <button @click="$router.push('/tracking')" class="card-btn">Перейти →</button>
-              </div>
-            </div>
-          </div>
-        </div>
+  <div class="home" ref="page">
+    <Header overlay />
 
-        <div class="about-section">
-          <div class="section-header">
-            <div class="title-glow"></div>
-            <h3 class="about-title">О компании</h3>
-          </div>
-          <div class="about-content">
-            <div class="about-text">
-              <p class="about-description">InterCargo - ведущая логистическая компания, специализирующаяся на междугородних грузоперевозках по всей России. Мы обеспечиваем надежную и своевременную доставку грузов любой сложности.</p>
-            </div>
-            <div class="stats-container">
-              <div class="stats-grid">
-                <div class="stat-card" ref="stat1">
-                  <div class="stat-content">
-                    <div class="stat-number" data-target="9" data-animated="false">0</div>
-                    <div class="stat-text">офисов</div>
-                    <div class="stat-detail">Москва, СПБ, Казань</div>
-                  </div>
-                </div>
-                <div class="stat-card" ref="stat2">
-                  <div class="stat-content">
-                    <div class="stat-number" data-target="256" data-animated="false">0</div>
-                    <div class="stat-text">грузовиков</div>
-                    <div class="stat-detail">Volvo, Scania, MAN</div>
-                  </div>
-                </div>
-                <div class="stat-card-image" ref="stat3">
-                  <img src="@/assets/images/popular-truck.webp" alt="Популярная модель" class="stat-img-cover" loading="lazy" @error="onImageError" />
-                </div>
-                <div class="stat-card-image" ref="stat4">
-                  <img src="@/assets/images/cargo-any.jpg" alt="Любые грузы" class="stat-img-cover" loading="lazy" @error="onImageError" />
-                </div>
-                <div class="stat-card" ref="stat5">
-                  <div class="stat-content">
-                    <div class="stat-number" data-target="1000" data-animated="false">0+</div>
-                    <div class="stat-text">сотрудников</div>
-                    <div class="stat-detail">опытных профессионалов</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+    <!-- ═══ Герой с 3D-картой маршрутов ═══ -->
+    <section class="hero">
+      <RouteMap3D class="hero-map" :avoid="heroTextRects" />
+      <div class="hero-shade" aria-hidden="true"></div>
 
-        <div class="news-section">
-          <h2 class="news-title">Новости компании</h2>
-          <div class="news-grid">
-            <div class="news-card">
-              <div class="news-image">
-                <img src="@/assets/images/new-routes.png" alt="Запуск нового маршрута" class="news-img" loading="lazy" @error="onImageError">
-                <span class="news-date-badge">12.03.2026</span>
-              </div>
-              <div class="news-content">
-                <h3 class="news-headline">Запуск нового маршрута Москва – Владивосток</h3>
-                <p class="news-excerpt">Увеличиваем географию присутствия: теперь регулярные рейсы на Дальний Восток с фиксированным расписанием.</p>
-                <a href="#" class="news-link">Читать далее →</a>
-              </div>
-            </div>
-            <div class="news-card">
-              <div class="news-image">
-                <img src="@/assets/images/news-1.png" alt="InterCargo в топ-10" class="news-img" loading="lazy" @error="onImageError">
-                <span class="news-date-badge">05.03.2026</span>
-              </div>
-              <div class="news-content">
-                <h3 class="news-headline">InterCargo вошла в топ-10 логистических операторов</h3>
-                <p class="news-excerpt">По итогам 2024 года компания признана одной из самых надёжных по версии рейтинга «Логистика России».</p>
-                <a href="#" class="news-link">Читать далее →</a>
-              </div>
-            </div>
-            <div class="news-card">
-              <div class="news-image">
-                <img src="@/assets/images/news-2.png" alt="Обновление приложения" class="news-img" loading="lazy" @error="onImageError">
-                <span class="news-date-badge">20.02.2026</span>
-              </div>
-              <div class="news-content">
-                <h3 class="news-headline">Обновление мобильного приложения для водителей</h3>
-                <p class="news-excerpt">Новые функции: фотофиксация груза, электронные подписи и улучшенный интерфейс.</p>
-                <a href="#" class="news-link">Читать далее →</a>
-              </div>
-            </div>
-          </div>
-          <div class="news-footer">
-            <a href="#" class="news-all-link">Все новости →</a>
+      <div class="ic-container hero-inner">
+        <div class="hero-copy" ref="heroCopy">
+          <span class="ic-eyebrow">Логистическая платформа · с 2010 года</span>
+          <h1 class="hero-title">
+            Междугородние <span class="accent">грузоперевозки</span><br>
+            по всей России
+          </h1>
+          <p class="hero-lead">
+            Собственный автопарк, тендеры и спот-аукционы, онлайн-трекинг и страхование
+            каждого рейса — от Калининграда до Владивостока.
+          </p>
+          <div class="hero-cta">
+            <a href="#offer" class="ic-btn ic-btn--primary">
+              Рассчитать перевозку
+              <ArrowRight />
+            </a>
+            <router-link to="/tracking" class="ic-btn ic-btn--ghost">
+              <PackageSearch />
+              Отследить груз
+            </router-link>
           </div>
         </div>
+      </div>
 
-        <div class="carriers-section" ref="carriers">
-          <div class="carriers-container">
-            <div class="carriers-content">
-              <div class="carriers-left">
-                <h3 class="carriers-title">Для перевозчиков</h3>
-                <div class="carriers-features-list">
-                  <div class="carriers-feature-item">
-                    <div class="carriers-check"></div>
-                    <div class="carriers-text">Все грузовладельцы на одной платформе – участвуйте в аукционах и тендерах, получайте выгодные заказы</div>
-                  </div>
-                  <div class="carriers-feature-item">
-                    <div class="carriers-check"></div>
-                    <div class="carriers-text">Только выгодные рейсы – наши перевозчики зарабатывают более 200 000 рублей в год с каждой машины</div>
-                  </div>
-                  <div class="carriers-feature-item">
-                    <div class="carriers-check"></div>
-                    <div class="carriers-text">Гарантия загрузки – у нас более 70 000 рейсов</div>
-                  </div>
-                </div>
-              </div>
-              <div class="carriers-join">
-                <div class="carriers-join-text">Присоединяйтесь</div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <a href="#products" class="scroll-hint" aria-label="Прокрутить к продуктам">
+        <span></span>
+      </a>
+    </section>
 
-        <div class="contact-section" ref="contactSection">
-          <div class="contact-container">
-            <div class="contact-image">
-                <img src="@/assets/images/feedback.jpg" alt="Обратная связь" class="contact-img" loading="lazy" @error="onImageError" />
-            </div>
-            <div class="contact-form-wrapper">
-              <h3 class="contact-title">Связаться с нами</h3>
-              <div class="contact-form">
-                <div class="form-group">
-                  <label class="form-label">Имя</label>
-                  <input type="text" class="form-input" placeholder="Полное имя" maxlength="100" />
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Адрес электронной почты</label>
-                  <input type="email" class="form-input" placeholder="example@gmail.com" maxlength="100" />
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Телефон</label>
-                  <input type="tel" class="form-input" placeholder="+7(928)-000-00-00" maxlength="20" />
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Ваше сообщение</label>
-                  <textarea class="form-textarea" placeholder="" maxlength="500" rows="4"></textarea>
-                </div>
-              </div>
-              <button class="contact-submit-btn">Отправить</button>
-            </div>
-          </div>
-        </div>
-        <Footer />
+    <!-- Цифры компании -->
+    <section class="stats-band">
+      <dl class="ic-container stats">
+        <div class="ic-reveal"><dt>{{ years }}</dt><dd>лет на рынке грузоперевозок</dd></div>
+        <div class="ic-reveal"><dt>256</dt><dd>собственных тягачей в парке</dd></div>
+        <div class="ic-reveal"><dt>5000+</dt><dd>компаний-клиентов</dd></div>
+        <div class="ic-reveal"><dt>98%</dt><dd>рейсов доставлено вовремя</dd></div>
+      </dl>
+    </section>
+
+    <!-- Бегущая строка направлений -->
+    <div class="ticker" aria-hidden="true">
+      <div class="ticker-track">
+        <span v-for="(r, i) in tickerRoutes.concat(tickerRoutes)" :key="i">{{ r }}</span>
       </div>
     </div>
+
+    <!-- ═══ Продукты ═══ -->
+    <section id="products" class="section">
+      <div class="ic-container">
+        <header class="section-head ic-reveal">
+          <span class="ic-eyebrow">Продукты платформы</span>
+          <h2>Всё для перевозки — <span class="accent">в одном окне</span></h2>
+          <p>Закупайте перевозки, торгуйтесь за горящие рейсы и контролируйте каждую машину без почты и десятка чатов.</p>
+        </header>
+
+        <div class="products">
+          <router-link v-for="(p, i) in products" :key="p.to" :to="p.to" class="product ic-card ic-reveal" :style="{ transitionDelay: `${i * 80}ms` }">
+            <span class="product-icon"><component :is="p.icon" /></span>
+            <h3>{{ p.title }}</h3>
+            <p>{{ p.text }}</p>
+            <ul>
+              <li v-for="f in p.features" :key="f">{{ f }}</li>
+            </ul>
+            <span class="product-more">Подробнее <ArrowRight /></span>
+          </router-link>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Как это работает ═══ -->
+    <section class="section section-alt">
+      <div class="ic-container">
+        <header class="section-head ic-reveal">
+          <span class="ic-eyebrow">Как это работает</span>
+          <h2>От заявки до документов — <span class="accent">четыре шага</span></h2>
+        </header>
+        <ol class="steps">
+          <li v-for="(s, i) in steps" :key="s.title" class="step ic-reveal" :style="{ transitionDelay: `${i * 90}ms` }">
+            <span class="step-num">{{ String(i + 1).padStart(2, '0') }}</span>
+            <span class="step-icon"><component :is="s.icon" /></span>
+            <h3>{{ s.title }}</h3>
+            <p>{{ s.text }}</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ═══ О компании ═══ -->
+    <section class="section">
+      <div class="ic-container about">
+        <div class="about-copy ic-reveal">
+          <span class="ic-eyebrow">О компании</span>
+          <h2>Возим сами и <span class="accent">отвечаем за результат</span></h2>
+          <p>
+            InterCargo — логистическая компания и цифровая платформа. У нас собственный парк тягачей Volvo,
+            Scania и MAN, девять офисов по стране и проверенная сеть партнёров-перевозчиков.
+          </p>
+          <div class="about-facts">
+            <div><strong>9</strong><span>офисов: Москва, Санкт-Петербург, Казань и другие</span></div>
+            <div><strong>1000+</strong><span>сотрудников и водителей</span></div>
+            <div><strong>24/7</strong><span>диспетчерская и поддержка клиентов</span></div>
+          </div>
+          <router-link to="/about" class="ic-btn ic-btn--ghost">Подробнее о компании <ArrowRight /></router-link>
+        </div>
+        <div class="about-media ic-reveal">
+          <figure class="photo photo-main">
+            <img :src="truckRoad" alt="Тягач InterCargo на трассе" loading="lazy" width="1920" height="1280">
+          </figure>
+          <figure class="photo photo-side">
+            <img :src="truckFog" alt="Грузовик в рейсе" loading="lazy" width="680" height="620">
+          </figure>
+          <div class="photo-badge">
+            <ShieldCheck />
+            <div><strong>Страхуем каждый рейс</strong><span>до 100% стоимости груза</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Для перевозчиков ═══ -->
+    <section class="section carriers-wrap">
+      <div class="ic-container">
+        <div class="carriers ic-reveal">
+          <div class="carriers-copy">
+            <span class="ic-eyebrow">Для перевозчиков</span>
+            <h2>Загрузка для ваших машин — <span class="accent">без простоев</span></h2>
+            <ul>
+              <li><Check /> Все грузовладельцы на одной платформе: тендеры, аукционы и прямые заказы</li>
+              <li><Check /> Более 70 000 рейсов в год и оплата без задержек</li>
+              <li><Check /> Рейтинг и отзывы помогают получать лучшие ставки</li>
+            </ul>
+          </div>
+          <div class="carriers-cta">
+            <strong>200 000 ₽+</strong>
+            <span>в среднем зарабатывает за год каждая машина партнёра</span>
+            <router-link :to="{ path: '/register', query: { type: 'carrier' } }" class="ic-btn ic-btn--primary">Стать перевозчиком <ArrowRight /></router-link>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Новости ═══ -->
+    <section class="section">
+      <div class="ic-container">
+        <header class="section-head row ic-reveal">
+          <div>
+            <span class="ic-eyebrow">Новости</span>
+            <h2>Что нового в <span class="accent">InterCargo</span></h2>
+          </div>
+          <router-link to="/news" class="ic-btn ic-btn--ghost">Все новости <ArrowRight /></router-link>
+        </header>
+        <div class="news">
+          <router-link v-for="(n, i) in news" :key="n.id" :to="`/news#${n.id}`" class="news-card ic-card ic-reveal" :style="{ transitionDelay: `${i * 80}ms` }">
+            <div class="news-img">
+              <img :src="n.image" :alt="n.title" loading="lazy">
+              <span class="news-tag">{{ n.tag }}</span>
+            </div>
+            <div class="news-body">
+              <time :datetime="n.date">{{ formatNewsDate(n.date) }}</time>
+              <h3>{{ n.title }}</h3>
+              <p>{{ n.excerpt }}</p>
+              <span class="news-more">Читать <ArrowRight /></span>
+            </div>
+          </router-link>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Заявка ═══ -->
+    <section id="offer" class="section offer-wrap">
+      <div class="ic-container offer">
+        <div class="offer-copy ic-reveal">
+          <span class="ic-eyebrow">Расчёт за 15 минут</span>
+          <h2>Получите <span class="accent">коммерческое предложение</span></h2>
+          <p>Оставьте контакты — менеджер уточнит детали груза и пришлёт точную стоимость и сроки.</p>
+          <ul class="offer-points">
+            <li><Calculator /> Точный расчёт без скрытых платежей</li>
+            <li><Clock /> Оптимальные сроки и маршрут</li>
+            <li><Headset /> Персональный менеджер на связи 24/7</li>
+          </ul>
+          <div class="offer-contacts">
+            <a href="tel:+79188180890"><Phone /> +7 (918) 818-08-90</a>
+            <a href="mailto:info@intercargo.ru"><Mail /> info@intercargo.ru</a>
+          </div>
+        </div>
+        <div class="offer-card ic-card ic-reveal">
+          <OfferForm />
+        </div>
+      </div>
+    </section>
+
+    <Footer />
   </div>
 </template>
 
-<script>
-import Header from "@/ui/Header.vue";
-import Footer from "@/ui/Footer.vue";
+<script setup>
+import { ref, defineAsyncComponent } from 'vue';
+import {
+  ArrowRight, PackageSearch, Gavel, Timer, Network, MapPinned, FilePlus2, Handshake, Truck, FileCheck2,
+  ShieldCheck, Check, Calculator, Clock, Headset, Phone, Mail,
+} from 'lucide-vue-next';
+import Header from '@/ui/Header.vue';
+import Footer from '@/ui/Footer.vue';
+import OfferForm from '@/components/OfferForm.vue';
+import { news, formatNewsDate } from '@/data/news';
+import { useReveal } from '@/composables/useReveal';
+import truckRoad from '@/assets/images/feedback.webp';
+import truckFog from '@/assets/images/popular-truck.webp';
 
-export default {
-  name: "Main",
-  components: { Header,Footer  },
-  data() {
-    return {
-      contactForm: {
-        name: '',
-        email: '',
-        phone: '',
-        message: ''
-      }
-    };
-  },
-  mounted() {
-    this.initScrollAnimation();
-    this.initNumberAnimation();
-    this.initTheme();
-    this.preloadImages();
-  },
-  methods: {
-    initTheme() {
-      const savedTheme = localStorage.getItem('theme') || 'dark';
-      document.documentElement.setAttribute('data-theme', savedTheme);
-    },
-    preloadImages() {
-      const images = [
-        '@/assets/icons/analytics.png',
-        '@/assets/icons/automation.png',
-        '@/assets/icons/security.png',
-        '@/assets/icons/speed.png',
-        '@/assets/images/new-routes.png',
-        '@/assets/images/news-1.png',
-        '@/assets/images/news-2.png',
-        '@/assets/images/popular-truck.webp',
-        '@/assets/images/cargo-any.jpg',
-        '@/assets/images/feedback.jpg'
-      ];
-      images.forEach(src => {
-        const img = new Image();
-        img.src = src;
-      });
-    },
-    onImageError(event) {
-      console.error('Ошибка загрузки изображения:', event.target.src);
-      event.target.style.display = 'none';
-      const parent = event.target.parentNode;
-      if (parent) {
-        parent.style.background = 'linear-gradient(145deg, #2a2f3b, #1a1e2a)';
-      }
-    },
-    initScrollAnimation() {
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-            if (entry.target.classList.contains('stat-card')) {
-              this.animateNumber(entry.target);
-            }
-          }
-        });
-      }, { threshold: 0.2, rootMargin: '0px 0px -50px 0px' });
+// three.js подгружается отдельным файлом, страница не ждёт его
+const RouteMap3D = defineAsyncComponent(() => import('@/components/routeMap/RouteMap3D.vue'));
 
-      const elements = [
-        this.$refs.card1,
-        this.$refs.card2,
-        this.$refs.card3,
-        this.$refs.card4,
-        this.$refs.stat1,
-        this.$refs.stat2,
-        this.$refs.stat3,
-        this.$refs.stat4,
-        this.$refs.stat5,
-        this.$refs.carriers,
-        this.$refs.contactSection
-      ].filter(Boolean);
-      
-      elements.forEach(el => observer.observe(el));
-    },
-    animateNumber(card) {
-      const numberElement = card.querySelector('.stat-number');
-      if (!numberElement || !numberElement.dataset.target || numberElement.dataset.animated === 'true') return;
-      numberElement.dataset.animated = 'true';
-      const target = parseInt(numberElement.dataset.target);
-      const duration = 2000;
-      const step = target / (duration / 16);
-      let current = 0;
-      const timer = setInterval(() => {
-        current += step;
-        if (current >= target) {
-          current = target;
-          clearInterval(timer);
-        }
-        numberElement.textContent = Math.floor(current) + (numberElement.textContent.includes('+') ? '+' : '');
-      }, 16);
-    },
-    initNumberAnimation() {
-      const numberElements = document.querySelectorAll('.stat-number[data-target]');
-      numberElements.forEach(el => {
-        if (!el.textContent.includes('+')) {
-          el.textContent = '0';
-        }
-        el.dataset.animated = 'false';
-      });
-    }
-  }
-};
+const page = ref(null);
+const heroCopy = ref(null);
+useReveal(page);
+
+// Блоки текста героя, под которыми карта не рисует подписи городов
+const heroTextRects = () => (heroCopy.value
+  ? [...heroCopy.value.querySelectorAll('.hero-title, .hero-lead, .hero-cta, .ic-eyebrow')].map((el) => el.getBoundingClientRect())
+  : []);
+
+const years = new Date().getFullYear() - 2010;
+
+const tickerRoutes = [
+  'Москва → Санкт-Петербург', 'Москва → Казань', 'Москва → Владивосток', 'Екатеринбург → Новосибирск',
+  'Санкт-Петербург → Краснодар', 'Казань → Самара', 'Новосибирск → Красноярск', 'Хабаровск → Владивосток',
+];
+
+const products = [
+  {
+    to: '/transport-tender', icon: Gavel, title: 'Транспортные тендеры',
+    text: 'Контроль бюджета и исполнения в TMS.',
+    features: ['Аналитический модуль', 'Сквозной процесс «закупка — исполнение»', 'Только проверенные перевозчики'],
+  },
+  {
+    to: '/spot-auctions', icon: Timer, title: 'Спот-аукционы',
+    text: 'Закройте горящий рейс за пару кликов.',
+    features: ['Все торги в одном окне', 'Закрытые аукционы по приглашению', 'Ставки в реальном времени'],
+  },
+  {
+    to: '/tms', icon: Network, title: 'TMS-система',
+    text: 'Интеграция с ERP и автоматизация заказов.',
+    features: ['Распределение заказов', 'Отслеживание статусов', 'Аудит логистики'],
+  },
+  {
+    to: '/tracking', icon: MapPinned, title: 'Трекинг грузов',
+    text: 'Где ваш груз — в любой момент.',
+    features: ['GPS-мониторинг бортов', 'Уведомления о статусе', 'Приложение для клиентов'],
+  },
+];
+
+const steps = [
+  { icon: FilePlus2, title: 'Заявка', text: 'Опишите груз и маршрут — в кабинете или через менеджера.' },
+  { icon: Handshake, title: 'Торги', text: 'Перевозчики предлагают цену, вы выбираете лучшую.' },
+  { icon: Truck, title: 'Перевозка', text: 'Машина в пути, вы видите её на карте и получаете статусы.' },
+  { icon: FileCheck2, title: 'Документы', text: 'Акты и накладные с электронной подписью — сразу в кабинете.' },
+];
 </script>
 
-<style>
-.feature-subtitle {
-  font-size: 16px;
-  color: var(--accent-color);
-  font-weight: 600;
-  margin-bottom: 20px;
-  line-height: 1.5;
-  font-family: 'Open Sans', sans-serif;
-  text-align: center;
-}
-
-:root[data-theme="dark"] {
-  --bg-primary: #0a0f1c;
-  --bg-secondary: rgba(255, 255, 255, 0.05);
-  --bg-card: rgba(255, 255, 255, 0.03);
-  --text-primary: #ffffff;
-  --text-secondary: #cbd5e0;
-  --text-muted: #a0aec0;
-  --accent-color: #2DC071;
-  --accent-gradient: linear-gradient(135deg, #2DC071, #28a45e);
-  --border-color: rgba(45, 192, 113, 0.15);
-  --shadow-color: rgba(0, 0, 0, 0.3);
-  --glow-color: rgba(45, 192, 113, 0.3);
-}
-
-:root[data-theme="light"] {
-  --bg-primary: #F3FFFD;
-  --bg-secondary: rgba(45, 192, 113, 0.08);
-  --bg-card: #ffffff;
-  --text-primary: #1a365d;
-  --text-secondary: #2d3748;
-  --text-muted: #4a5568;
-  --accent-color: #2DC071;
-  --accent-gradient: linear-gradient(135deg, #2DC071, #28a45e);
-  --border-color: rgba(45, 192, 113, 0.3);
-  --shadow-color: rgba(0, 0, 0, 0.1);
-  --glow-color: rgba(45, 192, 113, 0.2);
-}
-
-.main {
-  min-height: 100vh;
+<style scoped>
+.home {
   background: var(--bg-primary);
-  position: relative;
-  overflow-x: hidden;
-  transition: background-color 0.5s ease;
-}
-
-.content-section {
-  position: relative;
-  min-height: 100vh;
-  width: 100%;
-}
-
-.foreground-layer {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.info-section {
-  text-align: center;
-  padding: 120px 20px 80px;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-.section-title {
-  font-size: 52px;
-  font-weight: 800;
-  background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-color) 50%, #28a45e 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 80px;
-  font-family: 'Open Sans', sans-serif;
-  text-shadow: 0 0 50px var(--glow-color);
-  animation: titleGlow 3s ease-in-out infinite alternate;
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 40px;
-  margin-top: 40px;
-}
-
-.feature-card {
-  background: var(--bg-card);
-  padding: 40px 30px 30px;
-  border-radius: 20px;
-  border: 1px solid var(--border-color);
-  position: relative;
-  overflow: hidden;
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-  box-shadow: 0 4px 20px var(--shadow-color);
-  display: flex;
-  flex-direction: column;
-}
-
-.feature-card.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.card-content {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.icon-wrapper {
-  margin-bottom: 20px;
-}
-
-.feature-icon {
-  width: 60px;
-  height: 60px;
-  object-fit: contain;
-}
-
-.feature-card h3 {
-  font-size: 22px;
-  font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 15px;
-  font-family: 'Open Sans', sans-serif;
 }
 
-.feature-list {
-  text-align: left;
-  margin-bottom: 20px;
-  flex: 1;
-}
-
-.feature-item {
-  position: relative;
-  padding: 8px 0 8px 20px;
-  font-size: 14px;
-  color: var(--text-secondary);
-  line-height: 1.4;
-  font-family: 'Open Sans', sans-serif;
-}
-
-.feature-dot {
-  position: absolute;
-  left: 0;
-  top: 12px;
-  width: 6px;
-  height: 6px;
-  background: var(--accent-color);
-  border-radius: 50%;
-}
-
-.card-btn {
-  background: var(--accent-gradient);
-  color: white;
-  border: none;
-  padding: 12px 25px;
-  border-radius: 30px;
-  font-size: 16px;
-  font-weight: 600;
-  font-family: 'Open Sans', sans-serif;
-  cursor: pointer;
-  transition: opacity 0.3s ease;
-  box-shadow: 0 4px 15px var(--glow-color);
-  margin-top: auto;
-  align-self: center;
-}
-
-.card-btn:hover {
-  opacity: 0.9;
-}
-
-.about-section {
-  width: 100%;
-  margin-top: 100px;
-  max-width: 1400px;
-  padding: 0 20px;
-  position: relative;
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: 25px;
-  margin-bottom: 60px;
-  position: relative;
-}
-
-.title-glow {
-  width: 120px;
-  height: 8px;
-  background: var(--accent-gradient);
-  border-radius: 4px;
-  box-shadow: 0 0 30px var(--glow-color);
-  animation: glowPulse 2s ease-in-out infinite alternate;
-}
-
-.about-title {
-  font-size: 48px;
-  font-weight: 800;
-  background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-color) 100%);
+.accent {
+  background: linear-gradient(100deg, var(--accent-color) 10%, var(--accent-2) 90%);
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   background-clip: text;
-  font-family: 'Open Sans', sans-serif;
-  margin: 0;
+  color: transparent;
 }
 
-.about-content {
-  display: grid;
-  grid-template-columns: 1fr 1.2fr;
-  gap: 100px;
-  align-items: start;
-}
-
-.about-text {
-  padding-right: 40px;
-}
-
-.about-description {
-  font-size: 20px;
-  line-height: 1.8;
-  color: var(--text-secondary);
-  font-family: 'Open Sans', sans-serif;
-  margin: 0;
-  text-align: left;
-}
-
-.stats-container {
-  background: var(--bg-card);
-  border-radius: 30px;
-  width: 900px;
-  padding: 60px 50px;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 10px 40px var(--shadow-color);
+/* ─── Герой ─── */
+.hero {
   position: relative;
+  min-height: max(760px, 100svh);
   overflow: hidden;
+  background:
+    radial-gradient(80% 55% at 50% 72%, rgba(45, 192, 113, 0.09), transparent 70%),
+    var(--hero-bg);
+  color: var(--hero-text);
+  isolation: isolate;
 }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(2, 1fr);
-  gap: 30px;
+.hero-map {
+  z-index: 0;
+}
+
+.hero-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 34% at 50% 18%, rgba(4, 7, 11, 0.86), transparent 75%),
+    linear-gradient(180deg, rgba(4, 7, 11, 0.7) 0%, transparent 26%, transparent 90%, var(--bg-primary) 100%);
+}
+
+.hero-inner {
   position: relative;
   z-index: 2;
-}
-
-.stat-card {
-  background: var(--bg-card);
-  border-radius: 20px;
-  padding: 40px 30px;
-  text-align: center;
-  border: 1px solid var(--border-color);
-  position: relative;
-  width: 200px;
-  overflow: hidden;
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-  min-height: 150px;
   display: flex;
-  align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 15px var(--shadow-color);
+  padding-top: calc(var(--header-h) + clamp(20px, 5vh, 56px));
+  pointer-events: none;
 }
 
-.stat-card.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.stat-content {
-  position: relative;
-  z-index: 2;
+.hero-copy {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-}
-
-.stat-number {
-  font-size: 48px;
-  font-weight: 900;
-  background: var(--accent-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  line-height: 1;
-  font-family: 'Open Sans', sans-serif;
-}
-
-.stat-text {
-  font-size: 16px;
-  color: var(--text-primary);
-  font-weight: 600;
-  font-family: 'Open Sans', sans-serif;
-  line-height: 1.4;
-}
-
-.stat-detail {
-  font-size: 13px;
-  color: var(--text-muted);
-  font-family: 'Open Sans', sans-serif;
-  line-height: 1.3;
+  max-width: 1120px;
   text-align: center;
+  pointer-events: auto;
 }
 
-.stat-card-image {
-  border-radius: 20px;
-  position: relative;
-  width: 200px;
-  height: 200px;
-  overflow: hidden;
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-  box-shadow: 0 4px 15px var(--shadow-color);
+.hero-copy > * {
+  pointer-events: auto;
 }
 
-.stat-card-image.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.stat-img-cover {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.news-section {
-  width: 100%;
-  max-width: 1800px;
-  margin: 120px auto;
-  padding: 0 30px;
-}
-
-.news-title {
-  font-size: 48px;
-  font-weight: 800;
-  color: var(--text-primary);
-  font-family: 'Open Sans', sans-serif;
-  margin-bottom: 60px;
-  text-align: center;
-  position: relative;
-}
-
-.news-title::after {
-  content: '';
-  position: absolute;
-  bottom: -15px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 4px;
-  background: var(--accent-gradient);
-  border-radius: 2px;
-}
-
-.news-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 40px;
-  margin-bottom: 60px;
-}
-
-.news-card {
-  background: var(--bg-card);
-  border-radius: 24px;
-  border: 1px solid var(--border-color);
-  overflow: hidden;
-  height: 100%;
-  width: 93%;
-  box-shadow: 0 10px 30px var(--shadow-color);
-  display: flex;
-  flex-direction: column;
-}
-
-.news-image {
-  position: relative;
-  height: 700px;
-  overflow: hidden;
-  background-color: #2a2f3b;
-}
-
-.news-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.news-date-badge {
-  position: absolute;
-  top: 20px;
-  left: 390px;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
-  color: white;
-  padding: 6px 16px;
-  border-radius: 30px;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: 'Open Sans', sans-serif;
-  border: 1px solid rgba(255,255,255,0.2);
-}
-
-.news-content {
-  padding: 30px 25px 35px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.news-headline {
-  font-size: 22px;
+.hero-title {
+  margin: 20px 0 16px;
+  font-size: clamp(30px, 3.9vw, 58px);
   font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 15px;
-  font-family: 'Open Sans', sans-serif;
-  line-height: 1.4;
+  line-height: 1.06;
+  letter-spacing: -0.035em;
+  color: var(--hero-text);
+  text-shadow: 0 4px 40px rgba(4, 7, 11, 0.8);
 }
 
-.news-excerpt {
-  font-size: 15px;
-  color: var(--text-secondary);
-  line-height: 1.7;
-  margin-bottom: 25px;
-  font-family: 'Open Sans', sans-serif;
-  flex: 1;
+.hero-lead {
+  max-width: 620px;
+  color: var(--hero-muted);
+  font-size: 17px;
+  line-height: 1.6;
+  text-shadow: 0 2px 20px rgba(4, 7, 11, 0.9);
 }
 
-.news-link {
-  color: var(--accent-color);
-  text-decoration: none;
+.hero-cta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.hero .ic-btn--ghost {
+  --text-primary: var(--hero-text);
+  --border-strong: rgba(255, 255, 255, 0.2);
+  background: rgba(4, 7, 11, 0.4);
+  backdrop-filter: blur(6px);
+}
+
+/* Цифры под героем */
+.stats-band {
+  position: relative;
+  z-index: 2;
+  margin-top: -1px;
+  background: var(--bg-primary);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  padding-top: 8px;
+  padding-bottom: 56px;
+}
+
+.stats > div {
+  padding: 8px 28px;
+  border-left: 1px solid var(--border-color);
+}
+
+.stats > div:first-child {
+  border-left: 0;
+  padding-left: 0;
+}
+
+.stats dt {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 3.6vw, 48px);
   font-weight: 600;
-  font-size: 16px;
-  font-family: 'Open Sans', sans-serif;
+  line-height: 1;
+  background: linear-gradient(100deg, var(--text-primary) 30%, var(--accent-color));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.stats dd {
+  margin-top: 10px;
+  color: var(--text-secondary);
+  font-size: 14.5px;
+}
+
+.scroll-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 26px;
+  z-index: 3;
+  width: 26px;
+  height: 42px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: 14px;
+  transform: translateX(-50%);
+}
+
+.scroll-hint span {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  width: 4px;
+  height: 8px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: var(--accent-color);
+  animation: wheel 1.8s ease-in-out infinite;
+}
+
+@keyframes wheel {
+  0% { transform: translateY(0); opacity: 1; }
+  70% { transform: translateY(14px); opacity: 0; }
+  100% { opacity: 0; }
+}
+
+/* ─── Бегущая строка ─── */
+.ticker {
+  overflow: hidden;
+  border-block: 1px solid var(--border-color);
+  background: var(--bg-elevated);
+  mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+}
+
+.ticker-track {
+  display: flex;
+  gap: 48px;
+  width: max-content;
+  padding: 18px 0;
+  animation: ticker 50s linear infinite;
+}
+
+.ticker-track span {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  align-self: flex-start;
+  gap: 48px;
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
-.news-footer {
-  text-align: center;
-}
-
-.news-all-link {
-  display: inline-block;
-  padding: 16px 50px;
-  background: transparent;
-  border: 2px solid var(--accent-color);
-  color: var(--accent-color);
-  border-radius: 50px;
-  font-size: 18px;
-  font-weight: 600;
-  font-family: 'Open Sans', sans-serif;
-  text-decoration: none;
-  transition: background 0.3s ease, color 0.3s ease;
-}
-
-.news-all-link:hover {
+.ticker-track span::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
   background: var(--accent-color);
-  color: white;
 }
 
-/* Обновлённый блок связи */
-.contact-section {
-  width: 100%;
-  max-width: 1200px;
-  margin: 100px auto 120px;
-  padding: 0 30px;
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+@keyframes ticker {
+  to { transform: translateX(-50%); }
 }
 
-.contact-section.visible {
-  opacity: 1;
-  transform: translateY(0);
+/* ─── Секции ─── */
+.section {
+  padding: 110px 0;
 }
 
-.contact-container {
+.section-alt {
+  background:
+    radial-gradient(60% 80% at 50% 0%, rgba(var(--accent-rgb), 0.06), transparent 70%),
+    var(--bg-elevated);
+  border-block: 1px solid var(--border-color);
+}
+
+.section-head {
+  max-width: 720px;
+  margin-bottom: 56px;
+}
+
+.section-head.row {
   display: flex;
-  background: transparent;
-  overflow: hidden;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  max-width: none;
 }
 
-.contact-image {
-  width: 500px;
-  height: 500px;
-  flex-shrink: 0;
-  overflow: hidden;
-  border-radius: 20px 0 0 20px;
+.section-head h2,
+.about-copy h2,
+.carriers h2,
+.offer-copy h2 {
+  margin: 18px 0 14px;
+  font-size: clamp(28px, 3.6vw, 46px);
+}
+
+.section-head p,
+.about-copy p,
+.offer-copy p {
+  color: var(--text-secondary);
+  font-size: 17px;
+  line-height: 1.65;
+}
+
+/* Продукты */
+.products {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+.product {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 28px 24px;
+  color: inherit;
+  text-decoration: none;
+  overflow: hidden;
+  transition: transform 0.35s var(--motion-ease-out), border-color 0.35s ease, opacity 0.8s var(--motion-ease-out);
 }
 
-.contact-image::after {
+.product::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(45, 192, 113, 0.15), transparent);
-  opacity: 0.7;
+  background: radial-gradient(80% 60% at 0% 0%, rgba(var(--accent-rgb), 0.14), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.35s ease;
 }
 
-.contact-img {
+.product:hover {
+  transform: translateY(-6px);
+  border-color: rgba(var(--accent-rgb), 0.4);
+}
+
+.product:hover::before {
+  opacity: 1;
+}
+
+.product > * {
+  position: relative;
+}
+
+.product-icon,
+.step-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  color: var(--accent-color);
+  background: linear-gradient(145deg, rgba(var(--accent-rgb), 0.18), rgba(var(--accent-2-rgb), 0.06));
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
+}
+
+.product-icon svg,
+.step-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.product h3 {
+  margin: 22px 0 8px;
+  font-size: 19px;
+}
+
+.product p {
+  color: var(--text-secondary);
+  font-size: 14.5px;
+}
+
+.product ul {
+  display: grid;
+  gap: 8px;
+  margin: 18px 0 24px;
+  list-style: none;
+}
+
+.product li {
+  position: relative;
+  padding-left: 18px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.product li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.6em;
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--accent-color);
+  transform: rotate(45deg);
+}
+
+.product-more,
+.news-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  color: var(--accent-color);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.product-more svg,
+.news-more svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.25s ease;
+}
+
+.product:hover .product-more svg,
+.news-card:hover .news-more svg {
+  transform: translateX(4px);
+}
+
+/* Шаги */
+.steps {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 28px;
+  list-style: none;
+}
+
+.steps::before {
+  content: '';
+  position: absolute;
+  top: 26px;
+  left: 6%;
+  right: 6%;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, rgba(var(--accent-rgb), 0.5) 0 8px, transparent 8px 16px);
+}
+
+.step {
+  position: relative;
+}
+
+.step-num {
+  position: absolute;
+  top: -6px;
+  right: 0;
+  color: var(--border-strong);
+  font-family: var(--font-display);
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.step-icon {
+  position: relative;
+  background: var(--bg-elevated);
+  box-shadow: 0 0 0 8px var(--bg-elevated);
+}
+
+.step h3 {
+  margin: 24px 0 8px;
+  font-size: 20px;
+}
+
+.step p {
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+/* О компании */
+.about {
+  display: grid;
+  grid-template-columns: 1fr 1.05fr;
+  gap: 64px;
+  align-items: center;
+}
+
+.about-facts {
+  display: grid;
+  gap: 14px;
+  margin: 30px 0 34px;
+}
+
+.about-facts div {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.about-facts strong {
+  min-width: 96px;
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+.about-facts span {
+  color: var(--text-secondary);
+}
+
+.about-media {
+  position: relative;
+  min-height: 480px;
+}
+
+.photo {
+  position: absolute;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.8);
+}
+
+.photo img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
 }
 
-.contact-form-wrapper {
+.photo-main {
+  inset: 0 18% 14% 0;
+}
+
+.photo-side {
+  right: 0;
+  bottom: 0;
+  width: 44%;
+  aspect-ratio: 1 / 1.05;
+  border: 6px solid var(--bg-primary);
+}
+
+.photo-badge {
+  position: absolute;
+  left: 24px;
+  bottom: 40px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 50px 60px;
-  gap: 35px;
-  width: 610px;
-  background: transparent;
-}
-
-.contact-title {
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 700;
-  font-size: 28px;
-  line-height: 36px;
-  text-align: center;
-  letter-spacing: 0.2px;
-  color: var(--text-primary);
-  margin: 0;
-  position: relative;
-}
-
-.contact-title::after {
-  content: '';
-  position: absolute;
-  bottom: -12px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 3px;
-  background: var(--accent-color);
-  border-radius: 2px;
-}
-
-.contact-form {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 0px;
-  gap: 25px;
-  width: 100%;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 100%;
-}
-
-.form-label {
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 600;
-  font-size: 14px;
-  line-height: 20px;
-  letter-spacing: 0.2px;
-  color: var(--text-primary);
-}
-
-.form-input {
-  width: 100%;
-  height: 52px;
-  padding: 0 20px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 400;
-  font-size: 15px;
-  line-height: 28px;
-  letter-spacing: 0.2px;
-  color: var(--text-primary);
-  outline: none;
-  transition: border-color 0.2s ease;
-  box-sizing: border-box;
-}
-
-[data-theme="light"] .form-input {
-  background: rgba(255,255,255,0.4);
-  border: 1px solid rgba(45,192,113,0.3);
-  color: #1a365d;
-}
-
-.form-input::placeholder {
-  color: var(--text-muted);
-  opacity: 0.7;
-}
-
-[data-theme="light"] .form-input::placeholder {
-  color: #4a5568;
-}
-
-.form-input:focus {
-  border-color: var(--accent-color);
-}
-
-.form-textarea {
-  width: 100%;
-  min-height: 130px;
-  max-height: 200px;
-  padding: 15px 20px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 400;
-  font-size: 15px;
-  line-height: 28px;
-  letter-spacing: 0.2px;
-  color: var(--text-primary);
-  outline: none;
-  resize: vertical;
-  transition: border-color 0.2s ease;
-  box-sizing: border-box;
-}
-
-[data-theme="light"] .form-textarea {
-  background: rgba(255,255,255,0.4);
-  border: 1px solid rgba(45,192,113,0.3);
-  color: #1a365d;
-}
-
-.form-textarea:focus {
-  border-color: var(--accent-color);
-}
-
-.contact-submit-btn {
-  padding: 16px 40px;
-  background: var(--accent-color);
-  color: white;
-  border: none;
-  border-radius: 50px;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 24px;
-  letter-spacing: 0.3px;
-  cursor: pointer;
-  width: 100%;
-  transition: background 0.2s ease;
-  text-transform: uppercase;
-}
-
-.contact-submit-btn:hover {
-  background: #28a45e;
-}
-
-.carriers-section {
-  width: 100%;
-  background: linear-gradient(135deg, #252B42 0%, #1a2332 100%);
-  padding: 80px 20px;
-  margin-top: 60px;
-  opacity: 0;
-  transition: opacity 0.6s ease, transform 0.6s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.carriers-section::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle at 30% 70%, rgba(45,192,113,0.15) 0%, transparent 50%);
-  animation: rotateGradient 20s linear infinite;
-}
-
-.carriers-section.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-@keyframes rotateGradient {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.carriers-container {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.carriers-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 30px;
-}
-
-.carriers-left {
-  display: flex;
-  flex-direction: column;
-  max-width: 600px;
-}
-
-.carriers-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: #FFFFFF;
-  margin-bottom: 25px;
-}
-
-.carriers-features-list {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.carriers-feature-item {
-  display: flex;
-  align-items: flex-start;
   gap: 12px;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--bg-card-solid) 88%, transparent);
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(10px);
 }
 
-.carriers-check {
-  width: 30px;
-  height: 30px;
-  background: var(--accent-color);
-  border-radius: 50%;
+.photo-badge svg {
+  width: 26px;
+  height: 26px;
+  color: var(--accent-color);
+}
+
+.photo-badge strong {
+  display: block;
+  font-size: 14.5px;
+}
+
+.photo-badge span {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* Перевозчики */
+.carriers-wrap {
+  padding-top: 0;
+}
+
+.carriers {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 48px;
+  align-items: center;
+  padding: 56px;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background:
+    radial-gradient(70% 120% at 100% 50%, rgba(var(--accent-rgb), 0.22), transparent 60%),
+    linear-gradient(135deg, #0B1A13, #06100C);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
+  color: var(--hero-text);
+}
+
+.carriers::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(60% 80% at 80% 50%, #000, transparent);
+  pointer-events: none;
+}
+
+.carriers > * {
+  position: relative;
+  z-index: 1;
+}
+
+.carriers h2 {
+  color: var(--hero-text);
+}
+
+.carriers ul {
+  display: grid;
+  gap: 14px;
+  margin-top: 24px;
+  list-style: none;
+}
+
+.carriers li {
+  display: flex;
+  gap: 12px;
+  color: var(--hero-muted);
+}
+
+.carriers li svg {
   flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  padding: 3px;
+  border-radius: 50%;
+  background: rgba(45, 192, 113, 0.18);
+  color: #2DC071;
+}
+
+.carriers-cta {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  padding: 32px;
+  border-radius: var(--radius-lg);
+  background: rgba(4, 7, 11, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.carriers-cta strong {
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 600;
+  color: #2DC071;
+}
+
+.carriers-cta span {
+  margin-bottom: 14px;
+  color: var(--hero-muted);
+}
+
+/* Новости */
+.news {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.news-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.35s var(--motion-ease-out), border-color 0.35s ease, opacity 0.8s var(--motion-ease-out);
+}
+
+.news-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(var(--accent-rgb), 0.4);
+}
+
+.news-img {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--bg-elevated);
+}
+
+.news-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  transition: transform 0.6s var(--motion-ease-out);
+}
+
+.news-card:hover .news-img img {
+  transform: scale(1.05);
+}
+
+.news-tag {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(4, 7, 11, 0.72);
+  color: #F2F6F4;
+  font-size: 12px;
+  font-weight: 700;
+  backdrop-filter: blur(6px);
+}
+
+.news-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 22px 22px 24px;
+}
+
+.news-body time {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.news-body h3 {
+  margin: 10px 0 10px;
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.news-body p {
+  margin-bottom: 18px;
+  color: var(--text-secondary);
+  font-size: 14.5px;
+}
+
+/* Заявка */
+.offer-wrap {
+  background:
+    radial-gradient(50% 70% at 0% 50%, rgba(var(--accent-rgb), 0.08), transparent 70%),
+    var(--bg-elevated);
+  border-top: 1px solid var(--border-color);
+}
+
+.offer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+}
+
+.offer-points {
+  display: grid;
+  gap: 14px;
+  margin: 28px 0;
+  list-style: none;
+}
+
+.offer-points li {
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: bold;
-  font-size: 16px;
-  margin-top: 2px;
+  gap: 12px;
+  color: var(--text-secondary);
+  font-weight: 600;
 }
 
-.carriers-check::after {
-  content: '✓';
+.offer-points svg {
+  width: 20px;
+  height: 20px;
+  color: var(--accent-color);
 }
 
-.carriers-text {
-  font-size: 15px;
-  line-height: 24px;
-  color: #FFFFFF;
-}
-
-.carriers-join {
+.offer-contacts {
   display: flex;
-  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px 24px;
 }
 
-.carriers-join-text {
-  padding: 14px 40px;
-  background: var(--accent-color);
-  border-radius: 40px;
-  font-size: 16px;
+.offer-contacts a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
   font-weight: 700;
-  color: white;
-  cursor: pointer;
-  transition: background 0.3s ease;
+  text-decoration: none;
 }
 
-.carriers-join-text:hover {
-  background: #28a45e;
+.offer-contacts a:hover {
+  color: var(--accent-color);
 }
 
-@keyframes titleGlow {
-  0% { text-shadow: 0 0 50px var(--glow-color); }
-  100% { text-shadow: 0 0 60px var(--glow-color); }
+.offer-contacts svg {
+  width: 18px;
+  height: 18px;
+  color: var(--accent-color);
 }
 
-@keyframes glowPulse {
-  0% { box-shadow: 0 0 30px var(--glow-color); }
-  100% { box-shadow: 0 0 40px var(--glow-color); }
+.offer-card {
+  padding: 32px;
+  background: var(--bg-card-solid);
 }
 
-.feature-card:nth-child(1) { transition-delay: 0.1s; }
-.feature-card:nth-child(2) { transition-delay: 0.2s; }
-.feature-card:nth-child(3) { transition-delay: 0.3s; }
-.feature-card:nth-child(4) { transition-delay: 0.4s; }
-
-.stat-card:nth-child(1) { transition-delay: 0.1s; }
-.stat-card:nth-child(2) { transition-delay: 0.2s; }
-.stat-card-image:nth-child(3) { transition-delay: 0.3s; }
-.stat-card-image:nth-child(4) { transition-delay: 0.4s; }
-.stat-card:nth-child(5) { transition-delay: 0.5s; }
-
-@media (max-width: 1400px) {
-  .stats-container {
-    width: auto;
-  }
-  .news-section {
-    max-width: 1500px;
-  }
-  .news-image {
-    height: 500px;
-  }
-}
-
-@media (max-width: 1200px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 25px;
-  }
-  .stat-card {
-    padding: 35px 25px;
-    min-height: 140px;
-    width: auto;
-  }
-  .stat-number {
-    font-size: 42px;
-  }
-  .stat-card-image {
-    width: auto;
-    height: 180px;
-  }
-  .news-grid {
-    gap: 30px;
-  }
-  .news-image {
-    height: 450px;
-  }
-  .contact-container {
-    flex-direction: column;
-  }
-  .contact-image {
-    width: 100%;
-    height: 400px;
-    border-radius: 20px 20px 0 0;
-  }
-  .contact-form-wrapper {
-    width: 100%;
-    padding: 30px;
-  }
-}
-
-@media (max-width: 992px) {
-  .features-grid {
-    grid-template-columns: 1fr;
-  }
-  .news-grid {
+/* ─── Адаптив ─── */
+@media (max-width: 1100px) {
+  .products {
     grid-template-columns: repeat(2, 1fr);
   }
-  .about-content {
-    grid-template-columns: 1fr;
-    gap: 50px;
+
+  .steps {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 44px;
   }
-  .stats-container {
-    padding: 40px 30px;
-  }
-  .about-title {
-    font-size: 32px;
-  }
-  .about-description {
-    font-size: 16px;
-    text-align: center;
-  }
-  .about-text {
-    padding-right: 0;
-  }
-  .news-title {
-    font-size: 42px;
-    margin-bottom: 50px;
-  }
-  .news-image {
-    height: 400px;
+
+  .steps::before {
+    display: none;
   }
 }
 
-@media (max-width: 768px) {
-  .info-section {
-    padding: 80px 15px 60px;
-  }
-  .section-title {
-    font-size: 36px;
-    margin-bottom: 60px;
-  }
-  .features-grid {
+@media (max-width: 960px) {
+  .about,
+  .offer,
+  .carriers {
     grid-template-columns: 1fr;
-    gap: 25px;
   }
-  .feature-card {
-    padding: 30px 25px;
+
+  .about-media {
+    min-height: 420px;
   }
-  .news-title {
-    font-size: 36px;
-    margin-bottom: 40px;
+
+  .news {
+    grid-template-columns: 1fr 1fr;
   }
-  .news-grid {
-    grid-template-columns: 1fr;
-    gap: 30px;
-  }
-  .news-headline {
-    font-size: 20px;
-  }
-  .news-image {
-    height: 450px;
-  }
-  .stat-number {
-    font-size: 36px;
-  }
-  .stat-card-image {
-    height: 200px;
-  }
-  .contact-image {
-    height: 300px;
-  }
-  .contact-form-wrapper {
-    padding: 25px;
-  }
-  .carriers-content {
-    flex-direction: column;
-    gap: 30px;
-  }
-  .carriers-left {
-    max-width: 100%;
-    text-align: center;
-  }
-  .carriers-feature-item {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-  .carriers-join {
-    align-items: center;
-  }
-  .carriers-title {
-    font-size: 28px;
-    text-align: center;
+
+  .carriers {
+    padding: 40px 28px;
   }
 }
 
-@media (max-width: 576px) {
-  .section-title {
-    font-size: 28px;
+@media (max-width: 760px) {
+  .hero {
+    min-height: max(640px, 100svh);
   }
-  .feature-card {
-    padding: 25px 20px;
+
+  .stats {
+    grid-template-columns: 1fr 1fr;
+    row-gap: 28px;
   }
-  .feature-card h3 {
-    font-size: 20px;
+
+  .stats > div:nth-child(3) {
+    border-left: 0;
+    padding-left: 0;
   }
-  .stat-card {
-    padding: 30px 20px;
-    min-height: 120px;
+
+  .stats > div {
+    padding: 4px 16px;
   }
-  .stat-number {
-    font-size: 32px;
+
+  .scroll-hint {
+    display: none;
   }
-  .section-header {
+
+  .section {
+    padding: 72px 0;
+  }
+
+  .section-head.row {
     flex-direction: column;
     align-items: flex-start;
-    gap: 15px;
   }
-  .title-glow {
-    width: 60px;
+
+  .products,
+  .news,
+  .steps {
+    grid-template-columns: 1fr;
   }
-  .card-btn, .news-all-link {
-    padding: 12px 25px;
-    font-size: 15px;
+
+  .about-media {
+    min-height: 340px;
   }
-  .news-section {
-    padding: 0 15px;
+
+  .photo-badge {
+    left: 12px;
+    bottom: 20px;
   }
-  .news-title {
-    font-size: 32px;
-  }
-  .news-image {
-    height: 350px;
-  }
-  .news-content {
-    padding: 20px 15px;
-  }
-  .news-headline {
-    font-size: 18px;
-  }
-  .news-excerpt {
-    font-size: 14px;
-  }
-  .contact-image {
-    height: 250px;
+
+  .offer-card {
+    padding: 22px;
   }
 }
 </style>

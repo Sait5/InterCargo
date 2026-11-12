@@ -57,12 +57,12 @@ const { toasts } = storeToRefs(toastStore);
   pointer-events: auto;
 }
 .toast.success {
-  background: rgba(45, 192, 113, 0.15);
-  border-color: rgba(45, 192, 113, 0.3);
+  background: rgba(var(--accent-rgb), 0.15);
+  border-color: rgba(var(--accent-rgb), 0.3);
 }
 .toast.error {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(var(--danger-rgb), 0.15);
+  border-color: rgba(var(--danger-rgb), 0.3);
 }
 .toast-icon {
   width: 24px;
@@ -73,10 +73,10 @@ const { toasts } = storeToRefs(toastStore);
   justify-content: center;
 }
 .toast.success .toast-icon {
-  color: #2DC071;
+  color: var(--accent-color);
 }
 .toast.error .toast-icon {
-  color: #ef4444;
+  color: var(--danger);
 }
 .toast-message {
   flex: 1;

@@ -1,82 +1,104 @@
 <template>
   <div class="not-found">
     <Header />
-    <div class="not-found-content">
-      <div class="error-code">404</div>
-      <h1 class="error-title">Страница не найдена</h1>
-      <p class="error-message">Извините, запрашиваемая страница не существует.</p>
-      <router-link to="/" class="home-link">
-        Вернуться на главную
-      </router-link>
-    </div>
+    <main class="content">
+      <div class="code" aria-hidden="true">
+        <span>4</span>
+        <span class="road"><span class="truck"><Truck /></span></span>
+        <span>4</span>
+      </div>
+      <h1>Такого маршрута нет</h1>
+      <p>Похоже, адрес изменился или страница переехала. Вернитесь на главную или найдите нужное в меню.</p>
+      <div class="actions">
+        <router-link to="/" class="ic-btn ic-btn--primary">На главную</router-link>
+        <router-link to="/contacts" class="ic-btn ic-btn--ghost">Связаться с нами</router-link>
+      </div>
+    </main>
   </div>
 </template>
 
-<script>
-import Header from "@/ui/Header.vue"
-import Footer from "@/ui/Footer.vue"
-
-export default {
-  name: "NotFound",
-  components: { Header, Footer }
-}
+<script setup>
+import { Truck } from 'lucide-vue-next';
+import Header from '@/ui/Header.vue';
 </script>
 
 <style scoped>
 .not-found {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0a1929 0%, #1a2a3a 100%);
+  background:
+    radial-gradient(50% 50% at 50% 40%, rgba(var(--accent-rgb), 0.12), transparent 70%),
+    var(--bg-primary);
+  color: var(--text-primary);
 }
 
-.not-found-content {
-  max-width: 600px;
-  margin: 100px auto;
-  padding: 40px;
+.content {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 12vh 24px 80px;
   text-align: center;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 24px;
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.error-code {
-  font-size: 120px;
-  font-weight: 800;
-  background: linear-gradient(90deg, #2DC071, #4ECDC4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 20px;
-}
-
-.error-title {
-  font-size: 32px;
-  color: #ffffff;
-  margin-bottom: 20px;
+.code {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-family: var(--font-display);
+  font-size: clamp(90px, 16vw, 150px);
   font-weight: 700;
+  line-height: 1;
+  color: var(--accent-color);
 }
 
-.error-message {
-  font-size: 18px;
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 40px;
-  line-height: 1.6;
+.road {
+  position: relative;
+  width: clamp(90px, 16vw, 150px);
+  height: 0.8em;
+  border-radius: 50%;
+  border: 3px dashed rgba(var(--accent-rgb), 0.45);
 }
 
-.home-link {
-  display: inline-block;
-  padding: 16px 32px;
-  background: #2DC071;
-  color: white;
-  text-decoration: none;
-  border-radius: 12px;
-  font-weight: 600;
-  transition: all 0.3s ease;
+.truck {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-left: -20px;
+  border-radius: 50%;
+  background: var(--accent-gradient);
+  color: var(--text-on-accent);
+  transform-origin: 20px calc(0.4em + 18px);
+  animation: orbit 4s linear infinite;
 }
 
-.home-link:hover {
-  background: #28a45e;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(45, 192, 113, 0.3);
+.truck svg {
+  width: 20px;
+  height: 20px;
+}
+
+@keyframes orbit {
+  to { transform: rotate(360deg); }
+}
+
+h1 {
+  font-size: clamp(26px, 4vw, 38px);
+}
+
+p {
+  color: var(--text-secondary);
+  font-size: 17px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 8px;
 }
 </style>

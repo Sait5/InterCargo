@@ -193,8 +193,6 @@ toast.error(result.message || 'Ошибка создания аукциона');
 
 onMounted(() => {
 window.scrollTo({ top: 0, behavior: 'instant' });
-const savedTheme = localStorage.getItem('theme') || 'dark';
-document.documentElement.setAttribute('data-theme', savedTheme);
 if (userStore.user?.accountType !== 'customer' && !userStore.isAdmin) {
 toast.error('Только заказчики могут создавать аукционы');
 router.push('/spot-auctions');
@@ -206,7 +204,7 @@ router.push('/spot-auctions');
 .saas-landing { background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
 .create-auction-main { padding: 60px 0 100px; }
 .container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
-.gradient-text { background: linear-gradient(135deg, var(--accent-color) 0%, #4ECDC4 50%, var(--accent-color) 100%); background-size: 300% 300%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.gradient-text { background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-2) 50%, var(--accent-color) 100%); background-size: 300% 300%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .page-header { text-align: center; margin-bottom: 48px; }
 .page-title { font-size: clamp(32px, 4vw, 48px); font-weight: 800; margin-bottom: 12px; }
 .page-subtitle { font-size: 17px; color: var(--text-muted); }
@@ -218,22 +216,22 @@ router.push('/spot-auctions');
 .form-group { display: flex; flex-direction: column; gap: 8px; }
 .form-group label { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
 .form-group input, .form-group select, .form-group textarea { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 14px; color: var(--text-primary); font-size: 14px; outline: none; transition: all 0.2s ease; font-family: inherit; resize: vertical; }
-.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(45, 192, 113, 0.1); }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1); }
 .form-group select { cursor: pointer; }
 .form-group select option { background: var(--bg-card); color: var(--text-primary); }
 .form-hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
 .access-type-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .access-type-card { background: rgba(255, 255, 255, 0.03); border: 2px solid var(--border-color); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 12px; }
-.access-type-card:hover { border-color: rgba(45, 192, 113, 0.3); }
-.access-type-card.active { border-color: var(--accent-color); background: rgba(45, 192, 113, 0.05); }
+.access-type-card:hover { border-color: rgba(var(--accent-rgb), 0.3); }
+.access-type-card.active { border-color: var(--accent-color); background: rgba(var(--accent-rgb), 0.05); }
 .access-type-card svg { width: 24px; height: 24px; color: var(--accent-color); flex-shrink: 0; }
 .access-type-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
 .access-type-desc { font-size: 12px; color: var(--text-muted); }
 .form-actions { display: flex; gap: 12px; margin-top: 8px; }
 .btn-cancel { flex: 1; padding: 14px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-primary); font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
 .btn-cancel:hover { background: rgba(255, 255, 255, 0.08); }
-.btn-submit { flex: 1; padding: 14px; background: linear-gradient(135deg, #2DC071, #28a45e); border: none; border-radius: 12px; color: white; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(45, 192, 113, 0.2); }
-.btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(45, 192, 113, 0.3); }
+.btn-submit { flex: 1; padding: 14px; background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); border: none; border-radius: 12px; color: white; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.2); }
+.btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); }
 .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 @media (max-width: 768px) { .form-card { padding: 24px; } .form-row { grid-template-columns: 1fr; } .access-type-selector { grid-template-columns: 1fr; } }
 </style>

@@ -1,95 +1,6 @@
 <template>
-<div class="profile-layout">
-<aside class="sidebar">
-<div class="sidebar-header">
-<router-link to="/" class="logo-area">
-<div class="logo-icon">
-<img src="@/assets/icons/logotip.png" alt="InterCargo">
-</div>
-<div class="logo-text">
-<span class="logo-cargo">Inter</span>
-<span class="logo-express">Cargo</span>
-</div>
-</router-link>
-</div>
-<div class="user-card">
-<div class="user-avatar-lg">{{ initials }}</div>
-<div class="user-info">
-<div class="user-name-lg">{{ fullName }}</div>
-<div class="user-role">{{ roleLabel }}</div>
-<div class="user-email">{{ userStore.user?.email }}</div>
-</div>
-</div>
-<nav class="sidebar-nav">
-<router-link to="/profile" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-<span>Профиль</span>
-</router-link>
-<template v-if="userStore.isAdmin">
-<router-link to="/orders" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"></path></svg>
-<span>Заказы</span>
-</router-link>
-<router-link to="/carriers" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-<span>Перевозчики</span>
-</router-link>
-<router-link to="/documents" class="nav-link active">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-<span>Документы</span>
-</router-link>
-<router-link to="/admin" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-<span>Админ-панель</span>
-</router-link>
-</template>
-<template v-else-if="isCustomer">
-<router-link to="/orders" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"></path></svg>
-<span>Мои заказы</span>
-</router-link>
-<router-link to="/carriers" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
-<span>Перевозчики</span>
-</router-link>
-<router-link to="/documents" class="nav-link active">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-<span>Документы</span>
-</router-link>
-<router-link to="/chat" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-<span>Чат</span>
-</router-link>
-</template>
-<template v-else>
-<router-link to="/orders" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"></path></svg>
-<span>Доступные заказы</span>
-</router-link>
-<router-link to="/my-applications" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-<span>Мои заявки</span>
-</router-link>
-<router-link to="/documents" class="nav-link active">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-<span>Документы</span>
-</router-link>
-<router-link to="/chat" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-<span>Чат</span>
-</router-link>
-</template>
-<router-link to="/settings" class="nav-link">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-<span>Настройки</span>
-</router-link>
-<a class="nav-link logout" @click="handleLogout">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-<span>Выход</span>
-</a>
-</nav>
-</aside>
-<main class="main-content">
+<DashboardLayout>
+<div class="main-content">
 <header class="content-header">
 <div class="header-left">
 <h1>Документы</h1>
@@ -125,7 +36,7 @@ class="gallery-item"
 <div class="gallery-corner br"></div>
 </div>
 </div>
-</main>
+</div>
 <div class="preview-overlay" v-if="previewDoc" @click="closePreview">
 <div class="preview-content" @click.stop>
 <button class="preview-close" @click="closePreview">
@@ -140,17 +51,18 @@ class="gallery-item"
 </div>
 </div>
 </div>
-</div>
+</DashboardLayout>
 </template>
 
 <script setup>
+import DashboardLayout from '@/ui/DashboardLayout.vue';
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
 	
-import dokument2 from '@/assets/images/dokument2.jpg';
-import dokument3 from '@/assets/images/dokument3.jpg';
-import dokument4 from '@/assets/images/dokument4.jpg';
+import dokument2 from '@/assets/images/dokument2.webp';
+import dokument3 from '@/assets/images/dokument3.webp';
+import dokument4 from '@/assets/images/dokument4.webp';
 import dokument5 from '@/assets/images/dokument5.jpg';
 
 const router = useRouter();
@@ -214,8 +126,8 @@ onMounted(() => {});
 .logo-cargo { font-size: 28px; font-weight: 800; letter-spacing: 1.5px; color: var(--text-primary); }
 .logo-express { font-size: 28px; font-weight: 800; color: var(--accent-color); letter-spacing: 1.5px; }
 .user-card { display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; transition: all 0.3s ease; }
-.user-card:hover { border-color: rgba(45, 192, 113, 0.3); }
-.user-avatar-lg { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #2DC071, #28a45e); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: 700; flex-shrink: 0; }
+.user-card:hover { border-color: rgba(var(--accent-rgb), 0.3); }
+.user-avatar-lg { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: 700; flex-shrink: 0; }
 .user-info { overflow: hidden; flex: 1; }
 .user-name-lg { font-size: 15px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .user-role { font-size: 12px; color: var(--accent-color); font-weight: 600; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -225,10 +137,10 @@ onMounted(() => {});
 .nav-link svg { width: 20px; height: 20px; flex-shrink: 0; }
 .nav-link span { flex: 1; }
 .nav-link:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); transform: translateX(2px); }
-.nav-link.active { background: rgba(45, 192, 113, 0.1); color: var(--accent-color); font-weight: 600; }
+.nav-link.active { background: rgba(var(--accent-rgb), 0.1); color: var(--accent-color); font-weight: 600; }
 .nav-link.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 60%; background: var(--accent-color); border-radius: 0 3px 3px 0; }
-.nav-link.logout { color: #ef4444; margin-top: auto; }
-.nav-link.logout:hover { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.nav-link.logout { color: var(--danger); margin-top: auto; }
+.nav-link.logout:hover { background: rgba(var(--danger-rgb), 0.1); color: var(--danger); }
 .main-content { flex: 1; padding: 40px; max-width: 1200px; width: 100%; margin: 0 auto; }
 .content-header { margin-bottom: 40px; }
 .content-header h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-color) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
@@ -321,7 +233,7 @@ onMounted(() => {});
 .overlay-content svg {
 	color: var(--accent-color);
 	margin-bottom: 12px;
-	filter: drop-shadow(0 0 10px rgba(45, 192, 113, 0.5));
+	filter: drop-shadow(0 0 10px rgba(var(--accent-rgb), 0.5));
 }
 
 .overlay-content h3 {
@@ -419,8 +331,8 @@ onMounted(() => {});
 }
 
 .gallery-item:hover::after {
-	border-color: rgba(45, 192, 113, 0.4);
-	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 30px rgba(45, 192, 113, 0.15);
+	border-color: rgba(var(--accent-rgb), 0.4);
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 30px rgba(var(--accent-rgb), 0.15);
 }
 
 .preview-overlay {
@@ -493,8 +405,8 @@ onMounted(() => {});
 }
 
 .preview-close:hover {
-	background: rgba(239, 68, 68, 0.3);
-	border-color: #ef4444;
+	background: rgba(var(--danger-rgb), 0.3);
+	border-color: var(--danger);
 	transform: rotate(90deg);
 }
 
