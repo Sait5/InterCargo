@@ -1,12 +1,12 @@
 <template>
 <div class="saas-landing">
 <Header />
+<PageHero view="auctions-cranes" eyebrow="Новые торги">
+<template #title>Создать <span class="ic-accent">аукцион</span></template>
+Запустите торги и получите лучшие предложения от перевозчиков.
+</PageHero>
 <main class="create-auction-main">
 <div class="container">
-<div class="page-header">
-<h1 class="page-title">Создать <span class="gradient-text">аукцион</span></h1>
-<p class="page-subtitle">Запустите торги и получите лучшие предложения от перевозчиков</p>
-</div>
 
 <div class="form-card">
 <form @submit.prevent="submitAuction" class="auction-form">
@@ -116,6 +116,7 @@
 </template>
 
 <script setup>
+import PageHero from '@/ui/PageHero.vue';
 import { reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
@@ -215,13 +216,13 @@ router.push('/spot-auctions');
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .form-group { display: flex; flex-direction: column; gap: 8px; }
 .form-group label { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
-.form-group input, .form-group select, .form-group textarea { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 14px; color: var(--text-primary); font-size: 14px; outline: none; transition: all 0.2s ease; font-family: inherit; resize: vertical; }
+.form-group input, .form-group select, .form-group textarea { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 14px; color: var(--text-primary); font-size: 14px; outline: none; transition: all 0.2s ease; font-family: inherit; resize: vertical; }
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1); }
 .form-group select { cursor: pointer; }
 .form-group select option { background: var(--bg-card); color: var(--text-primary); }
 .form-hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
 .access-type-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.access-type-card { background: rgba(255, 255, 255, 0.03); border: 2px solid var(--border-color); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 12px; }
+.access-type-card { background: var(--bg-card); border: 2px solid var(--border-color); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 12px; }
 .access-type-card:hover { border-color: rgba(var(--accent-rgb), 0.3); }
 .access-type-card.active { border-color: var(--accent-color); background: rgba(var(--accent-rgb), 0.05); }
 .access-type-card svg { width: 24px; height: 24px; color: var(--accent-color); flex-shrink: 0; }
@@ -231,7 +232,7 @@ router.push('/spot-auctions');
 .btn-cancel { flex: 1; padding: 14px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-primary); font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
 .btn-cancel:hover { background: rgba(255, 255, 255, 0.08); }
 .btn-submit { flex: 1; padding: 14px; background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); border: none; border-radius: 12px; color: white; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.2); }
-.btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); }
+.btn-submit:hover:not(:disabled) { box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); }
 .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 @media (max-width: 768px) { .form-card { padding: 24px; } .form-row { grid-template-columns: 1fr; } .access-type-selector { grid-template-columns: 1fr; } }
 </style>

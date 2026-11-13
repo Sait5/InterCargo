@@ -4,14 +4,15 @@
 
     <!-- ═══ Герой с 3D-картой маршрутов ═══ -->
     <section class="hero">
-      <RouteMap3D class="hero-map" :avoid="heroTextRects" />
+      <RouteMap3D class="hero-map" :avoid="heroTextRects" @calc="calcFrom" />
       <div class="hero-shade" aria-hidden="true"></div>
 
       <div class="ic-container hero-inner">
         <div class="hero-copy" ref="heroCopy">
           <span class="ic-eyebrow">Логистическая платформа · с 2010 года</span>
           <h1 class="hero-title">
-            Междугородние <span class="accent">грузоперевозки</span><br>
+            Междугородние<br>
+            <span class="accent">грузоперевозки</span><br>
             по всей России
           </h1>
           <p class="hero-lead">
@@ -159,7 +160,7 @@
           <router-link to="/news" class="ic-btn ic-btn--ghost">Все новости <ArrowRight /></router-link>
         </header>
         <div class="news">
-          <router-link v-for="(n, i) in news" :key="n.id" :to="`/news#${n.id}`" class="news-card ic-card ic-reveal" :style="{ transitionDelay: `${i * 80}ms` }">
+          <router-link v-for="(n, i) in news" :key="n.id" :to="`/news#${n.id}`" class="news-card ic-card ic-reveal" :class="{ lead: i === 0 }" :style="{ transitionDelay: `${i * 80}ms` }">
             <div class="news-img">
               <img :src="n.image" :alt="n.title" loading="lazy">
               <span class="news-tag">{{ n.tag }}</span>
@@ -172,6 +173,18 @@
             </div>
           </router-link>
         </div>
+      </div>
+    </section>
+
+    <!-- ═══ Калькулятор ═══ -->
+    <section id="calc" class="section">
+      <div class="ic-container">
+        <header class="section-head ic-reveal">
+          <span class="ic-eyebrow">Калькулятор</span>
+          <h2>Сколько стоит <span class="accent">ваша перевозка</span></h2>
+          <p>Выберите маршрут, двигайте ползунки — цена и срок пересчитываются сразу.</p>
+        </header>
+        <PriceCalculator class="ic-reveal" :preset-from="presetFrom" @request="toOffer" />
       </div>
     </section>
 
@@ -193,7 +206,7 @@
           </div>
         </div>
         <div class="offer-card ic-card ic-reveal">
-          <OfferForm />
+          <OfferForm :prefill="offerText" />
         </div>
       </div>
     </section>
@@ -211,6 +224,7 @@ import {
 import Header from '@/ui/Header.vue';
 import Footer from '@/ui/Footer.vue';
 import OfferForm from '@/components/OfferForm.vue';
+import PriceCalculator from '@/components/PriceCalculator.vue';
 import { news, formatNewsDate } from '@/data/news';
 import { useReveal } from '@/composables/useReveal';
 import truckRoad from '@/assets/images/feedback.webp';
@@ -220,6 +234,19 @@ import truckFog from '@/assets/images/popular-truck.webp';
 const RouteMap3D = defineAsyncComponent(() => import('@/components/routeMap/RouteMap3D.vue'));
 
 const page = ref(null);
+const offerText = ref('');
+const presetFrom = ref('');
+// Кнопка в карточке города на карте: подставляем город в калькулятор
+const calcFrom = (cityId) => {
+  presetFrom.value = '';
+  requestAnimationFrame(() => { presetFrom.value = cityId; });
+  document.getElementById('calc')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+// Кнопка калькулятора: переносим расчёт в заявку и прокручиваем к форме
+const toOffer = (text) => {
+  offerText.value = text;
+  document.getElementById('offer')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
 const heroCopy = ref(null);
 useReveal(page);
 
@@ -302,7 +329,7 @@ const steps = [
   pointer-events: none;
   background:
     radial-gradient(60% 34% at 50% 18%, rgba(4, 7, 11, 0.86), transparent 75%),
-    linear-gradient(180deg, rgba(4, 7, 11, 0.7) 0%, transparent 26%, transparent 90%, var(--bg-primary) 100%);
+    linear-gradient(180deg, rgba(4, 7, 11, 0.7) 0%, transparent 26%, transparent 95%, var(--bg-primary) 100%);
 }
 
 .hero-inner {
@@ -329,7 +356,7 @@ const steps = [
 
 .hero-title {
   margin: 20px 0 16px;
-  font-size: clamp(30px, 3.9vw, 58px);
+  font-size: clamp(30px, 3.7vw, 54px);
   font-weight: 700;
   line-height: 1.06;
   letter-spacing: -0.035em;
@@ -541,7 +568,6 @@ const steps = [
 }
 
 .product:hover {
-  transform: translateY(-6px);
   border-color: rgba(var(--accent-rgb), 0.4);
 }
 
@@ -860,16 +886,18 @@ const steps = [
   color: var(--hero-muted);
 }
 
-/* Новости */
+/* Новости — журнальная сетка: главная новость крупно */
 .news {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1.35fr 1fr;
+  grid-template-rows: 1fr 1fr;
   gap: 20px;
 }
 
 .news-card {
-  display: flex;
-  flex-direction: column;
+  position: relative;
+  display: grid;
+  grid-template-columns: 200px 1fr;
   overflow: hidden;
   color: inherit;
   text-decoration: none;
@@ -877,27 +905,25 @@ const steps = [
 }
 
 .news-card:hover {
-  transform: translateY(-6px);
-  border-color: rgba(var(--accent-rgb), 0.4);
+  border-color: rgba(var(--accent-rgb), 0.45);
 }
 
 .news-img {
   position: relative;
-  aspect-ratio: 16 / 10;
   overflow: hidden;
-  background: var(--bg-elevated);
+  background: #05080C;
 }
 
 .news-img img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: top;
-  transition: transform 0.6s var(--motion-ease-out);
+  object-position: center;
+  transition: transform 0.8s var(--motion-ease-out);
 }
 
 .news-card:hover .news-img img {
-  transform: scale(1.05);
+  transform: scale(1.06);
 }
 
 .news-tag {
@@ -907,6 +933,7 @@ const steps = [
   padding: 5px 10px;
   border-radius: 999px;
   background: rgba(4, 7, 11, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: #F2F6F4;
   font-size: 12px;
   font-weight: 700;
@@ -916,8 +943,7 @@ const steps = [
 .news-body {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  padding: 22px 22px 24px;
+  padding: 22px 24px;
 }
 
 .news-body time {
@@ -926,15 +952,58 @@ const steps = [
 }
 
 .news-body h3 {
-  margin: 10px 0 10px;
+  margin: 8px 0;
   font-size: 18px;
   line-height: 1.3;
 }
 
 .news-body p {
-  margin-bottom: 18px;
+  margin-bottom: 14px;
   color: var(--text-secondary);
   font-size: 14.5px;
+}
+
+/* Главная новость: картинка на всю карточку, текст поверх */
+.news-card.lead {
+  grid-row: span 2;
+  grid-template-columns: 1fr;
+  align-content: end;
+  min-height: 440px;
+  border-color: rgba(var(--accent-rgb), 0.25);
+}
+
+.news-card.lead .news-img {
+  position: absolute;
+  inset: 0;
+}
+
+.news-card.lead .news-img::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(4, 7, 11, 0) 25%, rgba(4, 7, 11, 0.92) 100%);
+}
+
+.news-card.lead .news-body {
+  position: relative;
+  justify-content: flex-end;
+  padding: 32px;
+  color: #F2F6F4;
+}
+
+.news-card.lead .news-body h3 {
+  font-size: clamp(22px, 2.4vw, 30px);
+  color: #F2F6F4;
+}
+
+.news-card.lead .news-body p {
+  max-width: 520px;
+  color: rgba(242, 246, 244, 0.75);
+  font-size: 16px;
+}
+
+.news-card.lead .news-body time {
+  color: rgba(242, 246, 244, 0.6);
 }
 
 /* Заявка */
@@ -1031,7 +1100,13 @@ const steps = [
   }
 
   .news {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+
+  .news-card.lead {
+    grid-row: auto;
+    min-height: 380px;
   }
 
   .carriers {
@@ -1075,6 +1150,14 @@ const steps = [
   .news,
   .steps {
     grid-template-columns: 1fr;
+  }
+
+  .news-card:not(.lead) {
+    grid-template-columns: 1fr;
+  }
+
+  .news-card:not(.lead) .news-img {
+    aspect-ratio: 16 / 9;
   }
 
   .about-media {

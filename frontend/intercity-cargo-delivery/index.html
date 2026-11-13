@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="ru" data-theme="dark">
+<html lang="ru" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>InterCargo — грузоперевозки по России</title>
   <meta name="description" content="InterCargo — цифровая платформа междугородних грузоперевозок: тендеры, спот-аукционы, TMS и онлайн-трекинг грузов по всей России.">
-  <meta name="theme-color" content="#070B11">
+  <meta name="theme-color" content="#F4F7F5">
   <meta property="og:title" content="InterCargo — грузоперевозки по России">
   <meta property="og:description" content="Тендеры, спот-аукционы и трекинг грузов в одном окне.">
   <meta property="og:type" content="website">
@@ -13,12 +13,12 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Tektur:wght@500;600;700;800&display=swap" rel="stylesheet">
   <script>
     // Тема до загрузки приложения — без белой вспышки
     (function () {
       try {
-        var t = localStorage.getItem('theme') || 'dark';
+        var t = localStorage.getItem('theme') || 'light';
         if (t === 'auto') t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', t);
       } catch (e) {}

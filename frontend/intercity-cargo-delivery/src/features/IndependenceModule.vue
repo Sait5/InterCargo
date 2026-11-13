@@ -1,7 +1,7 @@
 <template>
   <div class="page-wrapper">
     <Header />
-    <PageHero view="overview" eyebrow="Независимость решений">
+    <PageHero view="independence-port" eyebrow="Независимость решений">
       <template #title>Объективность, встроенная <span class="ic-accent">в алгоритм</span></template>
       Человеческий фактор и субъективные предпочтения исключены из процесса выбора. Система оценивает участников строго по заранее утвержденным и прозрачным критериям.
     </PageHero>

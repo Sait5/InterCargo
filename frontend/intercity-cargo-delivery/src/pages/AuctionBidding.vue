@@ -1,6 +1,7 @@
 <template>
 <div class="saas-landing">
 <Header />
+<PageHero view="auctions-cranes" eyebrow="Аукцион" :title="auction?.title || 'Аукцион'" :lead="auction ? auction.route : 'Загрузка…'" />
 <main class="bidding-main">
 <div class="container">
 <div v-if="auctionStore.loading && !auction" class="loading-state">
@@ -110,6 +111,7 @@
 </template>
 
 <script setup>
+import PageHero from '@/ui/PageHero.vue';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useUserStore } from '@/stores/user';
@@ -245,17 +247,17 @@ if (refreshInterval) clearInterval(refreshInterval);
 .auction-status.active { background: rgba(var(--accent-rgb), 0.15); color: var(--accent-color); border: 1px solid rgba(var(--accent-rgb), 0.3); }
 .auction-status.completed { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
 .auction-status.cancelled { background: rgba(var(--danger-rgb), 0.15); color: var(--danger); border: 1px solid rgba(var(--danger-rgb), 0.3); }
-.auction-timer { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; padding: 8px 14px; background: rgba(255, 255, 255, 0.03); border-radius: 10px; }
+.auction-timer { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; padding: 8px 14px; background: var(--bg-card); border-radius: 10px; }
 .auction-timer.urgent { color: var(--danger); background: rgba(var(--danger-rgb), 0.1); animation: pulse 1s infinite; }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
 .auction-title { font-size: 24px; font-weight: 800; margin-bottom: 12px; }
 .auction-route { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; margin-bottom: 20px; }
 .auction-route svg { color: var(--accent-color); }
-.info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; padding: 20px; background: rgba(255, 255, 255, 0.02); border-radius: 12px; margin-bottom: 20px; }
+.info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; padding: 20px; background: var(--bg-card); border-radius: 12px; margin-bottom: 20px; }
 .info-item { display: flex; flex-direction: column; gap: 4px; }
 .info-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
 .info-value { font-size: 14px; font-weight: 600; }
-.auction-description { padding: 16px; background: rgba(255, 255, 255, 0.02); border-radius: 12px; }
+.auction-description { padding: 16px; background: var(--bg-card); border-radius: 12px; }
 .auction-description h4 { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
 .auction-description p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
 .bid-card h3, .creator-actions h3, .winner-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
@@ -266,11 +268,11 @@ if (refreshInterval) clearInterval(refreshInterval);
 .bid-form { display: flex; flex-direction: column; gap: 12px; }
 .form-group { display: flex; flex-direction: column; gap: 6px; }
 .form-group label { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
-.form-group input { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 14px; color: var(--text-primary); font-size: 16px; font-weight: 700; outline: none; transition: all 0.2s ease; }
+.form-group input { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 14px; color: var(--text-primary); font-size: 16px; font-weight: 700; outline: none; transition: all 0.2s ease; }
 .form-group input:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1); }
 .form-hint { font-size: 12px; color: var(--text-muted); }
 .btn-bid { padding: 14px; background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); border: none; border-radius: 12px; color: white; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.2); }
-.btn-bid:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); }
+.btn-bid:hover:not(:disabled) { box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); }
 .btn-bid:disabled { opacity: 0.6; cursor: not-allowed; }
 .actions-row { display: flex; gap: 10px; }
 .btn-complete, .btn-cancel-auction { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; border: none; }
@@ -289,10 +291,10 @@ if (refreshInterval) clearInterval(refreshInterval);
 .bids-count { background: rgba(var(--accent-rgb), 0.15); color: var(--accent-color); font-size: 13px; font-weight: 700; padding: 4px 12px; border-radius: 10px; }
 .no-bids { text-align: center; padding: 40px 20px; color: var(--text-muted); }
 .bids-list { display: flex; flex-direction: column; gap: 10px; max-height: 500px; overflow-y: auto; }
-.bid-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 12px; transition: all 0.2s ease; }
+.bid-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; transition: all 0.2s ease; }
 .bid-item.best { background: rgba(var(--accent-rgb), 0.08); border-color: rgba(var(--accent-rgb), 0.3); }
-.bid-position { width: 28px; height: 28px; border-radius: 50%; background: rgba(255, 255, 255, 0.05); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
-.bid-item.best .bid-position { background: var(--accent-color); color: white; }
+.bid-position { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-card); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+.bid-item.best .bid-position { background: var(--accent-color); color: var(--text-primary); }
 .bid-info { flex: 1; min-width: 0; }
 .bid-name { font-size: 14px; font-weight: 600; }
 .bid-company { font-size: 12px; color: var(--text-muted); margin-top: 2px; }

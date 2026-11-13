@@ -193,23 +193,23 @@ const handleLogout = () => {
 .card-subtitle { font-size: 14px; color: var(--text-muted); }
 .theme-settings { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 .theme-option { cursor: pointer; transition: all 0.3s ease; }
-.theme-option:hover { transform: translateY(-5px); }
+.theme-option:hover { }
 .theme-option.active .theme-preview { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.3); }
-.theme-preview { width: 100%; height: 120px; border: 2px solid rgba(255, 255, 255, 0.2); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+.theme-preview { width: 100%; height: 120px; border: 2px solid var(--border-strong); border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
 .light-theme { background: #F3FFFD; }
 .light-theme .preview-header { height: 20px; background: var(--accent-color); }
 .light-theme .preview-content { height: 60px; background: #ffffff; margin: 10px; border-radius: 6px; }
 .light-theme .preview-footer { height: 20px; background: #e8f5f2; margin: 0 10px; border-radius: 4px; }
-.dark-theme { background: var(--bg-elevated); }
+.dark-theme { background: #0A0F14; }
 .dark-theme .preview-header { height: 20px; background: var(--accent-color); }
-.dark-theme .preview-content { height: 60px; background: var(--bg-card-solid); margin: 10px; border-radius: 6px; }
-.dark-theme .preview-footer { height: 20px; background: var(--bg-elevated); margin: 0 10px; border-radius: 4px; }
+.dark-theme .preview-content { height: 60px; background: #141C24; margin: 10px; border-radius: 6px; }
+.dark-theme .preview-footer { height: 20px; background: #0F161D; margin: 0 10px; border-radius: 4px; }
 .auto-theme { background: #F3FFFD; }
-.auto-theme .preview-header { height: 20px; background: linear-gradient(90deg, var(--accent-color) 50%, var(--bg-card-solid) 50%); }
+.auto-theme .preview-header { height: 20px; background: linear-gradient(90deg, var(--accent-color) 50%, #141C24 50%); }
 .auto-theme .preview-content { height: 60px; display: flex; margin: 10px; border-radius: 6px; overflow: hidden; }
 .half-light { flex: 1; background: #ffffff; }
-.half-dark { flex: 1; background: var(--bg-card-solid); }
-.auto-theme .preview-footer { height: 20px; background: linear-gradient(90deg, #e8f5f2 50%, var(--bg-elevated) 50%); margin: 0 10px; border-radius: 4px; }
+.half-dark { flex: 1; background: #141C24; }
+.auto-theme .preview-footer { height: 20px; background: linear-gradient(90deg, #e8f5f2 50%, #0F161D 50%); margin: 0 10px; border-radius: 4px; }
 .theme-label { font-size: 14px; color: var(--text-secondary); text-align: center; font-weight: 500; }
 .notification-settings { display: flex; flex-direction: column; gap: 0; }
 .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--border-color); gap: 16px; }
@@ -226,7 +226,7 @@ input:checked + .slider:before { transform: translateX(24px); }
 .language-select { padding: 12px 24px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-primary); font-size: 16px; width: 200px; cursor: pointer; outline: none; }
 .language-select option { background: var(--bg-card); color: var(--text-primary); }
 .save-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.2); margin-top: 8px; }
-.save-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); }
+.save-btn:hover { box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); }
 @media (max-width: 1024px) { .sidebar { display: none; } .theme-settings { grid-template-columns: 1fr; } }
 @media (max-width: 768px) { .main-content { padding: 24px 16px; } .settings-card { padding: 24px; } .content-header h1 { font-size: 26px; } .setting-item { flex-direction: column; align-items: flex-start; gap: 12px; } }
 </style>

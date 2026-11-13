@@ -185,7 +185,6 @@ textarea {
 }
 
 .ic-btn--primary:hover {
-  transform: translateY(-2px);
   box-shadow: 0 16px 40px -12px rgba(var(--accent-rgb), 0.65);
 }
 
@@ -198,7 +197,6 @@ textarea {
 .ic-btn--ghost:hover {
   border-color: rgba(var(--accent-rgb), 0.6);
   color: var(--accent-color);
-  transform: translateY(-2px);
 }
 
 .ic-btn:disabled {
@@ -250,24 +248,86 @@ textarea.ic-input {
 /* Появление при прокрутке */
 .ic-reveal {
   opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.8s var(--motion-ease-out), transform 0.8s var(--motion-ease-out);
+  filter: blur(6px);
+  transition: opacity 0.9s ease, filter 0.9s ease;
 }
 
 .ic-reveal.is-visible {
   opacity: 1;
-  transform: none;
+  filter: none;
 }
 
 /* Переход между страницами */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.25s ease;
+.page-enter-active {
+  transition: opacity 0.4s var(--motion-ease-out), transform 0.4s var(--motion-ease-out);
 }
 
-.fade-enter-from,
-.fade-leave-to {
+.page-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.page-enter-from {
   opacity: 0;
+  transform: translateY(14px);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+/* Автоматическое появление блоков на лендингах (см. useSiteMotion).
+   Через animation, а не transition — чтобы не спорить с hover-эффектами карточек */
+.ic-auto-reveal:not(.is-visible) {
+  opacity: 0;
+}
+
+.ic-auto-reveal.is-visible {
+  animation: ic-rise 0.8s var(--motion-ease-out) var(--reveal-delay, 0ms) backwards;
+}
+
+@keyframes ic-rise {
+  from {
+    opacity: 0;
+    transform: none;
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* Пульсирующая точка в метках-«глазках» */
+.ic-eyebrow::before {
+  animation: ic-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes ic-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.6), 0 0 10px currentColor; }
+  50% { box-shadow: 0 0 0 6px rgba(var(--accent-rgb), 0), 0 0 10px currentColor; }
+}
+
+/* Блик, пробегающий по главным кнопкам */
+.ic-btn--primary {
+  position: relative;
+  overflow: hidden;
+}
+
+.ic-btn--primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
+  transform: translateX(-120%);
+  animation: ic-shine 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes ic-shine {
+  0%, 70% { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
 }
 
 .sr-only {
@@ -307,4 +367,9 @@ textarea.ic-input {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+/* Наведение на карточки — мягкая подсветка вместо подпрыгивания */
+[data-glow]:hover {
+  box-shadow: 0 0 0 1px rgba(var(--accent-rgb), 0.35), 0 18px 40px -24px rgba(var(--accent-rgb), 0.45);
 }

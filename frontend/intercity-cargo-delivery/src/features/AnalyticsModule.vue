@@ -1,7 +1,7 @@
 <template>
   <div class="page-wrapper">
     <Header />
-    <PageHero view="siberia" eyebrow="Аналитический модуль">
+    <PageHero view="analytics-office" eyebrow="Аналитический модуль">
       <template #title>Данные для принятия <span class="ic-accent">обоснованных решений</span></template>
       Система агрегирует информацию на каждом этапе закупки, превращая разрозненные данные в структурированные отчеты. Это позволяет оптимизировать бюджет и минимизировать логистические риски на основе фактов, а не интуиции.
     </PageHero>

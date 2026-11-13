@@ -1,7 +1,7 @@
 <template>
   <div class="news-page">
     <Header />
-    <PageHero eyebrow="Новости" title="Что нового в InterCargo" lead="Маршруты, обновления платформы и жизнь компании." />
+    <PageHero view="news-port" eyebrow="Новости" title="Что нового в InterCargo" lead="Маршруты, обновления платформы и жизнь компании." />
 
     <div class="ic-container list">
       <article v-for="n in news" :id="n.id" :key="n.id" class="post ic-card">

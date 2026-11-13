@@ -3,16 +3,24 @@
     <div v-if="failed" class="fallback" aria-hidden="true"></div>
 
     <div class="labels" aria-hidden="true">
+      <!-- Положение и состояние подписей пишутся прямо в DOM каждый кадр, без перерисовки Vue -->
       <span
-        v-for="l in labels"
+        v-for="l in labelList"
         :key="l.id"
-        class="label"
-        :class="[`tier-${l.tier}`, { active: l.active, hidden: !l.show }]"
-        :style="{ transform: `translate(${l.x}px, ${l.y}px) translate(-50%, -100%)` }"
+        :ref="(el) => setLabelEl(l.id, el)"
+        :class="`label hidden tier-${l.tier}`"
       >{{ l.name }}</span>
     </div>
 
-    <ul class="legend" aria-label="Обозначения на карте">
+    <!-- Управление картой -->
+    <div v-if="!failed" class="controls" :class="{ 'controls--tracking': tracking }">
+      <button type="button" aria-label="Приблизить" @click="map && map.zoomBy(0.8)">+</button>
+      <button type="button" aria-label="Отдалить" @click="map && map.zoomBy(1.25)">−</button>
+      <button type="button" aria-label="Исходный вид" @click="map && map.reset()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+    </div>
+    <p v-if="!failed && !tracking && hint" class="hint">Перетащите карту · нажмите на город · Ctrl + колесо — приблизить</p>
+
+    <ul v-if="!tracking" class="legend" aria-label="Обозначения на карте">
       <li><i class="lg-route"></i>Маршруты InterCargo</li>
       <li><i class="lg-road"></i>Федеральные трассы</li>
       <li><i class="lg-river"></i>Реки</li>
@@ -20,7 +28,17 @@
     </ul>
 
     <transition name="route-card" mode="out-in">
-      <div v-if="featured" :key="featured.from + featured.to" class="route-card">
+      <div v-if="selected" :key="'city-' + selected.id" class="route-card city-card">
+        <button type="button" class="cc-close" aria-label="Закрыть" @click="map && map.selectCity(null)">×</button>
+        <span class="rc-eyebrow">Хаб InterCargo</span>
+        <div class="rc-route"><span>{{ selected.name }}</span></div>
+        <ul class="cc-routes">
+          <li v-for="r in selected.routes" :key="r.to"><span>→ {{ r.to }}</span><b>{{ r.km.toLocaleString('ru-RU') }} км · {{ r.days }}–{{ r.days + 1 }} дн</b></li>
+          <li v-if="!selected.routes.length" class="cc-none">Регулярных рейсов пока нет — рассчитаем индивидуально</li>
+        </ul>
+        <button type="button" class="cc-go" @click="$emit('calc', selected.id)">Рассчитать перевозку отсюда →</button>
+      </div>
+      <div v-else-if="featured && !tracking" :key="featured.from + featured.to" class="route-card">
         <span class="rc-eyebrow">Маршрут в работе</span>
         <div class="rc-route">
           <span>{{ featured.from }}</span>
@@ -37,16 +55,27 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, shallowRef } from 'vue';
+import { ref, onMounted, onBeforeUnmount, shallowRef, watch } from 'vue';
 
 const root = ref(null);
-const labels = shallowRef([]);
+const labelList = shallowRef([]);
+const labelEls = new Map();
+const setLabelEl = (id, el) => { if (el) labelEls.set(id, el); else labelEls.delete(id); };
+let shown = new Set();
+let lastLayout = 0;
 const featured = ref(null);
 const failed = ref(false);
 let map = null;
-let lastLabelUpdate = 0;
+
+const emit = defineEmits(['calc', 'ready']);
+const selected = ref(null);
+const hint = ref(true);
 
 const props = defineProps({
+  // Режим трекинга одного груза: { from, to, progress }
+  tracking: { type: Object, default: null },
+  // center — под заголовком, right — справа от текста
+  layout: { type: String, default: 'center' },
   // Прямоугольники (в координатах страницы), под которыми подписи не показываем
   avoid: { type: Function, default: () => [] },
 });
@@ -73,7 +102,7 @@ function layoutLabels(list) {
     placed.push(r);
     show.add(l.id);
   }
-  return list.map((l) => ({ ...l, show: show.has(l.id) }));
+  return show;
 }
 
 const hasWebGL = () => {
@@ -95,22 +124,48 @@ onMounted(async () => {
     const { createRouteMap } = await import('./scene.js');
     if (!root.value) return;
     const created = await createRouteMap(root.value, {
+      tracking: props.tracking,
+      layout: props.layout,
+      onSelect: (info) => { selected.value = info; hint.value = false; },
       onFeatured: (info) => { featured.value = info; },
       onLabels: (list) => {
+        if (!labelList.value.length) labelList.value = list.map(({ id, name, tier }) => ({ id, name, tier }));
+        // какие подписи помещаются без наложений — 8 раз в секунду, а двигаются они каждый кадр
         const now = performance.now();
-        if (now - lastLabelUpdate < 50) return; // 20 раз в секунду достаточно
-        lastLabelUpdate = now;
-        labels.value = layoutLabels(list);
+        if (now - lastLayout > 120) {
+          lastLayout = now;
+          shown = layoutLabels(list);
+        }
+        for (const l of list) {
+          const el = labelEls.get(l.id);
+          if (!el) continue;
+          const hide = !(shown.has(l.id) || (l.active && l.visible));
+          // скрытые подписи не двигаем, видимые — только если сдвинулись заметно
+          if (!(hide && el._hide) && (Math.abs(l.x - (el._x ?? -1e4)) > 0.25 || Math.abs(l.y - (el._y ?? -1e4)) > 0.25)) {
+            el._x = l.x;
+            el._y = l.y;
+            el.style.transform = `translate3d(${l.x.toFixed(1)}px, ${l.y.toFixed(1)}px, 0) translate(-50%, -100%)`;
+          }
+          if (el._active !== l.active) { el._active = l.active; el.classList.toggle('active', l.active); }
+          if (el._hide !== hide) { el._hide = hide; el.classList.toggle('hidden', hide); }
+        }
       },
     });
     // Компонент могли закрыть, пока грузились текстуры
     if (!root.value) created.destroy();
-    else map = created;
+    else {
+      map = created;
+      emit('ready', map);
+      setTimeout(() => { hint.value = false; }, 9000);
+    }
   } catch (e) {
     console.error('3D-карта не запустилась:', e);
     failed.value = true;
   }
 });
+
+// Сменить отслеживаемый груз снаружи (страница трекинга)
+watch(() => props.tracking, (t) => { if (map && t) map.setTracking(t.from, t.to, t.progress); }, { deep: true });
 
 onBeforeUnmount(() => {
   if (map) map.destroy();
@@ -161,8 +216,8 @@ onBeforeUnmount(() => {
   font-size: 11.5px;
   font-weight: 600;
   white-space: nowrap;
-  backdrop-filter: blur(4px);
-  transition: opacity 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  background: rgba(4, 7, 11, 0.74);
+  transition: opacity 0.3s ease, color 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
   will-change: transform;
 }
 
@@ -189,6 +244,118 @@ onBeforeUnmount(() => {
 
 .label.hidden {
   opacity: 0;
+}
+
+.controls {
+  position: absolute;
+  z-index: 3;
+  right: clamp(16px, 4vw, 56px);
+  bottom: clamp(24px, 6vh, 64px);
+  display: grid;
+  gap: 6px;
+}
+
+.controls button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  background: rgba(8, 14, 20, 0.7);
+  color: #F2F6F4;
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.controls button:hover {
+  border-color: #2DC071;
+  color: #2DC071;
+}
+
+.controls svg {
+  width: 17px;
+  height: 17px;
+}
+
+.hint {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: clamp(24px, 6vh, 64px);
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(8, 14, 20, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(242, 246, 244, 0.8);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+  animation: hint-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes hint-pulse {
+  50% { border-color: rgba(45, 192, 113, 0.5); }
+}
+
+.city-card {
+  border-color: rgba(45, 192, 113, 0.5);
+}
+
+.cc-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  border: 0;
+  background: none;
+  color: rgba(242, 246, 244, 0.6);
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.cc-routes {
+  display: grid;
+  gap: 8px;
+  max-height: 190px;
+  overflow-y: auto;
+  list-style: none;
+  font-size: 13.5px;
+}
+
+.cc-routes li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.cc-routes b {
+  color: #3CC8D8;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.cc-none {
+  color: rgba(242, 246, 244, 0.6);
+}
+
+.cc-go {
+  width: 100%;
+  margin-top: 14px;
+  padding: 11px;
+  border: 0;
+  border-radius: 12px;
+  background: #2DC071;
+  color: #04130A;
+  font-weight: 800;
+  cursor: pointer;
 }
 
 .legend {

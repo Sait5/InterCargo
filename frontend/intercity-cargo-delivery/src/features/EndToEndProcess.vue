@@ -1,7 +1,7 @@
 <template>
   <div class="page-wrapper">
     <Header />
-    <PageHero view="west" eyebrow="Сквозной процесс">
+    <PageHero view="process-forklift" eyebrow="Сквозной процесс">
       <template #title>Единый цикл управления <span class="ic-accent">от заявки до оплаты</span></template>
       Исключение разрозненных инструментов. Все этапы логистической закупки связаны в непрерывную цепочку, где статус на одном этапе автоматически инициирует действия на следующем.
     </PageHero>
@@ -190,7 +190,7 @@ export default {
   width: 32px;
   height: 32px;
   background: var(--accent-color);
-  color: white;
+  color: var(--text-primary);
   border-radius: 50%;
   display: flex;
   align-items: center;

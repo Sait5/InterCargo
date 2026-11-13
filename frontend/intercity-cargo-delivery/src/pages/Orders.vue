@@ -15,7 +15,7 @@
 </p>
 </div>
 <div class="header-actions">
-<button v-if="isCustomer" class="btn-create" @click="$router.push('/transport-tender')">
+<button v-if="isCustomer" class="btn-create" @click="$router.push('/transport-tender?create=1')">
 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
 Создать заказ
 </button>
@@ -29,16 +29,21 @@
 <input v-model="search" type="text" placeholder="Поиск по маршруту..." />
 </div>
 <div class="orders-list">
-<div v-if="filteredOrders.length === 0" class="empty-state">
+<div v-if="exampleMode" class="example-banner">
+<span class="ex-chip">Пример</span>
+<span>{{ isCustomer ? 'У вас пока нет заказов — так они будут выглядеть. Статусы, отклики перевозчиков и чат появятся автоматически.' : 'Сейчас нет открытых заказов — так выглядит лента. Новые заказы появятся здесь сразу после модерации.' }}</span>
+<button v-if="isCustomer" class="btn-create" @click="$router.push('/transport-tender?create=1')">Создать заказ</button>
+</div>
+<div v-if="shownOrders.length === 0" class="empty-state">
 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
 <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"></path>
 </svg>
 <h3>Заказы не найдены</h3>
 <p v-if="isCustomer">Создайте свой первый заказ</p>
 <p v-else>Попробуйте изменить параметры поиска</p>
-<button v-if="isCustomer" class="btn-create" @click="$router.push('/transport-tender')">Создать заказ</button>
+<button v-if="isCustomer" class="btn-create" @click="$router.push('/transport-tender?create=1')">Создать заказ</button>
 </div>
-<div v-for="order in filteredOrders" :key="order.id" class="order-card">
+<div v-for="order in shownOrders" :key="order.id" class="order-card" :class="{ example: order.example }">
 <div class="order-header">
 <div class="order-status" :class="order.status">
 {{ getStatusLabel(order.status) }}
@@ -89,7 +94,7 @@
 </button>
 </div>
 </div>
-<div v-if="userStore.isAdmin && order.applicants && order.applicants.length > 0" class="applicants-section">
+<div v-if="(userStore.isAdmin || isCustomer) && order.applicants && order.applicants.length > 0" class="applicants-section">
 <h4 class="applicants-title">Заявки перевозчиков ({{ order.applicants.length }})</h4>
 <div class="applicants-list">
 <div v-for="applicant in order.applicants" :key="applicant.id" class="applicant-card">
@@ -154,6 +159,7 @@ import { useUserStore } from '@/stores/user';
 import { useOrderStore } from '@/stores/order';
 import { useToastStore } from '@/stores/toast';
 import { useChatStore } from '@/stores/chat';
+import { exampleOrders } from '@/data/examples';
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -203,6 +209,12 @@ const filteredOrders = computed(() => {
 		order.route.toLowerCase().includes(s)
 	);
 });
+
+// Пока своих заказов нет — показываем образцы с пометкой «Пример»
+const exampleMode = computed(() => !orderStore.loading && orders.value.length === 0 && !search.value.trim());
+const shownOrders = computed(() => (exampleMode.value ? exampleOrders : filteredOrders.value));
+const isExample = (id) => String(id).startsWith('ex-');
+const exampleNotice = () => toast.success('Это пример — действия станут доступны на настоящих заказах');
 
 const canApply = (order) => {
 	if (!isCarrier.value) return false;
@@ -255,6 +267,7 @@ const formatDate = (dateStr) => {
 };
 
 const approveOrder = async (orderId) => {
+	if (isExample(orderId)) return exampleNotice();
 	const result = await orderStore.approveOrder(orderId);
 	if (result.success) {
 		toast.success('Заказ активирован и опубликован');
@@ -264,6 +277,7 @@ const approveOrder = async (orderId) => {
 };
 
 const rejectOrder = async (orderId) => {
+	if (isExample(orderId)) return exampleNotice();
 	const result = await orderStore.rejectOrder(orderId);
 	if (result.success) {
 		toast.success('Заказ отклонён');
@@ -273,6 +287,7 @@ const rejectOrder = async (orderId) => {
 };
 
 const deleteOrder = async (orderId) => {
+	if (isExample(orderId)) return exampleNotice();
 	if (!confirm('Вы уверены, что хотите удалить этот заказ?')) return;
 	const result = await orderStore.deleteOrder(orderId);
 	if (result.success) {
@@ -283,6 +298,7 @@ const deleteOrder = async (orderId) => {
 };
 
 const approveApplicant = async (orderId, applicantId) => {
+	if (isExample(orderId)) return exampleNotice();
 	const result = await orderStore.approveApplicant(orderId, applicantId);
 	if (result.success) {
 		chatStore.fetchChats();
@@ -293,6 +309,7 @@ const approveApplicant = async (orderId, applicantId) => {
 };
 
 const rejectApplicant = async (orderId, applicantId) => {
+	if (isExample(orderId)) return exampleNotice();
 	const result = await orderStore.rejectApplicant(orderId, applicantId);
 	if (result.success) {
 		toast.success('Заявка перевозчика отклонена');
@@ -302,6 +319,7 @@ const rejectApplicant = async (orderId, applicantId) => {
 };
 
 const applyToOrder = async (orderId) => {
+	if (isExample(orderId)) return exampleNotice();
 	const result = await orderStore.applyToOrder(orderId);
 	if (result.success) {
 		toast.success('Заявка отправлена');
@@ -352,7 +370,7 @@ onMounted(() => {
 .content-header h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-color) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .content-header p { font-size: 16px; color: var(--text-muted); }
 .btn-create { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.2); }
-.btn-create:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); }
+.btn-create:hover { box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); }
 .search-bar { display: flex; align-items: center; gap: 12px; padding: 14px 20px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; margin-bottom: 24px; transition: all 0.2s ease; }
 .search-bar:focus-within { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1); }
 .search-bar svg { color: var(--text-muted); flex-shrink: 0; }
@@ -360,9 +378,9 @@ onMounted(() => {
 .search-bar input::placeholder { color: var(--text-muted); }
 .orders-list { display: flex; flex-direction: column; gap: 16px; }
 .order-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; padding: 24px; transition: all 0.3s ease; }
-.order-card:hover { border-color: rgba(var(--accent-rgb), 0.3); transform: translateY(-2px); box-shadow: 0 10px 30px var(--shadow-color); }
+.order-card:hover { border-color: rgba(var(--accent-rgb), 0.3); box-shadow: 0 10px 30px var(--shadow-color); }
 .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.order-status { padding: 6px 14px; border-radius: 100px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.order-status { white-space: nowrap; padding: 6px 14px; border-radius: 100px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
 .order-status.pending { background: rgba(245, 158, 11, 0.15); color: var(--warm); border: 1px solid rgba(245, 158, 11, 0.3); }
 .order-status.active { background: rgba(var(--accent-rgb), 0.15); color: var(--accent-color); border: 1px solid rgba(var(--accent-rgb), 0.3); }
 .order-status.rejected { background: rgba(var(--danger-rgb), 0.15); color: var(--danger); border: 1px solid rgba(var(--danger-rgb), 0.3); }
@@ -381,11 +399,11 @@ onMounted(() => {
 .admin-actions-row { display: flex; gap: 10px; flex-wrap: wrap; }
 .btn-approve-order, .btn-reject-order, .btn-delete-order { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; border: none; }
 .btn-approve-order { background: rgba(var(--accent-rgb), 0.15); color: var(--accent-color); }
-.btn-approve-order:hover { background: rgba(var(--accent-rgb), 0.25); transform: translateY(-2px); }
+.btn-approve-order:hover { background: rgba(var(--accent-rgb), 0.25); }
 .btn-reject-order { background: rgba(var(--danger-rgb), 0.15); color: var(--danger); }
-.btn-reject-order:hover { background: rgba(var(--danger-rgb), 0.25); transform: translateY(-2px); }
+.btn-reject-order:hover { background: rgba(var(--danger-rgb), 0.25); }
 .btn-delete-order { background: rgba(255, 255, 255, 0.05); color: var(--text-secondary); border: 1px solid var(--border-color); }
-.btn-delete-order:hover { background: rgba(var(--danger-rgb), 0.1); color: var(--danger); border-color: var(--danger); transform: translateY(-2px); }
+.btn-delete-order:hover { background: rgba(var(--danger-rgb), 0.1); color: var(--danger); border-color: var(--danger); }
 .applicants-section { margin-bottom: 20px; padding: 16px; background: rgba(var(--accent-rgb), 0.05); border: 1px solid rgba(var(--accent-rgb), 0.2); border-radius: 12px; }
 .applicants-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; }
 .applicants-list { display: flex; flex-direction: column; gap: 12px; }
@@ -407,17 +425,23 @@ onMounted(() => {
 .order-actions { display: flex; gap: 10px; }
 .btn-approve, .btn-reject, .btn-apply { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; border: none; }
 .btn-approve { background: rgba(var(--accent-rgb), 0.15); color: var(--accent-color); }
-.btn-approve:hover { background: rgba(var(--accent-rgb), 0.25); transform: translateY(-2px); }
+.btn-approve:hover { background: rgba(var(--accent-rgb), 0.25); }
 .btn-reject { background: rgba(var(--danger-rgb), 0.15); color: var(--danger); }
-.btn-reject:hover { background: rgba(var(--danger-rgb), 0.25); transform: translateY(-2px); }
+.btn-reject:hover { background: rgba(var(--danger-rgb), 0.25); }
 .btn-apply { background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); color: white; box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.2); }
-.btn-apply:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); }
+.btn-apply:hover { box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); }
 .applied-badge { padding: 10px 18px; background: rgba(var(--accent-rgb), 0.15); color: var(--accent-color); border-radius: 10px; font-size: 13px; font-weight: 600; border: 1px solid rgba(var(--accent-rgb), 0.3); }
 .my-order-badge { padding: 10px 18px; background: rgba(59, 130, 246, 0.15); color: #3b82f6; border-radius: 10px; font-size: 13px; font-weight: 600; border: 1px solid rgba(59, 130, 246, 0.3); }
+.example-banner { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 16px 20px; margin-bottom: 16px; border-radius: 16px; border: 1px dashed rgba(var(--accent-rgb), 0.45); background: rgba(var(--accent-rgb), 0.06); color: var(--text-secondary); font-size: 14px; }
+.example-banner span:nth-child(2) { flex: 1; min-width: 220px; }
+.ex-chip { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px; background: rgba(242, 184, 75, 0.16); color: var(--warm); font-size: 12px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
+.order-card.example { position: relative; }
+.order-card.example::after { content: 'Пример'; position: absolute; top: 14px; right: 50%; transform: translateX(50%); padding: 3px 10px; border-radius: 999px; background: rgba(242, 184, 75, 0.16); color: var(--warm); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
 .empty-state { text-align: center; padding: 80px 20px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; }
 .empty-state svg { color: var(--text-muted); opacity: 0.3; margin-bottom: 20px; }
 .empty-state h3 { font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
 .empty-state p { font-size: 15px; color: var(--text-muted); margin-bottom: 24px; }
-@media (max-width: 1024px) { .sidebar { display: none; } .order-details { grid-template-columns: 1fr; } }
+@media (max-width: 1024px) { .sidebar { display: none; } }
+@media (max-width: 480px) { .order-details { gap: 12px; padding: 14px; } .order-status { padding: 5px 10px; font-size: 11px; letter-spacing: 0.2px; } }
 @media (max-width: 768px) { .main-content { padding: 24px 16px; } .content-header h1 { font-size: 26px; } .order-footer { flex-direction: column; align-items: flex-start; } .order-actions { width: 100%; flex-direction: column; } .btn-approve, .btn-reject, .btn-apply, .btn-approve-order, .btn-reject-order, .btn-delete-order { width: 100%; justify-content: center; } .applicant-card { flex-direction: column; align-items: flex-start; } .applicant-actions { width: 100%; } .admin-actions-row { flex-direction: column; } }
 </style>

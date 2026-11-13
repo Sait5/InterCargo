@@ -1,27 +1,40 @@
 <template>
   <div class="backdrop" :class="`side-${side}`" aria-hidden="true">
-    <img :src="src" alt="" decoding="async" fetchpriority="high">
+    <video
+      v-if="video"
+      class="media"
+      :src="`/video/${video}.mp4`"
+      :poster="`/video/${video}.jpg`"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="metadata"
+    ></video>
+    <img v-else-if="src" class="media photo" :src="src" alt="" decoding="async" fetchpriority="high">
     <div class="veil"></div>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue';
-import west from '@/assets/map/map-west.webp';
-import siberia from '@/assets/map/map-siberia.webp';
-import east from '@/assets/map/map-east.webp';
-import overview from '@/assets/map/map-overview.webp';
 
-// Кадры той же 3D-карты, что на главной: так все страницы выглядят единым целым
-const views = { west, siberia, east, overview };
+// Фото страниц (Pexels, см. docs/CREDITS.md)
+const photos = Object.fromEntries(
+  Object.entries(import.meta.glob('@/assets/photos/*.webp', { eager: true, import: 'default' }))
+    .map(([path, url]) => [path.split('/').pop().replace('.webp', ''), url]),
+);
+const videos = ['truck-mountains', 'highway-top'];
 
 const props = defineProps({
-  view: { type: String, default: 'overview' },
-  // С какой стороны оставить место под текст: left — текст слева, center — текст по центру
+  // имя фото из assets/photos или видео из public/video
+  view: { type: String, default: 'news-port' },
+  // с какой стороны текст: left — фото затемнено слева, center — по центру
   side: { type: String, default: 'left' },
 });
 
-const src = computed(() => views[props.view] || overview);
+const video = computed(() => (videos.includes(props.view) ? props.view : null));
+const src = computed(() => photos[props.view] || photos['news-port']);
 </script>
 
 <style scoped>
@@ -30,51 +43,53 @@ const src = computed(() => views[props.view] || overview);
   inset: 0;
   z-index: 0;
   overflow: hidden;
-  pointer-events: none;
+  background: var(--hero-bg);
 }
 
-.backdrop img {
+.media {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 60% 40%;
-  opacity: 0.85;
-  animation: drift 40s ease-in-out infinite alternate;
 }
 
-@keyframes drift {
-  from { transform: scale(1.04) translate3d(0, 0, 0); }
-  to { transform: scale(1.1) translate3d(-1.5%, -1%, 0); }
+.photo {
+  animation: kenburns 28s ease-in-out infinite alternate;
+}
+
+@keyframes kenburns {
+  from { transform: scale(1.03); }
+  to { transform: scale(1.12) translate3d(-1.5%, -1%, 0); }
 }
 
 .veil {
   position: absolute;
   inset: 0;
+  pointer-events: none;
 }
 
 .side-left .veil {
   background:
-    linear-gradient(90deg, rgba(4, 7, 11, 0.96) 0%, rgba(4, 7, 11, 0.82) 34%, rgba(4, 7, 11, 0.25) 70%, rgba(4, 7, 11, 0.5) 100%),
-    linear-gradient(180deg, rgba(4, 7, 11, 0.6) 0%, transparent 30%, transparent 70%, var(--hero-bg) 100%);
+    linear-gradient(90deg, rgba(4, 9, 8, 0.9) 0%, rgba(4, 9, 8, 0.72) 38%, rgba(4, 9, 8, 0.25) 70%, rgba(4, 9, 8, 0.35) 100%),
+    linear-gradient(180deg, rgba(4, 9, 8, 0.55) 0%, transparent 28%, transparent 80%, rgba(4, 9, 8, 0.6) 100%);
 }
 
 .side-center .veil {
   background:
-    radial-gradient(60% 70% at 50% 45%, rgba(4, 7, 11, 0.86), rgba(4, 7, 11, 0.45) 100%),
-    linear-gradient(180deg, rgba(4, 7, 11, 0.5) 0%, transparent 30%, transparent 70%, var(--hero-bg) 100%);
+    radial-gradient(55% 60% at 50% 50%, rgba(4, 9, 8, 0.6), rgba(4, 9, 8, 0.25) 100%),
+    linear-gradient(180deg, rgba(4, 9, 8, 0.55) 0%, transparent 30%, transparent 75%, rgba(4, 9, 8, 0.6) 100%);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .backdrop img {
+  .photo {
     animation: none;
   }
 }
 
 @media (max-width: 760px) {
   .side-left .veil {
-    background: linear-gradient(180deg, rgba(4, 7, 11, 0.7), rgba(4, 7, 11, 0.9) 60%, var(--hero-bg));
+    background: linear-gradient(180deg, rgba(4, 9, 8, 0.65), rgba(4, 9, 8, 0.85) 60%, rgba(4, 9, 8, 0.9));
   }
 }
 </style>

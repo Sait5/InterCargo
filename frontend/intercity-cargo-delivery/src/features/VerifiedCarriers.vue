@@ -1,7 +1,7 @@
 <template>
   <div class="page-wrapper">
     <Header />
-    <PageHero view="east" eyebrow="Проверенные перевозчики">
+    <PageHero view="verified-truck" eyebrow="Проверенные перевозчики">
       <template #title>Многоуровневая система <span class="ic-accent">верификации</span></template>
       Доступ к тендерам получают только компании, прошедшие строгий аудит. Это гарантирует финансовую устойчивость, наличие ресурсов и соответствие законодательным нормам.
     </PageHero>

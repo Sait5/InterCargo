@@ -65,9 +65,31 @@ describe('Заказы и чат', () => {
     const sent = await authed(carrier.token).post(`/api/chats/${chatId}/messages`, { text: 'Здравствуйте!' });
     expect(sent.status).toBe(201);
 
-    const chats = (await authed(customer.token).get('/api/chats')).body;
+    // Список — без переписки, с превью и счётчиком непрочитанных
+    let chats = (await authed(customer.token).get('/api/chats')).body;
     expect(chats).toHaveLength(1);
-    expect(chats[0].messages[0].text).toBe('Здравствуйте!');
+    expect(chats[0].messages).toBeUndefined();
+    expect(chats[0].lastMessage.text).toBe('Здравствуйте!');
+    expect(chats[0].unread).toBe(1);
+    expect((await authed(carrier.token).get('/api/chats')).body[0].unread).toBe(0);
+
+    // Переписка целиком и «только новые»
+    const full = (await authed(customer.token).get(`/api/chats/${chatId}`)).body;
+    expect(full.messages.map((m) => m.text)).toEqual(['Здравствуйте!']);
+    const since = full.messages[0].createdAt;
+    await authed(customer.token).post(`/api/chats/${chatId}/messages`, { text: 'Добрый день' });
+    const fresh = (await authed(carrier.token).get(`/api/chats/${chatId}?since=${encodeURIComponent(since)}`)).body;
+    expect(fresh.messages.map((m) => m.text)).toEqual(['Добрый день']);
+
+    // Прочитал — счётчик обнуляется
+    expect((await authed(carrier.token).get('/api/chats')).body[0].unread).toBe(1);
+    expect((await authed(carrier.token).post(`/api/chats/${chatId}/read`)).status).toBe(200);
+    chats = (await authed(carrier.token).get('/api/chats')).body;
+    expect(chats[0].unread).toBe(0);
+    expect(chats[0].lastMessage.text).toBe('Добрый день');
+
+    // Посторонний не видит переписку
+    expect((await authed(other.token).get(`/api/chats/${chatId}`)).status).toBe(404);
 
     // Посторонний перевозчик не может писать в чужой чат
     expect((await authed(other.token).post(`/api/chats/${chatId}/messages`, { text: 'привет' })).status).toBe(404);

@@ -1,0 +1,217 @@
+/* Поля и кнопки форм входа и регистрации */
+.af-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.af-title {
+  font-size: 26px;
+}
+
+.af-switch {
+  color: var(--text-muted);
+  font-size: 13.5px;
+}
+
+.af-switch a {
+  color: var(--accent-color);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.af-sub {
+  margin-bottom: 24px;
+  color: var(--text-secondary);
+  font-size: 14.5px;
+}
+
+.af-form {
+  display: grid;
+  gap: 16px;
+}
+
+.af-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.af-field {
+  display: grid;
+  gap: 7px;
+}
+
+.af-field > span {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.af-control {
+  position: relative;
+}
+
+.af-control > svg {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  color: var(--text-muted);
+  transform: translateY(-50%);
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+.af-control:focus-within > svg {
+  color: var(--accent-color);
+}
+
+.af-control .ic-input {
+  padding-left: 44px;
+}
+
+.af-control .af-eye {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.af-control .af-eye:hover {
+  color: var(--text-primary);
+}
+
+.af-control .af-eye svg {
+  width: 18px;
+  height: 18px;
+}
+
+.af-error {
+  color: #FF7A7A;
+  font-size: 12.5px;
+}
+
+.af-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.af-check {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+
+.af-check input {
+  appearance: none;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--bg-input);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.af-check input:checked {
+  border-color: var(--accent-color);
+  background: var(--accent-color) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2304130A' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center / 14px no-repeat;
+}
+
+.af-check a,
+.af-link {
+  color: var(--accent-color);
+  font-weight: 700;
+  text-decoration: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-size: inherit;
+}
+
+.af-submit {
+  width: 100%;
+  height: 52px;
+  margin-top: 6px;
+}
+
+.af-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 6px 0;
+  color: var(--text-muted);
+  font-size: 12.5px;
+}
+
+.af-divider::before,
+.af-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-color);
+}
+
+.af-demo {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.af-demo button {
+  padding: 10px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.af-demo button:hover {
+  border-color: rgba(var(--accent-rgb), 0.6);
+  color: var(--accent-color);
+}
+
+.af-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: af-spin 0.7s linear infinite;
+}
+
+@keyframes af-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 560px) {
+  .af-row {
+    grid-template-columns: 1fr;
+  }
+}

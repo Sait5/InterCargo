@@ -72,9 +72,9 @@ describe('Пользователь', () => {
 });
 
 describe('Тема', () => {
-  it('ставит тёмную тему по умолчанию для неизвестного значения', () => {
-    expect(applyTheme('нечто')).toBe('dark');
-    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
-    expect(applyTheme('light')).toBe('light');
+  it('ставит светлую тему по умолчанию для неизвестного значения', () => {
+    expect(applyTheme('нечто')).toBe('light');
+    expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+    expect(applyTheme('dark')).toBe('dark');
   });
 });

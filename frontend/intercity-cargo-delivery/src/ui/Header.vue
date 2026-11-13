@@ -1,5 +1,5 @@
 <template>
-  <header class="site-header" :class="{ 'is-scrolled': scrolled || !overlay, 'is-overlay': overlay, 'menu-open': mobileOpen }">
+  <header class="site-header" :class="{ 'is-light': scrolled && !mobileOpen, 'menu-open': mobileOpen }">
     <div class="bar ic-container">
       <router-link to="/" class="brand" aria-label="InterCargo — на главную">
         <img src="@/assets/icons/logotip.webp" alt="" class="brand-mark" width="40" height="40">
@@ -121,7 +121,6 @@
       </div>
     </transition>
   </header>
-  <div v-if="!overlay" class="header-spacer" aria-hidden="true"></div>
 </template>
 
 <script setup>
@@ -136,9 +135,10 @@ import { useThemeStore } from '@/stores/theme';
 import { useToastStore } from '@/stores/toast';
 import { useNotificationStore } from '@/stores/notifications';
 
+// Шапка всегда лежит поверх тёмной верхней сцены страницы:
+// сверху прозрачная и тёмная, при прокрутке — белое стекло.
 defineProps({
-  // Прозрачная шапка поверх героя (главная). На остальных страницах — сплошная.
-  overlay: { type: Boolean, default: false },
+  overlay: { type: Boolean, default: true },
 });
 
 const route = useRoute();
@@ -227,36 +227,118 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* Шапка в два состояния:
+   вверху страницы — прозрачная полоса во всю ширину поверх тёмной сцены, светлый текст;
+   при прокрутке — «стягивается» в белую плавающую панель с тёмным текстом. */
 .site-header {
+  --text-primary: #F2F6F4;
+  --text-secondary: rgba(242, 246, 244, 0.78);
+  --text-muted: rgba(242, 246, 244, 0.55);
+  --border-color: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.22);
+  --surface-hover: rgba(255, 255, 255, 0.08);
+  --bg-card-solid: #FFFFFF;
+  --bg-primary: #FFFFFF;
+  --bg-input: #F1F5F3;
+  --accent-color: #2DC071;
+  --accent-rgb: 45, 192, 113;
+  --text-on-accent: #04130A;
+
   position: fixed;
-  inset: 0 0 auto;
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
-  height: var(--header-h);
-  transition: background 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease;
-  border-bottom: 1px solid transparent;
+  height: calc(var(--header-h) + 12px);
+  padding-top: 12px;
+  color: var(--text-primary);
+  pointer-events: none;
+  transition: color 0.45s ease;
 }
 
-.site-header.is-scrolled,
+.site-header > * {
+  pointer-events: auto;
+}
+
+/* Подложка: из полосы во всю ширину перетекает в плавающую панель */
+.site-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: -1;
+  border-radius: 0;
+  background: linear-gradient(180deg, rgba(4, 9, 8, 0.7) 0%, rgba(4, 9, 8, 0) 100%);
+  border: 1px solid transparent;
+  box-shadow: none;
+  transition:
+    top 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
+    left 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
+    right 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-radius 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
+    background 0.45s ease,
+    box-shadow 0.45s ease;
+}
+
+/* Состояние после прокрутки и при открытом меню — белая панель */
+.site-header.is-light,
 .site-header.menu-open {
-  background: color-mix(in srgb, var(--bg-primary) 78%, transparent);
-  backdrop-filter: blur(18px) saturate(1.4);
-  -webkit-backdrop-filter: blur(18px) saturate(1.4);
-  border-bottom-color: var(--border-color);
+  --text-primary: #0E1A15;
+  --text-secondary: #42524B;
+  --text-muted: #7A8882;
+  --border-color: rgba(14, 26, 21, 0.1);
+  --border-strong: rgba(14, 26, 21, 0.14);
+  --surface-hover: rgba(14, 26, 21, 0.05);
+  --accent-color: #18A65A;
+  --accent-rgb: 24, 166, 90;
+  --text-on-accent: #FFFFFF;
 }
 
-/* Поверх тёмного героя текст всегда светлый, пока шапка прозрачная */
-.site-header.is-overlay:not(.is-scrolled):not(.menu-open) {
-  --text-primary: var(--hero-text);
-  --text-secondary: var(--hero-muted);
-  --border-strong: rgba(255, 255, 255, 0.18);
+.site-header.is-light::before,
+.site-header.menu-open::before {
+  top: 12px;
+  left: max(12px, calc((100% - var(--container)) / 2 + 8px));
+  right: max(12px, calc((100% - var(--container)) / 2 + 8px));
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(14, 26, 21, 0.06);
+  box-shadow: 0 16px 44px -18px rgba(4, 20, 12, 0.5), 0 2px 6px rgba(4, 20, 12, 0.06);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
 }
 
-.header-spacer {
-  height: var(--header-h);
+.site-header.menu-open::before {
+  border-radius: 20px 20px 0 0;
+}
+
+/* Выпадающие панели всегда белые с тёмным текстом */
+.drop-panel,
+.pop {
+  --text-primary: #0E1A15;
+  --text-secondary: #42524B;
+  --text-muted: #7A8882;
+  --surface-hover: rgba(14, 26, 21, 0.05);
+  --border-color: rgba(14, 26, 21, 0.1);
+  --accent-color: #18A65A;
+  --accent-rgb: 24, 166, 90;
+  color: var(--text-primary);
+}
+
+/* Логотип слегка уменьшается в панели */
+.brand {
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.site-header.is-light .brand {
+  transform: scale(0.94);
 }
 
 .bar {
   height: 100%;
+  padding-left: 28px;
+  padding-right: 20px;
   display: flex;
   align-items: center;
   gap: 24px;
@@ -639,7 +721,10 @@ onBeforeUnmount(() => {
 
 .drawer {
   position: fixed;
-  inset: var(--header-h) 0 0;
+  inset: calc(var(--header-h) + 12px) 12px 12px;
+  background: #FFFFFF;
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 30px 60px -20px rgba(4, 20, 12, 0.4);
   display: flex;
   flex-direction: column;
   gap: 24px;

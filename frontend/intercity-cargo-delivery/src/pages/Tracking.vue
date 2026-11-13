@@ -3,11 +3,12 @@
 <Header />
 <main>
 <section class="hero">
-<HeroBackdrop view="east" side="left" />
+<RouteMap3D class="hero-map" layout="right" :tracking="mapTrack" :avoid="heroRects" />
+<div class="hero-veil" aria-hidden="true"></div>
 <div class="hero-glow"></div>
 <div class="container">
 <div class="hero-grid">
-<div class="hero-content">
+<div class="hero-content" ref="heroText">
 <div class="hero-badge hero-enter" data-delay="1">
 <span class="badge-dot"></span>
 Real-time Tracking
@@ -19,36 +20,17 @@ Real-time Tracking
 Полный контроль доставки в реальном времени.
 GPS-мониторинг, уведомления и мобильное приложение.
 </p>
-<div class="hero-actions hero-enter" data-delay="4">
-<button class="btn-primary btn-large btn-glow" @click="scrollToTracking">
-Отследить груз
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-<line x1="5" y1="12" x2="19" y2="12" />
-<polyline points="12 5 19 12 12 19" />
-</svg>
+<div class="hero-visual hero-enter" data-delay="6">
+<div class="shipment-switch" role="tablist" aria-label="Грузы">
+<button v-for="sh in activeShipments" :key="sh.id" type="button" role="tab" :aria-selected="currentId === sh.id" :class="{ on: currentId === sh.id }" @click="currentId = sh.id">
+<span class="sw-dot" :class="sh.status"></span>{{ sh.id }}
 </button>
 </div>
-<div class="hero-stats hero-enter" data-delay="5">
-<div class="hero-stat">
-<div class="hero-stat-value">GPS</div>
-<div class="hero-stat-label">мониторинг</div>
-</div>
-<div class="hero-stat">
-<div class="hero-stat-value">99.9%</div>
-<div class="hero-stat-label">точность</div>
-</div>
-<div class="hero-stat">
-<div class="hero-stat-value">24/7</div>
-<div class="hero-stat-label">поддержка</div>
-</div>
-</div>
-</div>
-<div class="hero-visual hero-enter" data-delay="6">
 <div class="tracking-card">
 <div class="tracking-header">
 <div class="tracking-title-row">
 <div class="tracking-dot"></div>
-<span>Груз в пути</span>
+<span>{{ getStatusText(current.status) }}</span>
 </div>
 <div class="status-badge">
 <span class="status-dot"></span>
@@ -58,11 +40,11 @@ Live
 <div class="tracking-map">
 <div class="map-route">
 <div class="map-point start">
-<div class="point-label">Москва</div>
+<div class="point-label">{{ current.route.split(' — ')[0] }}</div>
 </div>
 <div class="map-line">
-<div class="map-progress" :style="{ width: currentProgress + '%' }"></div>
-<div class="map-truck" :style="{ left: currentProgress + '%' }">
+<div class="map-progress" :style="{ width: current.progress + '%' }"></div>
+<div class="map-truck" :style="{ left: current.progress + '%' }">
 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 <rect x="1" y="3" width="15" height="13"></rect>
 <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
@@ -72,24 +54,34 @@ Live
 </div>
 </div>
 <div class="map-point end">
-<div class="point-label">СПб</div>
+<div class="point-label">{{ current.route.split(' — ')[1] }}</div>
 </div>
 </div>
 </div>
 <div class="tracking-info">
 <div class="info-row">
 <span class="info-label">№ груза</span>
-<span class="info-value">#TR-2847</span>
+<span class="info-value">#{{ current.id }}</span>
 </div>
 <div class="info-row">
 <span class="info-label">Статус</span>
-<span class="info-value status">В пути</span>
+<span class="info-value status" :class="current.status">{{ getStatusText(current.status) }}</span>
 </div>
 <div class="info-row">
 <span class="info-label">Прибытие</span>
-<span class="info-value">{{ eta }}</span>
+<span class="info-value">{{ current.eta }}</span>
 </div>
 </div>
+</div>
+</div>
+<div class="hero-actions hero-enter" data-delay="4">
+<button class="btn-primary btn-large btn-glow" @click="scrollToTracking">
+Отследить груз
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+<line x1="5" y1="12" x2="19" y2="12" />
+<polyline points="12 5 19 12 12 19" />
+</svg>
+</button>
 </div>
 </div>
 </div>
@@ -128,6 +120,7 @@ class="tracking-input"
 </div>
 </div>
 
+<p v-if="notFound" class="not-found">Груз «{{ notFound }}» не найден. Проверьте номер или попробуйте пример: TR-2847.</p>
 <div v-if="trackedShipment" class="tracking-result">
 <div class="result-header">
 <div class="result-info">
@@ -175,9 +168,10 @@ class="tracking-input"
 <div class="section-header">
 <span class="section-badge">Мониторинг</span>
 <h2 class="section-title">Активные <span class="gradient-text">отправления</span></h2>
+<p class="section-subtitle">Пример панели мониторинга: нажмите на отправление — карта в начале страницы покажет его маршрут и машину.</p>
 </div>
 <div class="shipments-list">
-<div v-for="shipment in activeShipments" :key="shipment.id" class="shipment-card">
+<div v-for="shipment in activeShipments" :key="shipment.id" role="button" tabindex="0" @keydown.enter.space.prevent="showOnMap(shipment.id)" class="shipment-card" :class="{ on: currentId === shipment.id }" @click="showOnMap(shipment.id)">
 <div class="shipment-header">
 <div class="shipment-id">#{{ shipment.id }}</div>
 <div class="shipment-status" :class="shipment.status">
@@ -210,6 +204,7 @@ class="tracking-input"
 </div>
 <div class="shipment-weight">{{ shipment.weight }}</div>
 </div>
+<span class="shipment-map-link">{{ currentId === shipment.id ? 'Сейчас на карте' : 'Показать на карте' }} →</span>
 </div>
 </div>
 </div>
@@ -241,8 +236,9 @@ class="tracking-input"
 </template>
 
 <script setup>
-import HeroBackdrop from '@/ui/HeroBackdrop.vue';
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, defineAsyncComponent } from 'vue';
+// three.js грузится отдельным файлом
+const RouteMap3D = defineAsyncComponent(() => import('@/components/routeMap/RouteMap3D.vue'));
 import Header from '@/ui/Header.vue';
 import Footer from '@/ui/Footer.vue';
 
@@ -250,8 +246,17 @@ const trackingSection = ref(null);
 
 const trackingNumber = ref('');
 const trackedShipment = ref(null);
-const currentProgress = ref(65);
-let progressInterval = null;
+const notFound = ref('');
+const heroText = ref(null);
+const heroRects = () => (heroText.value ? [heroText.value.getBoundingClientRect()] : []);
+
+// Маршруты грузов на карте (id городов из данных карты)
+const shipmentRoutes = {
+'TR-2847': { from: 'msk', to: 'spb' },
+'TR-1593': { from: 'kzn', to: 'ekb' },
+'TR-4721': { from: 'nsk', to: 'kja' },
+};
+const currentId = ref('TR-2847');
 
 const sampleNumbers = ['TR-2847', 'TR-1593', 'TR-4721'];
 
@@ -312,11 +317,9 @@ const activeShipments = ref([
 { id: 'TR-4721', route: 'Новосибирск — Красноярск', status: 'processing', progress: 20, eta: 'Завтра 12:00', driver: 'Волков Д.С.', driverInitials: 'ВД', vehicle: 'MAN TGX, С 789 КТ 54', weight: '8 100 кг' }
 ]);
 
-const eta = computed(() => {
-const now = new Date();
-const arrival = new Date(now.getTime() + 4 * 60 * 60 * 1000);
-return `Сегодня, ${arrival.getHours().toString().padStart(2, '0')}:${arrival.getMinutes().toString().padStart(2, '0')}`;
-});
+const current = computed(() => activeShipments.value.find((s) => s.id === currentId.value) || activeShipments.value[0]);
+const mapTrack = computed(() => ({ ...shipmentRoutes[current.value.id], progress: Math.min(0.97, current.value.progress / 100) }));
+
 
 const getStatusText = (status) => {
 const labels = { 'in-transit': 'В пути', 'delivered': 'Доставлен', 'processing': 'Обработка' };
@@ -328,28 +331,40 @@ if (!trackingNumber.value.trim()) return;
 const num = trackingNumber.value.trim().toUpperCase();
 if (shipmentsData[num]) {
 trackedShipment.value = JSON.parse(JSON.stringify(shipmentsData[num]));
+notFound.value = '';
+// показать найденный груз на карте в шапке
+currentId.value = num;
 } else {
 trackedShipment.value = null;
+notFound.value = num;
 }
+};
+
+const showOnMap = (id) => {
+currentId.value = id;
+window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 const scrollToTracking = () => {
 trackingSection.value?.scrollIntoView({ behavior: 'smooth' });
 };
 
-onMounted(() => {
-progressInterval = setInterval(() => {
-currentProgress.value = Math.min(100, currentProgress.value + 0.1);
-if (currentProgress.value >= 100) currentProgress.value = 0;
-}, 100);
-});
-
-onUnmounted(() => {
-if (progressInterval) clearInterval(progressInterval);
-});
 </script>
 
 <style scoped>
+.hero-map { z-index: 0; }
+.hero-veil { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(90deg, rgba(4, 7, 11, 0.92) 0%, rgba(4, 7, 11, 0.6) 34%, rgba(4, 7, 11, 0) 58%), linear-gradient(180deg, rgba(4, 7, 11, 0.5) 0%, transparent 20%, transparent 85%, rgba(4, 7, 11, 0.8) 100%); }
+.hero > .container { pointer-events: none; }
+.hero-content, .hero-visual { pointer-events: auto; }
+.shipment-switch { display: flex; gap: 6px; margin-bottom: 10px; }
+.shipment-switch button { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.14); background: rgba(8, 13, 18, 0.7); color: rgba(242, 246, 244, 0.75); font-weight: 700; font-size: 13px; cursor: pointer; backdrop-filter: blur(10px); transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease; }
+.shipment-switch button.on { border-color: #2DC071; color: #F2F6F4; background: rgba(45, 192, 113, 0.16); }
+.sw-dot { width: 8px; height: 8px; border-radius: 50%; background: #2DC071; box-shadow: 0 0 8px currentColor; }
+.sw-dot.delivered { background: #3CC8D8; }
+.sw-dot.processing { background: #F2B84B; }
+.info-value.status.delivered { color: #3CC8D8; }
+.info-value.status.processing { color: #F2B84B; }
+.not-found { max-width: 720px; margin: 16px auto 0; padding: 14px 18px; border-radius: 14px; border: 1px dashed rgba(242, 184, 75, 0.5); background: rgba(242, 184, 75, 0.08); color: var(--text-secondary); text-align: center; }
 .hero > .container { position: relative; z-index: 2; width: 100%; }
 .hero-glow { z-index: 1; opacity: 0.6; }
 .saas-landing { background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
@@ -358,7 +373,7 @@ section { padding: 100px 0; }
 .gradient-text { background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-2) 50%, var(--accent-color) 100%); background-size: 300% 300%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: gradientShift 8s ease infinite; }
 @keyframes gradientShift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
 
-.hero { padding: 104px 0 96px; min-height: min(720px, 88vh); display: flex; align-items: center; position: relative; overflow: hidden; background: var(--hero-bg); }
+.hero { padding: calc(var(--header-h) + 56px) 0 96px; min-height: min(760px, 92vh); display: flex; align-items: center; position: relative; overflow: hidden; background: var(--hero-bg); }
 .hero-glow { position: absolute; top: -20%; left: 50%; transform: translateX(-50%); width: 800px; height: 600px; background: radial-gradient(ellipse at center, rgba(var(--accent-rgb), 0.15) 0%, transparent 70%); pointer-events: none; }
 .hero-grid-bg { position: absolute; inset: 0; background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px); background-size: 60px 60px; mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%); pointer-events: none; }
 .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; position: relative; z-index: 1; }
@@ -374,33 +389,33 @@ section { padding: 100px 0; }
 .hero-stat-label { font-size: 12px; color: rgba(255, 255, 255, 0.6); margin-top: 6px; }
 
 .btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); color: white; border: none; border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer; padding: 12px 24px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.2); }
-.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); }
+.btn-primary:hover { box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); }
 .btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: rgba(255, 255, 255, 0.08); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer; padding: 12px 24px; transition: all 0.3s ease; }
-.btn-secondary:hover { background: rgba(255, 255, 255, 0.12); transform: translateY(-3px); }
+.btn-secondary:hover { background: rgba(255, 255, 255, 0.12); }
 .btn-large { padding: 16px 32px; font-size: 16px; border-radius: 14px; }
 
 .hero-visual { position: relative; }
 .tracking-card { background: rgba(8, 13, 18, 0.78); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; padding: 28px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); backdrop-filter: blur(20px); }
-.tracking-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
-.tracking-title-row { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; color: #ffffff; }
+.tracking-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); }
+.tracking-title-row { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; color: var(--text-primary); }
 .tracking-dot { width: 8px; height: 8px; background: var(--accent-color); border-radius: 50%; box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.5); }
 .status-badge { display: flex; align-items: center; gap: 6px; padding: 4px 12px; background: rgba(var(--accent-rgb), 0.15); color: var(--accent-color); border-radius: 100px; font-size: 12px; font-weight: 600; }
 .status-dot { width: 6px; height: 6px; background: var(--accent-color); border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
 
-.tracking-map { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 32px 24px; margin-bottom: 20px; }
+.tracking-map { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 32px 24px; margin-bottom: 20px; }
 .map-route { display: flex; align-items: center; gap: 16px; }
 .map-point { position: relative; width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; }
 .map-point.start { background: var(--accent-color); box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.5); }
 .map-point.end { background: #3b82f6; box-shadow: 0 0 12px rgba(59, 130, 246, 0.5); }
-.point-label { position: absolute; top: -24px; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: 600; color: rgba(255, 255, 255, 0.8); white-space: nowrap; }
+.point-label { position: absolute; top: -24px; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
 .map-line { flex: 1; height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; position: relative; overflow: visible; }
 .map-progress { position: absolute; top: 0; left: 0; height: 100%; background: linear-gradient(90deg, var(--accent-color), var(--accent-2)); border-radius: 2px; transition: width 0.3s ease; }
-.map-truck { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 36px; height: 36px; background: var(--accent-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.5); transition: left 0.3s ease; }
+.map-truck { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 36px; height: 36px; background: var(--accent-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-primary); box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.5); transition: left 0.3s ease; }
 
 .tracking-info { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.info-row { padding: 12px; background: rgba(255, 255, 255, 0.03); border-radius: 10px; }
+.info-row { padding: 12px; background: var(--bg-card); border-radius: 10px; }
 .info-label { display: block; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-.info-value { font-size: 14px; font-weight: 700; color: #ffffff; }
+.info-value { font-size: 14px; font-weight: 700; color: var(--text-primary); }
 .info-value.status { color: var(--accent-color); }
 
 .section-header { text-align: center; margin-bottom: 64px; }
@@ -410,11 +425,11 @@ section { padding: 100px 0; }
 
 .tracking-form-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 24px; padding: 32px; margin-bottom: 32px; }
 .tracking-input-wrap { display: flex; gap: 12px; margin-bottom: 16px; }
-.tracking-input { flex: 1; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 18px; color: var(--text-primary); font-size: 16px; font-weight: 600; outline: none; transition: all 0.2s ease; letter-spacing: 1px; }
+.tracking-input { flex: 1; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 18px; color: var(--text-primary); font-size: 16px; font-weight: 600; outline: none; transition: all 0.2s ease; letter-spacing: 1px; }
 .tracking-input:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1); }
 .tracking-input::placeholder { color: var(--text-muted); font-weight: 400; letter-spacing: normal; }
 .btn-track { display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.2); }
-.btn-track:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); }
+.btn-track:hover { box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); }
 .sample-numbers { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .sample-label { font-size: 13px; color: var(--text-muted); }
 .sample-btn { padding: 6px 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); border-radius: 8px; color: var(--accent-color); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; font-family: monospace; }
@@ -444,13 +459,13 @@ section { padding: 100px 0; }
 .step-location { font-size: 11px; color: var(--accent-color); margin-top: 2px; }
 
 .result-details { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.detail-card { padding: 16px; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 12px; }
+.detail-card { padding: 16px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; }
 .detail-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
 .detail-value { font-size: 14px; font-weight: 700; color: var(--text-primary); }
 
 .shipments-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 .shipment-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; padding: 24px; transition: all 0.3s ease; }
-.shipment-card:hover { transform: translateY(-4px); border-color: rgba(var(--accent-rgb), 0.3); box-shadow: 0 10px 30px var(--shadow-color); }
+.shipment-card:hover { border-color: rgba(var(--accent-rgb), 0.3); box-shadow: 0 10px 30px var(--shadow-color); }
 .shipment-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .shipment-id { font-size: 18px; font-weight: 800; color: var(--accent-color); }
 .shipment-status { padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
@@ -460,7 +475,7 @@ section { padding: 100px 0; }
 .shipment-route { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; margin-bottom: 16px; }
 .shipment-route svg { color: var(--accent-color); flex-shrink: 0; }
 .shipment-progress { margin-bottom: 16px; }
-.progress-bar { height: 6px; background: rgba(255, 255, 255, 0.05); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+.progress-bar { height: 6px; background: var(--bg-card); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
 .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-color), var(--accent-2)); border-radius: 3px; transition: width 0.5s ease; }
 .progress-info { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); }
 .shipment-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 16px; border-top: 1px solid var(--border-color); }
@@ -471,7 +486,7 @@ section { padding: 100px 0; }
 .shipment-weight { font-size: 13px; font-weight: 700; color: var(--accent-color); }
 
 .cta-section { padding: 80px 0; }
-.cta-card { background: linear-gradient(135deg, var(--bg-elevated) 0%, var(--bg-card-solid) 100%); border: 1px solid rgba(var(--accent-rgb), 0.2); border-radius: 32px; padding: 64px; text-align: center; position: relative; overflow: hidden; }
+.cta-card { background: linear-gradient(135deg, #0B1A13 0%, #06100C 100%); border: 1px solid rgba(var(--accent-rgb), 0.2); border-radius: 32px; padding: 64px; text-align: center; position: relative; overflow: hidden; }
 .cta-orb { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; }
 .cta-orb-1 { top: -100px; left: -100px; width: 300px; height: 300px; background: rgba(var(--accent-rgb), 0.15); }
 .cta-orb-2 { bottom: -100px; right: -100px; width: 400px; height: 400px; background: rgba(var(--accent-rgb), 0.1); }
@@ -482,8 +497,8 @@ section { padding: 100px 0; }
 
 .hero-enter { opacity: 0; animation: heroFadeUp 0.7s ease forwards; }
 .hero-enter-title { opacity: 0; animation: heroTitlePop 0.7s ease forwards; }
-@keyframes heroFadeUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes heroTitlePop { 0% { opacity: 0; transform: translateY(24px) scale(0.96); } 60% { opacity: 1; transform: translateY(-2px) scale(1.01); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes heroFadeUp { from { opacity: 0; transform: translateY(0); } to { opacity: 1; transform: translateY(0); } }
+@keyframes heroTitlePop { 0% { opacity: 0; transform: translateY(0); } 60% { opacity: 1; transform: none; } 100% { opacity: 1; transform: translateY(0) scale(1); } }
 .hero-enter[data-delay="1"] { animation-delay: 0ms; }
 .hero-enter[data-delay="2"], .hero-enter-title[data-delay="2"] { animation-delay: 120ms; }
 .hero-enter[data-delay="3"] { animation-delay: 240ms; }
@@ -511,4 +526,23 @@ section { padding: 60px 0; }
 .cta-actions { flex-direction: column; }
 .hero-stats { flex-direction: column; }
 }
+
+/* Шапка трекинга: слева текст и карточка груза, справа — карта с маршрутом */
+.hero { min-height: min(860px, 100vh); padding-bottom: 72px; }
+.hero-grid { grid-template-columns: minmax(0, 520px); gap: 0; }
+.hero-description { margin-bottom: 26px; }
+.hero-visual { margin-bottom: 26px; }
+.hero-visual .tracking-card { padding: 20px 22px; border-radius: 20px; }
+.hero-visual .tracking-header { margin-bottom: 14px; }
+.hero-visual .tracking-map { padding: 16px 18px; margin-bottom: 14px; }
+.hero-actions { margin-bottom: 0; }
+@media (max-width: 900px) {
+  .hero-veil { background: linear-gradient(180deg, rgba(4, 7, 11, 0.75) 0%, rgba(4, 7, 11, 0.55) 60%, rgba(4, 7, 11, 0.9) 100%); }
+}
+.map-point.start .point-label { left: 0; transform: none; }
+.map-point.end .point-label { left: auto; right: 0; transform: none; }
+.hero-visual .tracking-map { padding-top: 30px; }
+.shipment-card[role="button"] { cursor: pointer; }
+.shipment-card.on { border-color: rgba(var(--accent-rgb), 0.6); box-shadow: 0 0 0 1px rgba(var(--accent-rgb), 0.35), 0 18px 40px -24px rgba(var(--accent-rgb), 0.5); }
+.shipment-map-link { display: inline-block; margin-top: 14px; font-size: 13px; font-weight: 700; color: var(--accent-color); }
 </style>

@@ -27,10 +27,10 @@ const routes = [
   { path: '/profile', name: 'Profile', component: () => import('../pages/Profile.vue'), meta: page('Профиль', { requiresAuth: true }) },
   { path: '/settings', name: 'Settings', component: () => import('../pages/Settings.vue'), meta: page('Настройки', { requiresAuth: true }) },
   { path: '/orders', name: 'Orders', component: () => import('../pages/Orders.vue'), meta: page('Заказы', { requiresAuth: true }) },
-  { path: '/carriers', name: 'Carriers', component: () => import('../pages/Carriers.vue'), meta: page('Перевозчики', { requiresAuth: true }) },
-  { path: '/my-applications', name: 'MyApplications', component: () => import('../pages/MyApplications.vue'), meta: page('Мои заявки', { requiresAuth: true }) },
-  { path: '/documents', name: 'Documents', component: () => import('../pages/Documents.vue'), meta: page('Документы', { requiresAuth: true }) },
-  { path: '/reviews', name: 'Reviews', component: () => import('../pages/Reviews.vue'), meta: page('Отзывы', { requiresAuth: true }) },
+  { path: '/carriers', name: 'Carriers', component: () => import('../pages/Carriers.vue'), meta: page('Перевозчики', { requiresAuth: true, roles: ['customer', 'admin'] }) },
+  { path: '/my-applications', name: 'MyApplications', component: () => import('../pages/MyApplications.vue'), meta: page('Мои заявки', { requiresAuth: true, roles: ['carrier'] }) },
+  { path: '/documents', name: 'Documents', component: () => import('../pages/Documents.vue'), meta: page('Документы', { requiresAuth: true, roles: ['customer', 'admin'] }) },
+  { path: '/reviews', name: 'Reviews', component: () => import('../pages/Reviews.vue'), meta: page('Отзывы', { requiresAuth: true, roles: ['carrier'] }) },
   { path: '/chat', name: 'Chat', component: () => import('../pages/Chat.vue'), meta: page('Чат', { requiresAuth: true }) },
   { path: '/admin', name: 'AdminPanel', component: () => import('../pages/AdminPanel.vue'), meta: page('Админ-панель', { requiresAuth: true, requiresAdmin: true }) },
 
@@ -48,7 +48,19 @@ const router = createRouter({
   routes,
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) return savedPosition
-    if (to.hash) return { el: to.hash, top: 90, behavior: 'smooth' }
+    if (to.hash) {
+      // при переходе с другой страницы блок появляется только после анимации смены страниц —
+      // ждём, пока он окажется в документе
+      return new Promise((resolve) => {
+        const started = Date.now()
+        const find = () => {
+          if (document.querySelector(to.hash)) resolve({ el: to.hash, top: 90, behavior: 'smooth' })
+          else if (Date.now() - started < 2500) setTimeout(find, 60)
+          else resolve({ top: 0 })
+        }
+        setTimeout(find, to.path === from.path ? 0 : 450)
+      })
+    }
     return { top: 0 }
   },
 })
@@ -65,6 +77,11 @@ router.beforeEach(async (to) => {
   }
   if (to.meta.requiresAdmin && !userStore.isAdmin) {
     return { path: '/profile' }
+  }
+  // Разделы, которые есть только у определённой роли (например, «Мои заявки» — у перевозчика)
+  if (to.meta.roles && userStore.user) {
+    const role = userStore.isAdmin ? 'admin' : userStore.user.accountType
+    if (!to.meta.roles.includes(role)) return { path: '/profile' }
   }
   if (to.meta.guestOnly && userStore.isAuthenticated) {
     return { path: '/profile' }

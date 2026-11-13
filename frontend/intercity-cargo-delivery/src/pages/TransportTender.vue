@@ -1,2601 +1,779 @@
 <template>
-  <div class="saas-landing">
+  <div class="saas-landing tnd">
     <Header />
 
     <main>
-      <section class="hero">
-        <HeroBackdrop view="overview" side="left" />
-        <div class="hero-glow"></div>
-
-        <div class="container">
-          <div class="hero-grid">
-            <div class="hero-content">
-              <div class="hero-badge hero-enter" data-delay="1">
-                <span class="badge-dot"></span>
-                Enterprise Logistics Platform
-              </div>
-
-              <h1 class="hero-title hero-enter-title" data-delay="2">
-                Управляйте транспортными<br />
-                <span class="gradient-text">заказами</span>
-              </h1>
-
-              <p class="hero-description hero-enter" data-delay="3">
-                Создавайте заказы, находите перевозчиков и управляйте логистикой в одной системе.
-              </p>
-
-              <div class="hero-actions hero-enter" data-delay="4">
-                <button v-if="!userStore.isAdmin" class="btn-primary btn-large btn-glow" @click="openCreateOrder">
-                  Создать заказ
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                       stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                    <polyline points="12 5 19 12 12 19" />
-                  </svg>
-                </button>
-                <button v-if="!userStore.isAdmin" class="btn-secondary btn-large" @click="scrollToOrders">
-                  Смотреть заказы
-                </button>
-                <button v-else class="btn-secondary btn-large" @click="$router.push('/orders')">
-                  Перейти в управление заказами
-                </button>
-              </div>
-
-              <div class="hero-stats hero-enter" data-delay="5">
-                <div
-                  v-for="stat in stats"
-                  :key="stat.id"
-                  class="hero-stat hover-lift"
-                  :ref="setStatRef"
-                >
-                  <span class="hero-stat-value">{{ stat.displayValue }}{{ stat.suffix }}</span>
-                  <span class="hero-stat-label">{{ stat.label }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="hero-visual hero-enter" data-delay="6">
-              <div class="dashboard-card">
-                <div class="dashboard-header">
-                  <div class="dashboard-title-row">
-                    <div class="dashboard-dot"></div>
-                    <span>Активные заказы</span>
-                  </div>
-                  <div class="status-badge">
-                    <span class="status-dot"></span>
-                    Live
-                  </div>
-                </div>
-                <div class="dashboard-items">
-                  <div
-                    v-for="order in recentOrders.slice(0, 3)"
-                    :key="order.id"
-                    class="dashboard-item"
-                  >
-                    <div class="dashboard-item-left">
-                      <div class="dashboard-route">{{ order.route }}</div>
-                      <div class="dashboard-meta">{{ order.type }}</div>
-                    </div>
-                    <div class="dashboard-price">{{ formatPrice(order.price) }}</div>
-                  </div>
-                  <div v-if="recentOrders.length === 0" class="dashboard-empty">
-                    Пока нет активных заказов
-                  </div>
-                </div>
-                <div class="dashboard-footer">
-                  <span class="dashboard-footer-text">Обновлено только что</span>
-                  <div class="dashboard-progress">
-                    <div class="dashboard-progress-bar"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="social-proof" ref="socialRef">
-        <div class="container">
-          <p class="social-label reveal">Нам доверяют ведущие логистические компании</p>
-          <div class="logos-track">
-            <div
-              v-for="company in companies"
-              :key="company.id"
-              class="logo-item reveal logo-animate"
-              :style="{ '--i': company.id }"
-            >
-              {{ company.name }}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="features" id="features" ref="featuresSection">
-        <div class="container">
-          <div class="section-header reveal">
-            <span class="section-badge">Возможности</span>
-            <h2 class="section-title">
-              Всё для управления<br />
-              <span class="gradient-text">транспортными заказами</span>
-            </h2>
-            <p class="section-subtitle">
-              Создавайте общие или личные заказы, управляйте перевозчиками и отслеживайте исполнение.
+      <!-- ─── Шапка: живые торги ─── -->
+      <section class="hero tnd-hero">
+        <HeroBackdrop view="tender-ship" side="left" />
+        <div class="container tnd-hero__grid">
+          <div class="tnd-hero__text">
+            <span class="ic-eyebrow tnd-in" style="--d: 0ms">Транспортные тендеры</span>
+            <h1 class="tnd-in" style="--d: 90ms">Перевозчики <span class="ic-accent">соревнуются</span> — вы экономите</h1>
+            <p class="tnd-hero__lead tnd-in" style="--d: 180ms">
+              Выставьте направление и объём — проверенные перевозчики предложат цены, а вы выберете лучшее предложение
+              по цене, срокам и рейтингу. Без звонков и таблиц в почте.
             </p>
-          </div>
-
-          <div class="features-grid">
-            <div
-              v-for="feature in features"
-              :key="feature.id"
-              class="feature-card hover-lift reveal"
-              :style="{ '--i': feature.id }"
-              @click="goToFeature(feature.slug)"
-            >
-              <div class="feature-icon-wrap" v-html="feature.icon"></div>
-              <h3 class="feature-title">{{ feature.title }}</h3>
-              <p class="feature-text">{{ feature.text }}</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="live-orders" id="orders" ref="ordersSection">
-        <div class="container">
-          <div class="section-header reveal">
-            <span class="section-badge">Заказы</span>
-            <h2 class="section-title">
-              <template v-if="userStore.isAdmin">Все заказы</template>
-              <template v-else>Доступные <span class="gradient-text">заказы</span></template>
-            </h2>
-            <p class="section-subtitle white-text">
-              <template v-if="userStore.isAdmin">Просмотр и управление всеми заказами в системе.</template>
-              <template v-else>Общие заказы, доступные для просмотра.</template>
-            </p>
-          </div>
-
-          <div class="live-orders__filters reveal">
-            <div class="filter-group">
-              <button
-                v-for="filter in filters"
-                :key="filter.id"
-                class="filter-chip"
-                :class="{ active: type === filter.value }"
-                @click="type = filter.value"
-              >
-                {{ filter.label }}
+            <div class="tnd-hero__actions tnd-in" style="--d: 270ms">
+              <button v-if="!userStore.isAdmin" type="button" class="ic-btn ic-btn--primary" @click="openCreateOrder">
+                Создать тендер <ArrowRight />
               </button>
+              <RouterLink v-else to="/orders" class="ic-btn ic-btn--primary">Управление заказами <ArrowRight /></RouterLink>
+              <button type="button" class="ic-btn ic-btn--ghost tnd-ghost" @click="scrollToOrders">Смотреть лоты</button>
             </div>
-            <div class="search-group">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                   stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-              <input
-                v-model.trim="search"
-                type="text"
-                placeholder="Поиск по направлению..."
-                class="search-input"
-              />
-            </div>
+            <dl class="tnd-stats tnd-in" style="--d: 360ms">
+              <div v-for="st in stats" :key="st.label" class="hero-stat">
+                <dt><strong>{{ st.value }}</strong></dt>
+                <dd>{{ st.label }}</dd>
+              </div>
+            </dl>
           </div>
 
-          <transition-group name="order-list" tag="div" class="live-orders__grid">
-            <div
-              v-for="order in filteredOrders"
-              :key="order.id"
-              class="order-card hover-lift"
-            >
-              <span
-                class="order-card__badge"
-                :class="getBadgeClass(order.type)"
-              >
-                {{ order.type }}
-              </span>
-              <div class="order-card__route">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                  <circle cx="12" cy="10" r="3" />
-                </svg>
-                {{ order.route }}
+          <!-- Живой лот: ставки приходят сами, цена снижается -->
+          <aside class="live tnd-in" style="--d: 300ms" aria-label="Пример торгов">
+            <div class="live__head">
+              <span class="live__dot"></span>
+              <span>Идут торги</span>
+              <span class="live__timer"><Timer />{{ timerText }}</span>
+            </div>
+            <div class="live__lot">
+              <div class="live__route">{{ lot.route }}</div>
+              <div class="live__meta">{{ lot.cargo }} · старт {{ formatPrice(lot.start) }}</div>
+            </div>
+            <div class="live__price">
+              <div>
+                <span class="live__label">Лучшая ставка</span>
+                <strong :key="best">{{ formatPrice(best) }}</strong>
               </div>
-              <div class="order-card__details">
-                <div class="order-detail">
-                  <span class="order-detail__label">Объём</span>
-                  <span class="order-detail__value">{{ order.volume }}</span>
-                </div>
-                <div class="order-detail">
-                  <span class="order-detail__label">Период</span>
-                  <span class="order-detail__value">{{ formatDate(order.dateFrom) }} — {{ formatDate(order.dateTo) }}</span>
-                </div>
-                <div class="order-detail">
-                  <span class="order-detail__label">Тип заказа</span>
-                  <span class="order-detail__value">{{ order.accessType === 'public' ? 'Общий' : 'Личный' }}</span>
-                </div>
-              </div>
-              <div class="order-card__footer">
-                <div class="order-price">
-                  <span class="order-price__label">Начальная цена</span>
-                  <span class="order-price__value">{{ formatPrice(order.price) }}</span>
-                </div>
-                <button
-                  v-if="canApply(order)"
-                  class="btn--accent"
-                  @click.stop="applyToOrder(order)"
-                >
-                  Участвовать
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                       stroke="currentColor" stroke-width="2.5">
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                    <polyline points="12 5 19 12 12 19" />
-                  </svg>
-                </button>
-                <span v-else-if="hasApplied(order.id)" class="applied-badge">Заявка подана</span>
-                
-              </div>
-              <div class="order-card__bids">
-                <div class="bid-avatars">
-                  <div class="bid-avatar">А</div>
-                  <div class="bid-avatar">Б</div>
-                  <div class="bid-avatar">В</div>
-                  <div class="bid-count">+{{ Math.max(0, order.applicants.length - 3) }}</div>
-                </div>
-                <span class="bid-text">{{ order.applicants.length }} участников</span>
+              <div class="live__save">
+                <span class="live__label">Экономия</span>
+                <strong>−{{ savedPct }}%</strong>
               </div>
             </div>
-          </transition-group>
-
-          <transition name="fade">
-            <div v-if="filteredOrders.length === 0" class="empty-state">
-              <div class="empty-icon">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="1.5">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                  <line x1="8" y1="11" x2="14" y2="11" />
-                </svg>
-              </div>
-              <p class="empty-title">Заказы не найдены</p>
-              <p class="empty-text">Попробуйте изменить параметры поиска или создайте новый заказ</p>
-            </div>
-          </transition>
+            <div class="live__bar"><i :style="{ width: Math.min(100, savedPct * 4) + '%' }"></i></div>
+            <TransitionGroup name="bid" tag="ul" class="live__bids">
+              <li v-for="(b, i) in bids" :key="b.id" :class="{ top: i === 0 }">
+                <span class="live__avatar">{{ b.name[0] }}</span>
+                <span class="live__who">{{ b.name }}<small>рейтинг {{ b.rating }}</small></span>
+                <span class="live__bid">{{ formatPrice(b.price) }}</span>
+              </li>
+            </TransitionGroup>
+            <p class="live__note">Пример торгов — так выглядит ваш лот в системе</p>
+          </aside>
         </div>
       </section>
 
-      <section class="process" id="process" ref="processSection">
+      <!-- ─── Как устроен тендер ─── -->
+      <section class="tnd-steps">
         <div class="container">
-          <div class="section-header reveal">
-            <span class="section-badge">Процесс</span>
-            <h2 class="section-title">
-              Как это <span class="gradient-text">работает</span>
-            </h2>
-            <p class="section-subtitle">
-              Четыре шага от создания заказа до заключения договора.
+          <div class="section-head">
+            <span class="ic-eyebrow">Как это работает</span>
+            <h2>Четыре шага от лота <span class="ic-accent">до договора</span></h2>
+          </div>
+          <ol class="steps-grid">
+            <li v-for="(s, i) in steps" :key="s.title" class="step-card">
+              <div class="step-card__top">
+                <span class="step-card__icon"><component :is="s.icon" /></span>
+                <span class="step-card__num">0{{ i + 1 }}</span>
+              </div>
+              <h3>{{ s.title }}</h3>
+              <p>{{ s.text }}</p>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- ─── Лоты ─── -->
+      <section id="orders" ref="ordersSection" class="tnd-board">
+        <div class="container">
+          <div class="board-head">
+            <div>
+              <span class="ic-eyebrow">Лоты</span>
+              <h2>{{ userStore.isAdmin ? 'Все заказы' : 'Открытые лоты' }}</h2>
+              <p v-if="showingExamples" class="board-hint">
+                Сейчас здесь <b>примеры</b>.
+                <template v-if="!userStore.isAuthenticated">Войдите как перевозчик, чтобы видеть реальные лоты и подавать заявки.</template>
+                <template v-else>Как только заказчики опубликуют лоты, они появятся здесь.</template>
+              </p>
+            </div>
+            <div class="board-tools">
+              <label class="board-search">
+                <Search />
+                <input v-model.trim="search" type="text" placeholder="Поиск по направлению" aria-label="Поиск по направлению">
+              </label>
+            </div>
+          </div>
+
+          <div class="chips" role="tablist" aria-label="Тип груза">
+            <button
+              v-for="f in filters"
+              :key="f.label"
+              type="button"
+              class="chip"
+              :class="{ on: type === f.value }"
+              @click="type = f.value"
+            >{{ f.label }}</button>
+          </div>
+
+          <TransitionGroup name="lot" tag="div" class="lots">
+            <article v-for="order in filteredOrders" :key="order.id" class="lot">
+              <div class="lot__route">
+                <span class="lot__pin"><MapPin /></span>
+                <div>
+                  <h3>{{ order.route }}</h3>
+                  <span class="lot__sub">
+                    <span class="badge" :class="badgeClass(order.type)">{{ order.type }}</span>
+                    <span v-if="order.example" class="badge badge--example">Пример</span>
+                    <span class="lot__access"><component :is="order.accessType === 'private' ? Lock : Globe" />{{ order.accessType === 'private' ? 'Личный' : 'Общий' }}</span>
+                  </span>
+                </div>
+              </div>
+              <dl class="lot__facts">
+                <div><dt>Объём</dt><dd>{{ order.volume }}</dd></div>
+                <div><dt>Период</dt><dd>{{ formatDate(order.dateFrom) }} — {{ formatDate(order.dateTo) }}</dd></div>
+                <div><dt>Участники</dt><dd>{{ order.applicants?.length || 0 }}</dd></div>
+              </dl>
+              <div class="lot__price">
+                <span>Начальная цена</span>
+                <strong>{{ formatPrice(order.price) }}</strong>
+              </div>
+              <div class="lot__action">
+                <span v-if="hasApplied(order.id)" class="applied"><Check />Заявка подана</span>
+                <button v-else type="button" class="ic-btn ic-btn--primary lot__btn" @click="applyToOrder(order)">
+                  Участвовать
+                </button>
+              </div>
+            </article>
+          </TransitionGroup>
+
+          <div v-if="filteredOrders.length === 0" class="empty">
+            <Search />
+            <p class="empty__title">Ничего не нашлось</p>
+            <p>Измените фильтр или поиск{{ userStore.isAdmin ? '' : ' — или создайте свой лот' }}.</p>
+            <button v-if="!userStore.isAdmin" type="button" class="ic-btn ic-btn--ghost" @click="openCreateOrder">Создать тендер</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─── Калькулятор экономии ─── -->
+      <section class="tnd-save is-dark">
+        <div class="container save-grid">
+          <div>
+            <span class="ic-eyebrow">Экономия</span>
+            <h2>Сколько вы сэкономите <span class="ic-accent">за год</span></h2>
+            <p class="save-lead">
+              В среднем тендеры InterCargo снижают расходы на перевозки на 12–25%. Передвиньте ползунок — посчитаем для вашего бюджета.
             </p>
           </div>
-
-          <div class="process-steps">
-            <div
-              v-for="step in steps"
-              :key="step.id"
-              class="process-step reveal"
-              :style="{ '--i': step.id }"
-            >
-              <div class="step-visual">
-                <div class="step-number">{{ String(step.id).padStart(2, '0') }}</div>
-                <div v-if="step.id < steps.length" class="step-connector">
-                  <div class="step-connector-line"></div>
-                  <div class="step-connector-dot"></div>
-                </div>
+          <div class="save-card">
+            <label class="save-card__label" for="budget">Бюджет на перевозки в год</label>
+            <div class="save-card__budget">{{ budget }} млн ₽</div>
+            <input id="budget" v-model.number="budget" type="range" min="1" max="300" step="1" class="range" :style="{ '--fill': ((budget - 1) / 299) * 100 + '%' }">
+            <div class="save-card__scale"><span>1 млн</span><span>300 млн</span></div>
+            <div class="save-card__result">
+              <div>
+                <span>Ожидаемая экономия</span>
+                <strong>≈ {{ savingText }}</strong>
               </div>
-              <div class="step-content">
-                <h3 class="step-title">{{ step.title }}</h3>
-                <p class="step-text">{{ step.text }}</p>
+              <div>
+                <span>Диапазон</span>
+                <b>{{ rangeText }}</b>
               </div>
             </div>
+            <button v-if="!userStore.isAdmin" type="button" class="ic-btn ic-btn--primary save-card__btn" @click="openCreateOrder">
+              Запустить первый тендер <ArrowRight />
+            </button>
           </div>
         </div>
       </section>
 
-      <section class="faq" id="faq" ref="faqSection">
+      <!-- ─── Возможности ─── -->
+      <section class="tnd-features">
         <div class="container">
-          <div class="section-header reveal">
-            <span class="section-badge">FAQ</span>
-            <h2 class="section-title">
-              Часто задаваемые <span class="gradient-text">вопросы</span>
-            </h2>
+          <div class="section-head">
+            <span class="ic-eyebrow">Возможности</span>
+            <h2>Почему тендеры через <span class="ic-accent">InterCargo</span></h2>
           </div>
-
-          <div class="faq__grid">
-            <div
-              v-for="item in faq"
-              :key="item.id"
-              class="faq-item reveal"
-              :class="{ 'is-open': openFaq === item.id }"
-              :style="{ '--i': item.id }"
-            >
-              <div
-                class="faq-item__question"
-                @click="toggleFaq(item.id)"
-              >
-                <span>{{ item.q }}</span>
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                  stroke-linecap="round"
-                  :class="{ rotated: openFaq === item.id }"
-                >
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
+          <div class="feature-grid">
+            <RouterLink v-for="f in features" :key="f.slug" :to="`/feature/${f.slug}`" class="feature-card">
+              <div class="feature-card__img"><img :src="photo(f.photo)" alt="" loading="lazy" decoding="async"></div>
+              <div class="feature-card__body">
+                <h3>{{ f.title }}</h3>
+                <p>{{ f.text }}</p>
+                <span class="feature-card__more">Подробнее <ArrowRight /></span>
               </div>
-              <transition name="faq-expand">
-                <div v-if="openFaq === item.id" class="faq-item__answer">
-                  {{ item.a }}
-                </div>
-              </transition>
+            </RouterLink>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─── Вопросы ─── -->
+      <section class="tnd-faq">
+        <div class="container faq-wrap">
+          <div class="section-head section-head--left">
+            <span class="ic-eyebrow">Вопросы</span>
+            <h2>Часто <span class="ic-accent">спрашивают</span></h2>
+          </div>
+          <div class="faq-list">
+            <div v-for="(q, i) in faq" :key="q.q" class="faq-item" :class="{ open: openFaq === i }">
+              <button type="button" class="faq-item__q" :aria-expanded="openFaq === i" @click="openFaq = openFaq === i ? -1 : i">
+                {{ q.q }}<Plus class="faq-item__icon" />
+              </button>
+              <div class="faq-item__a"><div><p>{{ q.a }}</p></div></div>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="cta-fullwidth">
-        <div class="cta-inner">
-          <div class="cta-orb cta-orb-1"></div>
-          <div class="cta-orb cta-orb-2"></div>
-          <div class="cta-layout-text">
-            <div class="cta-badge">Начните бесплатно</div>
-            <h2 class="cta-title">Готовы оптимизировать логистику?</h2>
-            <p class="cta-text">Присоединяйтесь к 500+ компаниям, которые уже экономят на перевозках до 25%</p>
+      <!-- ─── Призыв ─── -->
+      <section class="tnd-cta-wrap">
+        <div class="container">
+          <div class="cta-card tnd-cta">
+            <div>
+              <h2>Готовы снизить расходы на логистику?</h2>
+              <p>Первый тендер — бесплатно. Создайте лот за 5 минут, предложения начнут приходить в тот же день.</p>
+            </div>
+            <div class="tnd-cta__actions">
+              <button v-if="!userStore.isAdmin" type="button" class="ic-btn ic-btn--primary" @click="openCreateOrder">Создать тендер <ArrowRight /></button>
+              <RouterLink to="/contacts?topic=partnership" class="ic-btn ic-btn--ghost">Обсудить с менеджером</RouterLink>
+            </div>
           </div>
         </div>
       </section>
     </main>
 
-    <div class="modal-overlay" v-if="showCreateOrderModal" @click="closeCreateOrder">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h2>Создать новый заказ</h2>
-          <button class="modal-close" @click="closeCreateOrder">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-        <form @submit.prevent="submitOrder" class="modal-form">
-          <div class="form-group">
-            <label>Тип заказа</label>
-            <div class="access-type-selector">
-              <div class="access-type-card" :class="{ active: newOrder.accessType === 'public' }" @click="newOrder.accessType = 'public'">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="2" y1="12" x2="22" y2="12"></line>
-                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                </svg>
-                <div>
-                  <div class="access-type-title">Общий заказ</div>
-                  <div class="access-type-desc">Доступен всем перевозчикам</div>
-                </div>
-              </div>
-              <div class="access-type-card" :class="{ active: newOrder.accessType === 'private' }" @click="newOrder.accessType = 'private'">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-                <div>
-                  <div class="access-type-title">Личный заказ</div>
-                  <div class="access-type-desc">Только для выбранных перевозчиков</div>
-                </div>
-              </div>
-            </div>
+    <!-- ─── Создание заказа ─── -->
+    <Transition name="modal">
+      <div v-if="showCreateOrderModal" class="modal" @click.self="closeCreateOrder">
+        <form class="modal__card" @submit.prevent="submitOrder">
+          <div class="modal__head">
+            <h2>Новый тендер</h2>
+            <button type="button" class="modal__close" aria-label="Закрыть" @click="closeCreateOrder"><X /></button>
           </div>
+
+          <div class="access">
+            <button type="button" class="access__opt" :class="{ on: newOrder.accessType === 'public' }" @click="newOrder.accessType = 'public'">
+              <Globe />
+              <span><b>Общий</b><small>Видят все перевозчики</small></span>
+            </button>
+            <button type="button" class="access__opt" :class="{ on: newOrder.accessType === 'private' }" @click="newOrder.accessType = 'private'">
+              <Lock />
+              <span><b>Личный</b><small>Только выбранные перевозчики</small></span>
+            </button>
+          </div>
+
           <div class="form-row">
-            <div class="form-group">
-              <label>Город отправления</label>
-              <select v-model="newOrder.from" required>
-                <option value="">Выберите город</option>
+            <label class="field">
+              <span>Откуда</span>
+              <select v-model="newOrder.from" class="ic-input" required>
+                <option value="">Город отправления</option>
                 <option v-for="city in cities" :key="city" :value="city">{{ city }}</option>
               </select>
-            </div>
-            <div class="form-group">
-              <label>Город назначения</label>
-              <select v-model="newOrder.to" required>
-                <option value="">Выберите город</option>
+            </label>
+            <label class="field">
+              <span>Куда</span>
+              <select v-model="newOrder.to" class="ic-input" required>
+                <option value="">Город назначения</option>
                 <option v-for="city in cities" :key="city" :value="city">{{ city }}</option>
               </select>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Тип груза</label>
-            <select v-model="newOrder.type" required>
-              <option value="">Выберите тип</option>
-              <option value="Сборные">Сборные</option>
-              <option value="Рефрижераторные">Рефрижераторные</option>
-              <option value="Негабарит">Негабарит</option>
-              <option value="Стандартные">Стандартные</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Объём</label>
-            <input v-model="newOrder.volume" type="text" placeholder="Например: 120 т/мес" required />
+            </label>
           </div>
           <div class="form-row">
-            <div class="form-group">
-              <label>Дата начала</label>
-              <input v-model="newOrder.dateFrom" type="date" required class="date-input" />
-            </div>
-            <div class="form-group">
-              <label>Дата окончания</label>
-              <input v-model="newOrder.dateTo" type="date" required class="date-input" />
-            </div>
+            <label class="field">
+              <span>Тип груза</span>
+              <select v-model="newOrder.type" class="ic-input" required>
+                <option value="">Выберите тип</option>
+                <option v-for="f in filters.slice(1)" :key="f.value" :value="f.value">{{ f.value }}</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Объём</span>
+              <input v-model="newOrder.volume" class="ic-input" type="text" placeholder="Например: 120 т/мес" required>
+            </label>
           </div>
-          <div class="form-group">
-            <label>Начальная цена (только цифры)</label>
-            <input
-              v-model="newOrder.price"
-              type="number"
-              min="0"
-              step="1"
-              placeholder="Например: 85000"
-              required
-              @keydown="blockLetters"
-            />
+          <div class="form-row">
+            <label class="field">
+              <span>Начало</span>
+              <input v-model="newOrder.dateFrom" class="ic-input" type="date" :min="today" required>
+            </label>
+            <label class="field">
+              <span>Окончание</span>
+              <input v-model="newOrder.dateTo" class="ic-input" type="date" :min="newOrder.dateFrom || today" required>
+            </label>
           </div>
-          <div class="form-actions">
-            <button type="button" class="btn-cancel" @click="closeCreateOrder">Отмена</button>
-            <button type="submit" class="btn-submit">Создать заказ</button>
+          <label class="field">
+            <span>Начальная цена, ₽</span>
+            <input v-model="newOrder.price" class="ic-input" type="number" inputmode="numeric" min="1" step="1" placeholder="Например: 85000" required @keydown="blockLetters">
+          </label>
+
+          <div class="modal__actions">
+            <button type="button" class="ic-btn ic-btn--ghost" @click="closeCreateOrder">Отмена</button>
+            <button type="submit" class="ic-btn ic-btn--primary" :disabled="saving">{{ saving ? 'Создаём…' : 'Опубликовать' }}</button>
           </div>
         </form>
       </div>
-    </div>
+    </Transition>
 
     <Footer />
   </div>
 </template>
 
-<script>
-import HeroBackdrop from '@/ui/HeroBackdrop.vue'
-import Header from '@/ui/Header.vue'
-import Footer from '@/ui/Footer.vue'
-import { useOrderStore } from '@/stores/order'
-import { useUserStore } from '@/stores/user'
-import { useToastStore } from '@/stores/toast'
+<script setup>
+import { ref, reactive, computed, onMounted, onBeforeUnmount, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import {
+  ArrowRight, Timer, Search, MapPin, Lock, Globe, Check, Plus, X, FilePlus2, ShieldCheck, Users, FileSignature,
+} from 'lucide-vue-next';
+import HeroBackdrop from '@/ui/HeroBackdrop.vue';
+import Header from '@/ui/Header.vue';
+import Footer from '@/ui/Footer.vue';
+import { useOrderStore } from '@/stores/order';
+import { useUserStore } from '@/stores/user';
+import { useToastStore } from '@/stores/toast';
+import { exampleOrders } from '@/data/examples';
 
-export default {
-  name: 'TransportTender',
-  components: { HeroBackdrop,  Header, Footer },
-  data() {
-    return {
-      search: '',
-      type: '',
-      openFaq: null,
-      observer: null,
-      statRefs: [],
-      showCreateOrderModal: false,
-      newOrder: {
-        accessType: 'public',
-        from: '',
-        to: '',
-        type: '',
-        volume: '',
-        dateFrom: '',
-        dateTo: '',
-        price: ''
-      },
-      cities: [
-        'Москва',
-        'Санкт-Петербург',
-        'Новосибирск',
-        'Красноярск',
-        'Екатеринбург',
-        'Казань',
-        'Самара',
-        'Владивосток',
-        'Ростов-на-Дону',
-        'Нижний Новгород',
-        'Челябинск',
-        'Уфа',
-        'Пермь',
-        'Воронеж',
-        'Волгоград'
-      ],
-      stats: [
-        { id: 1, target: 1200, suffix: '+', label: 'заказов выполнено', displayValue: 0 },
-        { id: 2, target: 18, suffix: '%', label: 'средняя экономия', displayValue: 0 },
-        { id: 3, target: 500, suffix: '+', label: 'перевозчиков в базе', displayValue: 0 },
-      ],
-      companies: [
-        { id: 1, name: 'ТрансЛогистик' },
-        { id: 2, name: 'ГрузоТех' },
-        { id: 3, name: 'МегаТранс' },
-        { id: 4, name: 'КаргоПро' },
-        { id: 5, name: 'ЛогистикПлюс' },
-        { id: 6, name: 'АвтоФрахт' },
-      ],
-      filters: [
-        { id: 1, label: 'Все', value: '' },
-        { id: 2, label: 'Сборные', value: 'Сборные' },
-        { id: 3, label: 'Рефрижераторные', value: 'Рефрижераторные' },
-        { id: 4, label: 'Негабарит', value: 'Негабарит' },
-        { id: 5, label: 'Стандартные', value: 'Стандартные' },
-      ],
-      features: [
-        {
-          id: 1,
-          slug: 'analytics',
-          icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,
-          title: 'Аналитический модуль',
-          text: 'Сравнительные отчёты, прогнозирование ставок и контроль KPI перевозчиков в едином окне.',
-        },
-        {
-          id: 2,
-          slug: 'end-to-end',
-          icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>`,
-          title: 'Сквозной процесс',
-          text: 'От заявки до закрывающих документов — всё бесшовно интегрировано с вашей ERP-системой.',
-        },
-        {
-          id: 3,
-          slug: 'independence',
-          icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
-          title: 'Независимость решений',
-          text: 'Система исключает человеческий фактор и конфликт интересов при выборе перевозчика.',
-        },
-        {
-          id: 4,
-          slug: 'verified',
-          icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
-          title: 'Проверенные перевозчики',
-          text: 'Доступ только для компаний, прошедших строгую верификацию документов и истории.',
-        },
-      ],
-      steps: [
-        { id: 1, title: 'Создание заказа', text: 'Укажите направление, объёмы и требования к перевозчикам.' },
-        { id: 2, title: 'Подтверждение админом', text: 'Администратор проверяет заказ и активирует его.' },
-        { id: 3, title: 'Отбор заявок', text: 'Перевозчики подают заявки, админ выбирает подходящего.' },
-        { id: 4, title: 'Исполнение', text: 'Перевозчик выполняет заказ с контролем исполнения и бюджета.' },
-      ],
-      faq: [
-        { id: 1, q: 'В чём разница между общим и личным заказом?', a: 'Общий заказ виден всем зарегистрированным перевозчикам. Личный заказ виден только тем перевозчикам, которых вы выбрали.' },
-        { id: 2, q: 'Как формируется начальная цена?', a: 'Вы указываете начальную цену при создании заказа. Перевозчики могут предлагать свои цены в заявках.' },
-        { id: 3, q: 'Можно ли задать эксклюзивные условия?', a: 'Да, вы можете настроить требования к транспорту, температурному режиму и срокам доставки.' },
-        { id: 4, q: 'Как быстро определяется исполнитель?', a: 'Администратор рассматривает заявки и выбирает подходящего перевозчика. Обычно это занимает 1-3 дня.' },
-      ],
-      badgeMap: {
-        'Негабарит': 'badge--high',
-        'Рефрижераторные': 'badge--medium'
-      }
-    }
-  },
-  computed: {
-    orderStore() {
-      return useOrderStore()
-    },
-    userStore() {
-      return useUserStore()
-    },
-    toast() {
-      return useToastStore()
-    },
-    isCarrier() {
-      return this.userStore.user?.accountType === 'carrier'
-    },
-    isCustomer() {
-      return this.userStore.user?.accountType === 'customer'
-    },
-    orders() {
-      if (this.userStore.isAdmin) {
-        return this.orderStore.activeOrders
-      }
-      if (this.isCarrier) {
-        return this.orderStore.activeOrders
-      }
-      return this.orderStore.activeOrders
-    },
-    recentOrders() {
-      return this.orders.slice(0, 3)
-    },
-    filteredOrders() {
-      const s = this.search.toLowerCase().trim()
-      const t = this.type
-      return this.orders.filter((order) => {
-        const matchSearch = !s || order.route.toLowerCase().includes(s)
-        const matchType = !t || order.type === t
-        return matchSearch && matchType
-      })
-    }
-  },
-  beforeRouteEnter(to, from, next) {
-    next(vm => {
-      vm.scrollToTop()
-    })
-  },
-  mounted() {
-    this.initScrollAnimations()
-    this.initCountUp()
-    this.scrollToTop()
-    this.orderStore.fetchOrders()
-  },
-  beforeUnmount() {
-    if (this.observer) this.observer.disconnect()
-  },
-  methods: {
-    scrollToTop() {
-      this.$nextTick(() => {
-        setTimeout(() => {
-          window.scrollTo({ top: 0, behavior: 'instant' })
-          document.documentElement.scrollTop = 0
-          document.body.scrollTop = 0
-        }, 100)
-      })
-    },
-    openCreateOrder() {
-      if (!this.userStore.isAuthenticated) {
-        this.toast.error('Войдите в аккаунт, чтобы создать заказ')
-        this.$router.push('/login')
-        return
-      }
-      if (this.userStore.isAdmin) {
-        this.toast.error('Администраторы не могут создавать заказы')
-        return
-      }
-      this.showCreateOrderModal = true
-    },
-    closeCreateOrder() {
-      this.showCreateOrderModal = false
-      this.newOrder = {
-        accessType: 'public',
-        from: '',
-        to: '',
-        type: '',
-        volume: '',
-        dateFrom: '',
-        dateTo: '',
-        price: ''
-      }
-    },
-    blockLetters(event) {
-      const allowedKeys = ['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End']
-      if (allowedKeys.includes(event.key)) return
-      if (!/^\d$/.test(event.key)) {
-        event.preventDefault()
-      }
-    },
-    formatPrice(price) {
-      const num = parseInt(price)
-      if (isNaN(num)) return price
-      return num.toLocaleString('ru-RU') + ' ₽'
-    },
-    formatDate(dateStr) {
-      if (!dateStr) return ''
-      const date = new Date(dateStr)
-      return date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
-    },
-    async submitOrder() {
-      if (!this.newOrder.from || !this.newOrder.to) {
-        this.toast.error('Выберите города отправления и назначения')
-        return
-      }
-      if (this.newOrder.from === this.newOrder.to) {
-        this.toast.error('Города отправления и назначения должны отличаться')
-        return
-      }
-      if (!this.newOrder.dateFrom || !this.newOrder.dateTo) {
-        this.toast.error('Укажите даты начала и окончания')
-        return
-      }
-      if (new Date(this.newOrder.dateFrom) > new Date(this.newOrder.dateTo)) {
-        this.toast.error('Дата начала не может быть позже даты окончания')
-        return
-      }
-      if (!this.newOrder.price || parseInt(this.newOrder.price) <= 0) {
-        this.toast.error('Укажите корректную начальную цену')
-        return
-      }
+const orderStore = useOrderStore();
+const userStore = useUserStore();
+const toast = useToastStore();
+const route = useRoute();
+const router = useRouter();
 
-        const orderData = {
-          route: `${this.newOrder.from} — ${this.newOrder.to}`,
-          from: this.newOrder.from,
-          to: this.newOrder.to,
-          type: this.newOrder.type,
-          volume: this.newOrder.volume,
-          dateFrom: this.newOrder.dateFrom,
-          dateTo: this.newOrder.dateTo,
-          price: parseInt(this.newOrder.price),
-          accessType: this.newOrder.accessType,
-          createdBy: this.userStore.user?.id,
-          customerName: `${this.userStore.user?.firstName || ''} ${this.userStore.user?.lastName || ''}`.trim(),
-          customerPhone: this.userStore.user?.phone || '',
-          customerEmail: this.userStore.user?.email || ''
-        }
+// Фото (Pexels, см. docs/CREDITS.md)
+const photos = Object.fromEntries(
+  Object.entries(import.meta.glob('@/assets/photos/*.webp', { eager: true, import: 'default' }))
+    .map(([path, url]) => [path.split('/').pop().replace('.webp', ''), url]),
+);
+const photo = (name) => photos[name];
 
-const result = await this.orderStore.createOrder(orderData)
+const formatPrice = (price) => {
+  const num = Number.parseInt(price, 10);
+  return Number.isNaN(num) ? price : `${num.toLocaleString('ru-RU')} ₽`;
+};
+const formatDate = (d) => (d ? new Date(d).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' }) : '');
 
-      if (result.success) {
-        if (this.newOrder.accessType === 'private') {
-          this.toast.success('Личный заказ создан и активирован!')
-        } else {
-          this.toast.success('Заказ создан и отправлен на подтверждение администратору!')
-        }
-        this.closeCreateOrder()
-      } else {
-        this.toast.error(result.message || 'Ошибка создания заказа')
-      }
-    },
-    canApply(order) {
-      if (!this.userStore.isAuthenticated) return false
-      if (this.userStore.isAdmin) return false
-      if (!this.isCarrier) return false
-      return !this.hasApplied(order.id)
-    },
-    hasApplied(orderId) {
-      if (!this.userStore.user) return false
-      return this.orderStore.hasApplied(orderId, this.userStore.user.id)
-    },
-async applyToOrder(order) {
-  if (!this.userStore.isAuthenticated) {
-    this.toast.error('Войдите в аккаунт, чтобы участвовать в заказе')
-    this.$router.push('/login')
-    return
+const stats = [
+  { value: '1 200+', label: 'тендеров проведено' },
+  { value: '18%', label: 'средняя экономия' },
+  { value: '500+', label: 'перевозчиков' },
+];
+
+// ─── Живой лот в шапке ───
+const lot = { route: 'Москва — Казань', cargo: 'Стройматериалы, 20 т', start: 85000 };
+const carriers = [
+  ['ВолковТранс', 4.9], ['СибЛогистик', 4.8], ['РефЛайн', 4.7], ['ГрузоТех', 4.9], ['АвтоФрахт', 4.6],
+  ['КаргоПро', 4.8], ['МегаТранс', 4.7], ['ЛогистикПлюс', 4.5],
+];
+let bidId = 0;
+const bid = ([name, rating], price) => {
+  bidId += 1;
+  return { id: bidId, name, rating, price };
+};
+const bids = ref([bid(carriers[3], 81500), bid(carriers[1], 83000), bid(carriers[0], 84200)]);
+// новая ставка — всегда от другого перевозчика, чем предыдущая
+const makeBid = (price) => {
+  const pool = carriers.filter(([n]) => n !== bids.value[0]?.name);
+  return bid(pool[Math.floor(Math.random() * pool.length)], price);
+};
+const best = computed(() => bids.value[0]?.price || lot.start);
+const savedPct = computed(() => Math.round((1 - best.value / lot.start) * 100));
+const timerLeft = ref(14 * 60 + 32);
+const timerText = computed(() => `${String(Math.floor(timerLeft.value / 60)).padStart(2, '0')}:${String(timerLeft.value % 60).padStart(2, '0')}`);
+let bidTimer = 0;
+let clockTimer = 0;
+const tickBid = () => {
+  if (document.hidden) return;
+  // торги «перезапускаются», когда цена упала на ~22%
+  if (best.value < lot.start * 0.78) {
+    bids.value = [makeBid(82000 + Math.round(Math.random() * 2000))];
+    return;
   }
+  const step = 300 + Math.round(Math.random() * 1400);
+  bids.value = [makeBid(Math.round((best.value - step) / 100) * 100), ...bids.value].slice(0, 4);
+};
 
-      const result = await this.orderStore.applyToOrder(order.id)
-      
-      if (result.success) {
-        this.toast.success('Заявка отправлена! Заказчик рассмотрит её — ответ придёт в уведомления.')
-      } else {
-        this.toast.error(result.message || 'Ошибка отправки заявки')
-      }
-    },
-    scrollToOrders() {
-      this.$refs.ordersSection?.scrollIntoView({ behavior: 'smooth' })
-    },
-    goToFeature(slug) {
-      this.$router.push(`/feature/${slug}`).catch(e => {
-        if (e.name !== 'NavigationDuplicated') console.error(e)
-      })
-    },
-    toggleFaq(id) {
-      this.openFaq = this.openFaq === id ? null : id
-    },
-    getBadgeClass(type) {
-      return this.badgeMap[type] || 'badge--low'
-    },
-    setStatRef(el) {
-      if (el) this.statRefs.push(el)
-    },
-    initScrollAnimations() {
-      this.observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (!entry.isIntersecting) return
-            const el = entry.target
-            el.classList.add('is-visible')
-            if (el.classList.contains('faq')) {
-              el.classList.add('section-visible')
-            }
-            const children = el.querySelectorAll('.reveal')
-            children.forEach((child, i) => {
-              child.style.setProperty('--i', i)
-              requestAnimationFrame(() => {
-                child.classList.add('is-visible')
-              })
-            })
-            this.observer.unobserve(el)
-          })
-        },
-        { threshold: 0.12, rootMargin: '0px 0px -60px 0px' }
-      )
-      const sections = [
-        this.$refs.featuresSection,
-        this.$refs.ordersSection,
-        this.$refs.processSection,
-        this.$refs.faqSection,
-        this.$refs.socialRef
-      ].filter(Boolean)
-      sections.forEach((section) => this.observer.observe(section))
-    },
-    initCountUp() {
-      this.statRefs = []
-      const statObserver = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (!entry.isIntersecting) return
-            const index = this.statRefs.indexOf(entry.target)
-            if (index !== -1) {
-              this.animateStat(index)
-            }
-            statObserver.unobserve(entry.target)
-          })
-        },
-        { threshold: 0.3 }
-      )
-      this.$nextTick(() => {
-        this.statRefs.forEach((el) => {
-          if (el) statObserver.observe(el)
-        })
-      })
-    },
-    animateStat(index) {
-      const stat = this.stats[index]
-      const duration = 1800
-      const startTime = performance.now()
-      const step = (currentTime) => {
-        const elapsed = currentTime - startTime
-        const progress = Math.min(elapsed / duration, 1)
-        const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress)
-        stat.displayValue = Math.round(eased * stat.target)
-        if (progress < 1) {
-          requestAnimationFrame(step)
-        }
-      }
-      requestAnimationFrame(step)
-    }
+// ─── Шаги ───
+const steps = [
+  { icon: FilePlus2, title: 'Создайте лот', text: 'Направление, объём, сроки и стартовая цена — форма заполняется за 5 минут.' },
+  { icon: ShieldCheck, title: 'Проверка', text: 'Модератор проверяет лот, общий публикуется для всех перевозчиков, личный — сразу.' },
+  { icon: Users, title: 'Предложения', text: 'Перевозчики подают заявки, вы сравниваете цены, сроки и рейтинги в одном окне.' },
+  { icon: FileSignature, title: 'Договор', text: 'Выбираете победителя, открывается чат и документы — дальше контроль исполнения.' },
+];
+
+// ─── Лоты ───
+const filters = [
+  { label: 'Все', value: '' },
+  { label: 'Сборные', value: 'Сборные' },
+  { label: 'Рефрижераторные', value: 'Рефрижераторные' },
+  { label: 'Негабарит', value: 'Негабарит' },
+  { label: 'Стандартные', value: 'Стандартные' },
+];
+const search = ref('');
+const type = ref('');
+const ordersSection = ref(null);
+
+// Показательные лоты с типами из фильтра
+const examples = exampleOrders.map((o, i) => ({ ...o, type: ['Стандартные', 'Сборные', 'Рефрижераторные'][i] || 'Стандартные' }));
+const realOrders = computed(() => orderStore.activeOrders);
+const showingExamples = computed(() => realOrders.value.length === 0);
+const orders = computed(() => (showingExamples.value ? examples : realOrders.value));
+const filteredOrders = computed(() => {
+  const s = search.value.toLowerCase();
+  return orders.value.filter((o) => (!s || o.route.toLowerCase().includes(s)) && (!type.value || o.type === type.value));
+});
+const badgeClass = (t) => ({ Негабарит: 'badge--hot', Рефрижераторные: 'badge--cold' }[t] || 'badge--std');
+const hasApplied = (id) => Boolean(userStore.user) && orderStore.hasApplied(id, userStore.user.id);
+
+const applyToOrder = async (order) => {
+  if (order.example) {
+    toast.success('Это пример лота. Реальные лоты появятся здесь после публикации заказчиками.');
+    return;
   }
-}
+  if (!userStore.isAuthenticated) {
+    toast.error('Войдите как перевозчик, чтобы участвовать');
+    router.push({ path: '/login', query: { redirect: '/transport-tender' } });
+    return;
+  }
+  if (!userStore.isCarrier) {
+    toast.error('Подавать заявки могут только перевозчики');
+    return;
+  }
+  const res = await orderStore.applyToOrder(order.id);
+  if (res.success) toast.success('Заявка отправлена — ответ придёт в уведомления');
+  else toast.error(res.message || 'Не удалось отправить заявку');
+};
+
+const scrollToOrders = () => ordersSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+// ─── Экономия ───
+const budget = ref(40);
+const fmtMln = (v) => (v >= 1 ? `${v.toLocaleString('ru-RU', { maximumFractionDigits: 1 })} млн ₽` : `${Math.round(v * 1000).toLocaleString('ru-RU')} тыс. ₽`);
+const shown = ref(budget.value * 0.18);
+let tween = 0;
+watch(budget, (v) => {
+  cancelAnimationFrame(tween);
+  const from = shown.value;
+  const to = v * 0.18;
+  const t0 = performance.now();
+  const step = (now) => {
+    const k = Math.min(1, (now - t0) / 450);
+    shown.value = from + (to - from) * (1 - (1 - k) ** 3);
+    if (k < 1) tween = requestAnimationFrame(step);
+  };
+  tween = requestAnimationFrame(step);
+});
+const savingText = computed(() => `${fmtMln(shown.value)} в год`);
+const rangeText = computed(() => `${fmtMln(budget.value * 0.12)} — ${fmtMln(budget.value * 0.25)}`);
+
+// ─── Возможности ───
+const features = [
+  { slug: 'analytics', photo: 'analytics-office', title: 'Аналитика ставок', text: 'Сравнительные отчёты, прогноз ставок и KPI перевозчиков в одном окне.' },
+  { slug: 'end-to-end', photo: 'process-forklift', title: 'Сквозной процесс', text: 'От заявки до закрывающих документов — с выгрузкой в вашу ERP.' },
+  { slug: 'independence', photo: 'independence-port', title: 'Честный выбор', text: 'Правила торгов исключают сговор и конфликт интересов.' },
+  { slug: 'verified', photo: 'verified-truck', title: 'Проверенные перевозчики', text: 'Только компании, прошедшие проверку документов и истории.' },
+];
+
+const faq = [
+  { q: 'Чем общий лот отличается от личного?', a: 'Общий лот видят все проверенные перевозчики платформы, он публикуется после проверки модератором. Личный — только приглашённые вами перевозчики, он активируется сразу.' },
+  { q: 'Как формируется цена?', a: 'Вы задаёте стартовую цену, перевозчики предлагают свою в заявках. Вы видите все предложения и выбираете лучшее не только по цене, но и по срокам и рейтингу.' },
+  { q: 'Можно указать особые требования?', a: 'Да: тип кузова, температурный режим, сроки подачи, страхование и требования к документам — всё это указывается в лоте.' },
+  { q: 'Как быстро находится исполнитель?', a: 'Первые предложения обычно приходят в течение часа. Выбор победителя занимает от нескольких часов до 1–3 дней — зависит от вас.' },
+  { q: 'Сколько это стоит?', a: 'Первый тендер бесплатный. Дальше — по тарифу «Постоянный клиент» или индивидуальным условиям для крупного бизнеса.' },
+];
+const openFaq = ref(0);
+
+// ─── Создание заказа ───
+const cities = ['Москва', 'Санкт-Петербург', 'Новосибирск', 'Красноярск', 'Екатеринбург', 'Казань', 'Самара', 'Владивосток', 'Ростов-на-Дону', 'Нижний Новгород', 'Челябинск', 'Уфа', 'Пермь', 'Воронеж', 'Волгоград', 'Краснодар'];
+const today = new Date().toISOString().slice(0, 10);
+const blank = () => ({ accessType: 'public', from: '', to: '', type: '', volume: '', dateFrom: '', dateTo: '', price: '' });
+const newOrder = reactive(blank());
+const showCreateOrderModal = ref(false);
+const saving = ref(false);
+
+const openCreateOrder = () => {
+  if (!userStore.isAuthenticated) {
+    toast.error('Войдите в аккаунт, чтобы создать тендер');
+    router.push({ path: '/login', query: { redirect: '/transport-tender?create=1' } });
+    return;
+  }
+  if (userStore.isAdmin) {
+    toast.error('Администраторы не создают заказы');
+    return;
+  }
+  if (userStore.isCarrier) {
+    toast.error('Тендеры создают заказчики. Перевозчики участвуют в лотах ниже.');
+    scrollToOrders();
+    return;
+  }
+  showCreateOrderModal.value = true;
+};
+const closeCreateOrder = () => {
+  showCreateOrderModal.value = false;
+  Object.assign(newOrder, blank());
+};
+const blockLetters = (e) => {
+  if (['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'Enter'].includes(e.key) || e.ctrlKey || e.metaKey) return;
+  if (!/^\d$/.test(e.key)) e.preventDefault();
+};
+const submitOrder = async () => {
+  if (newOrder.from === newOrder.to) return toast.error('Города отправления и назначения должны отличаться');
+  if (new Date(newOrder.dateFrom) > new Date(newOrder.dateTo)) return toast.error('Дата начала не может быть позже окончания');
+  if (!(Number.parseInt(newOrder.price, 10) > 0)) return toast.error('Укажите корректную начальную цену');
+  saving.value = true;
+  const u = userStore.user || {};
+  const res = await orderStore.createOrder({
+    route: `${newOrder.from} — ${newOrder.to}`,
+    from: newOrder.from,
+    to: newOrder.to,
+    type: newOrder.type,
+    volume: newOrder.volume,
+    dateFrom: newOrder.dateFrom,
+    dateTo: newOrder.dateTo,
+    price: Number.parseInt(newOrder.price, 10),
+    accessType: newOrder.accessType,
+    createdBy: u.id,
+    customerName: `${u.firstName || ''} ${u.lastName || ''}`.trim(),
+    customerPhone: u.phone || '',
+    customerEmail: u.email || '',
+  });
+  saving.value = false;
+  if (!res.success) return toast.error(res.message || 'Не удалось создать тендер');
+  toast.success(newOrder.accessType === 'private' ? 'Личный лот создан и уже активен' : 'Лот отправлен на проверку модератору');
+  closeCreateOrder();
+  return null;
+};
+
+const onKey = (e) => { if (e.key === 'Escape' && showCreateOrderModal.value) closeCreateOrder(); };
+
+onMounted(() => {
+  orderStore.fetchOrders();
+  if (!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) bidTimer = setInterval(tickBid, 2600);
+  clockTimer = setInterval(() => { timerLeft.value = timerLeft.value > 0 ? timerLeft.value - 1 : 15 * 60; }, 1000);
+  window.addEventListener('keydown', onKey);
+  // ссылка «Создать заказ» из кабинета ведёт сюда с ?create=1
+  if (route.query.create) {
+    router.replace({ query: {} });
+    openCreateOrder();
+  }
+});
+onBeforeUnmount(() => {
+  clearInterval(bidTimer);
+  clearInterval(clockTimer);
+  cancelAnimationFrame(tween);
+  window.removeEventListener('keydown', onKey);
+});
 </script>
 
-
-
-
 <style scoped>
-.hero > .container { position: relative; z-index: 2; width: 100%; }
-.hero-glow { z-index: 1; opacity: 0.6; }
-.saas-landing {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  min-height: 100vh;
-  font-family: var(--font-body);
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-  transition: background-color 0.5s ease;
+.tnd { background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; }
+.container { max-width: var(--container, 1200px); margin: 0 auto; padding: 0 24px; }
+section { padding: 110px 0; }
+.ic-btn svg { width: 18px; height: 18px; }
+
+.section-head { max-width: 760px; margin: 0 auto 56px; text-align: center; }
+.section-head h2, .board-head h2 { font-size: clamp(30px, 4vw, 46px); margin: 18px 0 14px; color: var(--text-primary); }
+.section-head p { color: var(--text-secondary); font-size: 17px; }
+.section-head--left { margin: 0; text-align: left; }
+
+.tnd-in { opacity: 0; animation: tnd-in 0.9s var(--motion-ease-out) var(--d, 0ms) forwards; }
+@keyframes tnd-in { from { opacity: 0; filter: blur(8px); } to { opacity: 1; filter: none; } }
+
+/* ─── Шапка ─── */
+.tnd-hero { position: relative; overflow: hidden; padding: calc(var(--header-h) + 64px) 0 80px; min-height: min(880px, 100vh); display: flex; align-items: center; background: var(--hero-bg); color: #F2F6F4; }
+.tnd-hero > .container { position: relative; z-index: 2; width: 100%; }
+.tnd-hero__grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); gap: 56px; align-items: center; }
+.tnd-hero h1 { font-size: clamp(36px, 5vw, 62px); line-height: 1.05; margin: 22px 0; color: #fff; }
+.tnd-hero__lead { max-width: 540px; font-size: 18px; line-height: 1.6; color: rgba(242, 246, 244, 0.78); }
+.tnd-hero__actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 32px; }
+.tnd-ghost { color: #F2F6F4; border-color: rgba(255, 255, 255, 0.25); background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(10px); }
+.tnd-stats { display: flex; gap: 36px; flex-wrap: wrap; margin-top: 44px; padding-top: 28px; border-top: 1px solid rgba(255, 255, 255, 0.12); }
+.tnd-stats strong { display: block; font-family: var(--font-display); font-size: 34px; line-height: 1; color: #fff; }
+.tnd-stats dd { margin-top: 8px; font-size: 13px; color: rgba(242, 246, 244, 0.6); }
+
+.live { padding: 22px; border-radius: 24px; background: rgba(8, 13, 18, 0.72); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.8); }
+.live__head { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: rgba(242, 246, 244, 0.8); }
+.live__dot { width: 8px; height: 8px; border-radius: 50%; background: #2DC071; box-shadow: 0 0 0 0 rgba(45, 192, 113, 0.6); animation: live-ping 1.8s ease-out infinite; }
+@keyframes live-ping { 0% { box-shadow: 0 0 0 0 rgba(45, 192, 113, 0.6); } 100% { box-shadow: 0 0 0 10px rgba(45, 192, 113, 0); } }
+.live__timer { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: rgba(242, 184, 75, 0.12); color: #F2B84B; font-variant-numeric: tabular-nums; }
+.live__timer svg { width: 14px; height: 14px; }
+.live__lot { margin: 18px 0 16px; }
+.live__route { font-family: var(--font-display); font-size: 22px; color: #fff; }
+.live__meta { font-size: 13px; color: rgba(242, 246, 244, 0.55); margin-top: 4px; }
+.live__price { display: flex; justify-content: space-between; align-items: flex-end; padding: 16px; border-radius: 16px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.06); }
+.live__label { display: block; font-size: 12px; color: rgba(242, 246, 244, 0.5); margin-bottom: 4px; }
+.live__price strong { font-family: var(--font-display); font-size: 30px; color: #2DC071; font-variant-numeric: tabular-nums; animation: live-flash 0.8s ease; }
+@keyframes live-flash { from { color: #fff; text-shadow: 0 0 18px rgba(45, 192, 113, 0.9); } to { color: #2DC071; text-shadow: none; } }
+.live__save { text-align: right; }
+.live__save strong { font-size: 22px; color: #F2B84B; animation: none; }
+.live__bar { height: 4px; margin: 12px 0 14px; border-radius: 4px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+.live__bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #2DC071, #F2B84B); transition: width 0.8s var(--motion-ease-out); }
+.live__bids { list-style: none; display: flex; flex-direction: column; gap: 6px; min-height: 212px; }
+.live__bids li { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03); border: 1px solid transparent; }
+.live__bids li.top { border-color: rgba(45, 192, 113, 0.35); background: rgba(45, 192, 113, 0.08); }
+.live__avatar { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: rgba(60, 200, 216, 0.14); color: #3CC8D8; font-weight: 800; }
+.live__who { display: flex; flex-direction: column; font-weight: 700; font-size: 14px; color: #F2F6F4; }
+.live__who small { font-weight: 500; font-size: 12px; color: rgba(242, 246, 244, 0.45); }
+.live__bid { font-weight: 800; font-variant-numeric: tabular-nums; color: #F2F6F4; }
+.live__note { margin-top: 12px; font-size: 12px; color: rgba(242, 246, 244, 0.4); text-align: center; }
+.bid-enter-active { transition: opacity 0.6s ease, filter 0.6s ease; }
+.bid-leave-active { transition: opacity 0.3s ease; position: absolute; visibility: hidden; }
+.bid-enter-from { opacity: 0; filter: blur(6px); }
+.bid-leave-to { opacity: 0; }
+
+/* ─── Шаги ─── */
+.steps-grid { list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; counter-reset: s; }
+.step-card { position: relative; padding: 26px 24px; border-radius: 22px; background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: var(--shadow-card); }
+.step-card:not(:last-child)::after { content: ''; position: absolute; top: 48px; right: -17px; width: 18px; height: 2px; background: linear-gradient(90deg, rgba(var(--accent-rgb), 0.6), transparent); }
+.step-card__top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+.step-card__icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 15px; background: rgba(var(--accent-rgb), 0.1); color: var(--accent-color); }
+.step-card__icon svg { width: 24px; height: 24px; }
+.step-card__num { font-family: var(--font-display); font-size: 34px; color: rgba(var(--accent-rgb), 0.18); }
+.step-card h3 { font-size: 20px; margin-bottom: 8px; }
+.step-card p { font-size: 14.5px; line-height: 1.6; color: var(--text-secondary); }
+
+/* ─── Лоты ─── */
+.tnd-board { background: var(--bg-elevated, var(--bg-primary)); }
+.board-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; margin-bottom: 22px; }
+.board-head h2 { margin-bottom: 6px; }
+.board-hint { max-width: 620px; color: var(--text-secondary); }
+.board-hint b { color: var(--warm, #F2B84B); }
+.board-search { display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 16px; min-width: 300px; border-radius: 999px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-muted); transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+.board-search:focus-within { border-color: rgba(var(--accent-rgb), 0.6); box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.1); }
+.board-search svg { width: 18px; height: 18px; flex-shrink: 0; }
+.board-search input { flex: 1; border: 0; outline: none; background: none; color: var(--text-primary); font-size: 15px; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
+.chip { height: 38px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-secondary); font-weight: 700; font-size: 14px; cursor: pointer; transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
+.chip:hover { border-color: rgba(var(--accent-rgb), 0.45); color: var(--text-primary); }
+.chip.on { background: var(--accent-color); border-color: var(--accent-color); color: var(--text-on-accent, #04120A); }
+.lots { display: flex; flex-direction: column; gap: 10px; }
+.lot { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.5fr) minmax(0, 0.8fr) auto; gap: 24px; align-items: center; padding: 20px 22px; border-radius: 20px; background: var(--bg-card); border: 1px solid var(--border-color); transition: border-color 0.25s ease, box-shadow 0.25s ease; }
+.lot:hover { border-color: rgba(var(--accent-rgb), 0.4); }
+.lot__route { display: flex; gap: 14px; align-items: center; min-width: 0; }
+.lot__pin { display: grid; place-items: center; flex-shrink: 0; width: 44px; height: 44px; border-radius: 14px; background: rgba(var(--accent-rgb), 0.1); color: var(--accent-color); }
+.lot__pin svg { width: 20px; height: 20px; }
+.lot h3 { font-size: 17px; margin-bottom: 6px; font-family: var(--font-body); }
+.lot__sub { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.badge { padding: 3px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
+.badge--std { background: rgba(var(--accent-rgb), 0.12); color: var(--accent-color); }
+.badge--cold { background: rgba(60, 200, 216, 0.14); color: #1FA3B3; }
+.badge--hot { background: rgba(229, 72, 77, 0.12); color: #E5484D; }
+.badge--example { background: rgba(242, 184, 75, 0.16); color: #C98A12; }
+.lot__access { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-muted); }
+.lot__access svg { width: 13px; height: 13px; }
+.lot__facts { display: grid; grid-template-columns: 0.8fr 1.3fr 0.8fr; gap: 12px; }
+.lot__facts dt { font-size: 12px; color: var(--text-muted); }
+.lot__facts dd { font-weight: 700; font-size: 14.5px; }
+.lot__price span { display: block; font-size: 12px; color: var(--text-muted); }
+.lot__price strong { font-family: var(--font-display); font-size: 20px; color: var(--accent-color); white-space: nowrap; }
+.lot__btn { height: 42px; padding: 0 18px; font-size: 14px; }
+.applied { display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px; border-radius: 999px; background: rgba(var(--accent-rgb), 0.12); color: var(--accent-color); font-weight: 700; font-size: 13px; }
+.applied svg { width: 16px; height: 16px; }
+.lot-enter-active, .lot-leave-active { transition: opacity 0.3s ease; }
+.lot-enter-from, .lot-leave-to { opacity: 0; }
+.lot-leave-active { position: absolute; visibility: hidden; }
+.empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 56px 20px; border-radius: 22px; border: 1px dashed var(--border-strong); color: var(--text-secondary); text-align: center; }
+.empty > svg { width: 36px; height: 36px; color: var(--text-muted); }
+.empty__title { font-weight: 800; font-size: 18px; color: var(--text-primary); }
+.empty .ic-btn { margin-top: 10px; }
+
+/* ─── Экономия ─── */
+.tnd-save { background: radial-gradient(60% 80% at 0% 100%, rgba(var(--accent-rgb), 0.18), transparent 70%), #070B10; color: #F2F6F4; }
+.save-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+.tnd-save h2 { font-size: clamp(30px, 4vw, 46px); margin: 18px 0 16px; color: #fff; }
+.save-lead { color: rgba(242, 246, 244, 0.7); font-size: 17px; line-height: 1.6; max-width: 480px; }
+.save-card { padding: 32px; border-radius: 26px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); }
+.save-card__label { font-size: 13px; color: rgba(242, 246, 244, 0.55); }
+.save-card__budget { font-family: var(--font-display); font-size: 40px; color: #fff; margin: 6px 0 16px; font-variant-numeric: tabular-nums; }
+.range { --fill: 13%; width: 100%; height: 8px; border-radius: 8px; appearance: none; -webkit-appearance: none; background: linear-gradient(90deg, var(--accent-color) var(--fill), rgba(255, 255, 255, 0.1) var(--fill)); outline: none; cursor: pointer; }
+.range::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: #fff; border: 5px solid var(--accent-color); box-shadow: 0 0 0 6px rgba(var(--accent-rgb), 0.2); cursor: grab; }
+.range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #fff; border: 5px solid var(--accent-color); cursor: grab; }
+.save-card__scale { display: flex; justify-content: space-between; font-size: 12px; color: rgba(242, 246, 244, 0.4); margin-top: 8px; }
+.save-card__result { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; margin: 26px 0; padding: 20px; border-radius: 18px; background: rgba(var(--accent-rgb), 0.08); border: 1px solid rgba(var(--accent-rgb), 0.25); }
+.save-card__result span { display: block; font-size: 12px; color: rgba(242, 246, 244, 0.55); margin-bottom: 4px; }
+.save-card__result strong { font-family: var(--font-display); font-size: 26px; color: #2DC071; font-variant-numeric: tabular-nums; }
+.save-card__result b { font-size: 15px; color: #fff; }
+.save-card__btn { width: 100%; }
+
+/* ─── Возможности ─── */
+.feature-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.feature-card { display: flex; flex-direction: column; border-radius: 22px; overflow: hidden; background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: var(--shadow-card); text-decoration: none; color: inherit; transition: border-color 0.25s ease; }
+.feature-card:hover { border-color: rgba(var(--accent-rgb), 0.45); }
+.feature-card__img { aspect-ratio: 4 / 3; overflow: hidden; background: #0b1117; }
+.feature-card__img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s var(--motion-ease-out); }
+.feature-card:hover .feature-card__img img { transform: scale(1.05); }
+.feature-card__body { display: flex; flex-direction: column; flex: 1; padding: 22px; }
+.feature-card h3 { font-size: 19px; margin-bottom: 8px; }
+.feature-card p { flex: 1; font-size: 14.5px; line-height: 1.6; color: var(--text-secondary); }
+.feature-card__more { display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; font-weight: 700; font-size: 14px; color: var(--accent-color); }
+.feature-card__more svg { width: 16px; height: 16px; transition: transform 0.25s ease; }
+.feature-card:hover .feature-card__more svg { transform: translateX(4px); }
+
+/* ─── Вопросы ─── */
+.faq-wrap { display: grid; grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr); gap: 56px; align-items: start; }
+.faq-list { display: flex; flex-direction: column; gap: 10px; }
+.faq-item { border-radius: 18px; border: 1px solid var(--border-color); background: var(--bg-card); transition: border-color 0.25s ease; }
+.faq-item.open { border-color: rgba(var(--accent-rgb), 0.45); }
+.faq-item__q { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 20px 22px; border: 0; background: none; color: var(--text-primary); font-weight: 700; font-size: 16px; text-align: left; cursor: pointer; }
+.faq-item__icon { flex-shrink: 0; width: 22px; height: 22px; padding: 3px; border-radius: 50%; background: rgba(var(--accent-rgb), 0.12); color: var(--accent-color); transition: transform 0.3s var(--motion-ease-out); }
+.faq-item.open .faq-item__icon { transform: rotate(45deg); }
+.faq-item__a { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.35s var(--motion-ease-out); }
+.faq-item.open .faq-item__a { grid-template-rows: 1fr; }
+.faq-item__a > div { overflow: hidden; }
+.faq-item__a p { padding: 0 22px 20px; color: var(--text-secondary); line-height: 1.65; }
+
+/* ─── Призыв ─── */
+.tnd-cta-wrap { padding-top: 0; }
+.tnd-cta { display: flex; justify-content: space-between; align-items: center; gap: 32px; padding: 48px 52px; border-radius: 28px; background: radial-gradient(60% 120% at 100% 0%, rgba(var(--accent-rgb), 0.28), transparent 60%), linear-gradient(135deg, #0C1A14, #070B10); color: #F2F6F4; }
+.tnd-cta h2 { font-size: clamp(26px, 3vw, 36px); color: #fff; margin-bottom: 10px; }
+.tnd-cta p { color: rgba(242, 246, 244, 0.7); max-width: 560px; }
+.tnd-cta__actions { display: flex; gap: 12px; flex-wrap: wrap; flex-shrink: 0; }
+
+/* ─── Окно создания ─── */
+.modal { position: fixed; inset: 0; z-index: 1200; display: grid; place-items: center; padding: 20px; background: rgba(4, 7, 11, 0.6); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); overflow-y: auto; }
+.modal__card { width: min(620px, 100%); padding: 28px; border-radius: 26px; background: var(--bg-card-solid, var(--bg-primary)); border: 1px solid var(--border-color); box-shadow: 0 40px 100px -30px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; gap: 16px; }
+.modal__head { display: flex; justify-content: space-between; align-items: center; }
+.modal__head h2 { font-size: 26px; }
+.modal__close { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--border-color); background: none; color: var(--text-secondary); cursor: pointer; }
+.modal__close svg { width: 20px; height: 20px; }
+.access { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.access__opt { display: flex; gap: 12px; align-items: center; padding: 14px; border-radius: 16px; border: 1px solid var(--border-color); background: var(--bg-input, transparent); color: var(--text-primary); text-align: left; cursor: pointer; transition: border-color 0.2s ease, background 0.2s ease; }
+.access__opt svg { width: 22px; height: 22px; color: var(--accent-color); flex-shrink: 0; }
+.access__opt span { display: flex; flex-direction: column; }
+.access__opt small { color: var(--text-muted); font-size: 12px; }
+.access__opt.on { border-color: var(--accent-color); background: rgba(var(--accent-rgb), 0.08); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700; color: var(--text-secondary); }
+.modal__actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+.modal-enter-active, .modal-leave-active { transition: opacity 0.25s ease; }
+.modal-enter-from, .modal-leave-to { opacity: 0; }
+
+/* ─── Адаптив ─── */
+@media (max-width: 1100px) {
+  .lot { grid-template-columns: 1fr 1fr; }
+  .lot__action { justify-self: end; }
+  .feature-grid { grid-template-columns: repeat(2, 1fr); }
 }
-.date-input {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 12px 16px;
-  color: var(--text-primary);
-  font-size: 15px;
-  outline: none;
-  transition: all 0.2s ease;
-  width: 100%;
-  cursor: pointer;
-}
-
-.date-input:focus {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1);
-}
-
-.date-input::-webkit-calendar-picker-indicator {
-  filter: invert(1) brightness(0.8);
-  cursor: pointer;
-  opacity: 0.6;
-  transition: opacity 0.2s ease;
-}
-
-.date-input::-webkit-calendar-picker-indicator:hover {
-  opacity: 1;
-}
-
-[data-theme="light"] .date-input::-webkit-calendar-picker-indicator {
-  filter: none;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 24px;
-}
-
-.section-header {
-  text-align: center;
-  margin-bottom: 64px;
-}
-
-.section-badge {
-  display: inline-block;
-  padding: 6px 14px;
-  background: rgba(var(--accent-rgb), 0.1);
-  color: var(--accent-color);
-  border-radius: 100px;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 20px;
-  border: 1px solid rgba(var(--accent-rgb), 0.15);
-}
-
-.section-title {
-  font-size: clamp(28px, 4vw, 42px);
-  font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  margin-bottom: 16px;
-}
-
-.section-subtitle {
-  font-size: 17px;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  max-width: 560px;
-  margin: 0 auto;
-}
-.my-order-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 18px;
-  border-radius: 10px;
-  background: rgba(59, 130, 246, 0.15);
-  color: #3b82f6;
-  font-weight: 600;
-  font-size: 13px;
-  border: 1px solid rgba(59, 130, 246, 0.3);
-}
-
-.applied-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 18px;
-  border-radius: 10px;
-  background: rgba(var(--accent-rgb), 0.15);
-  color: var(--accent-color);
-  font-weight: 600;
-  font-size: 13px;
-  border: 1px solid rgba(var(--accent-rgb), 0.3);
-}
-
-.white-text {
-  color: #ffffff;
-}
-
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: linear-gradient(135deg, var(--accent-color), var(--accent-strong));
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 15px;
-  cursor: pointer;
-  padding: 12px 24px;
-  transition: all var(--motion-duration-base) var(--motion-ease-out);
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-primary:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-glow);
-}
-
-.btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: #ffffff;
-  border: 1px solid #e0e0e0;
-  color: #1a1a1a;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 15px;
-  cursor: pointer;
-  padding: 12px 24px;
-  transition: all var(--motion-duration-base) var(--motion-ease-out);
-}
-
-.btn-secondary:hover {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-  background: #ffffff;
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.1);
-}
-
-.btn-secondary-demo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: #ffffff;
-  border: 1px solid #e0e0e0;
-  color: #1a1a1a;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 15px;
-  cursor: pointer;
-  padding: 12px 24px;
-  transition: all var(--motion-duration-base) var(--motion-ease-out);
-}
-
-.btn-secondary-demo:hover {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-  background: #ffffff;
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.1);
-}
-
-[data-theme="dark"] .btn-secondary-demo {
-  background: transparent;
-  border-color: rgba(255, 255, 255, 0.3);
-  color: #ffffff;
-}
-
-[data-theme="dark"] .btn-secondary-demo:hover {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-}
-
-.btn-large {
-  padding: 16px 32px;
-  font-size: 16px;
-  border-radius: 14px;
-}
-
-.btn--accent {
-  background: rgba(var(--accent-rgb), 0.12);
-  color: var(--accent-color);
-  padding: 8px 18px;
-  border-radius: 10px;
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: none;
-}
-
-.btn--accent:hover {
-  background: rgba(var(--accent-rgb), 0.2);
-  transform: translateY(-2px);
-}
-
-.reveal {
-  opacity: 0;
-  transform: translateY(24px);
-  transition:
-    opacity var(--motion-duration-slow) var(--motion-ease-out),
-    transform var(--motion-duration-slow) var(--motion-ease-out);
-  will-change: transform, opacity;
-  transition-delay: calc(var(--i, 0) * var(--motion-stagger));
-}
-
-.reveal.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-@keyframes heroFadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(28px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes heroTitlePop {
-  0% {
-    opacity: 0;
-    transform: translateY(24px) scale(0.96);
-  }
-  60% {
-    opacity: 1;
-    transform: translateY(-2px) scale(1.01);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.hero-enter {
-  opacity: 0;
-  animation: heroFadeUp var(--motion-duration-slow) var(--motion-ease-out) forwards;
-}
-
-.hero-enter-title {
-  opacity: 0;
-  animation: heroTitlePop var(--motion-duration-slow) var(--motion-ease-out) forwards;
-}
-
-.hero-enter[data-delay="1"] { animation-delay: 0ms; }
-.hero-enter[data-delay="2"],
-.hero-enter-title[data-delay="2"] { animation-delay: 120ms; }
-.hero-enter[data-delay="3"] { animation-delay: 240ms; }
-.hero-enter[data-delay="4"] { animation-delay: 380ms; }
-.hero-enter[data-delay="5"] { animation-delay: 520ms; }
-.hero-enter[data-delay="6"] { animation-delay: 680ms; }
-
-.gradient-text {
-  background: linear-gradient(
-    135deg,
-    var(--accent-color) 0%,
-    var(--accent-2) 25%,
-    #2DD4BF 50%,
-    var(--accent-2) 75%,
-    var(--accent-color) 100%
-  );
-  background-size: 300% 300%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: gradientShift 8s ease infinite;
-}
-
-@keyframes gradientShift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-
-.hover-lift {
-  transition:
-    transform var(--motion-duration-base) var(--motion-ease-out),
-    box-shadow var(--motion-duration-base) var(--motion-ease-out),
-    border-color var(--motion-duration-base) var(--motion-ease-out);
-}
-
-.hover-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px -12px var(--shadow-color);
-  border-color: rgba(var(--accent-rgb), 0.4);
-}
-
-.btn-glow::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at center, rgba(255,255,255,0.15), transparent 70%);
-  opacity: 0;
-  transition: opacity var(--motion-duration-fast) var(--motion-ease-out);
-}
-
-.btn-glow:hover::after {
-  opacity: 1;
-}
-
-.hero {
-  padding: 104px 0 96px;
-  min-height: min(720px, 88vh);
-  display: flex;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
-  background: var(--hero-bg);
-}
-
-.hero-glow {
-  position: absolute;
-  top: -20%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 800px;
-  height: 600px;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(var(--accent-rgb), 0.15) 0%,
-    transparent 70%
-  );
-  pointer-events: none;
-  animation: heroGlow 10s ease-in-out infinite;
-}
-
-@keyframes heroGlow {
-  0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(1); }
-  50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
-}
-
-.hero-grid-bg {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 60px 60px;
-  mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
-  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
-  pointer-events: none;
-}
-
-.hero-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 64px;
-  align-items: center;
-  position: relative;
-  z-index: 1;
-}
-
-.hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: rgba(var(--accent-rgb), 0.12);
-  color: var(--accent-color);
-  border-radius: 100px;
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 28px;
-  border: 1px solid rgba(var(--accent-rgb), 0.2);
-}
-
-.badge-dot {
-  width: 6px;
-  height: 6px;
-  background: var(--accent-color);
-  border-radius: 50%;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.4); }
-  50% { opacity: 0.8; box-shadow: 0 0 0 6px rgba(var(--accent-rgb), 0); }
-}
-
-.hero-title {
-  font-size: clamp(36px, 5vw, 56px);
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.03em;
-  margin-bottom: 24px;
-  color: #ffffff;
-}
-
-.hero-description {
-  font-size: 18px;
-  color: #b0b0b0;
-  line-height: 1.65;
-  margin-bottom: 36px;
-  max-width: 500px;
-}
-
-.hero-actions {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 56px;
-  flex-wrap: wrap;
-}
-
-.hero-stats {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.hero-stat {
-  display: flex;
-  flex-direction: column;
-  padding: 16px 20px;
-  background: rgba(8, 13, 18, 0.78);
-  backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  min-width: 120px;
-}
-
-.hero-stat:hover {
-  border-color: rgba(var(--accent-rgb), 0.4);
-}
-
-.hero-stat-value {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--accent-color);
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-}
-
-.hero-stat-label {
-  font-size: 12px;
-  color: #a0a0a0;
-  margin-top: 4px;
-}
-
-.hero-visual {
-  position: relative;
-}
-
-.dashboard-card {
-  background: rgba(8, 13, 18, 0.8);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-  padding: 28px;
-  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(20px);
-  position: relative;
-  overflow: hidden;
-}
-
-.dashboard-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), 0.3), transparent);
-}
-
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.dashboard-title-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 600;
-  font-size: 15px;
-  color: #ffffff;
-}
-
-.dashboard-dot {
-  width: 8px;
-  height: 8px;
-  background: var(--accent-color);
-  border-radius: 50%;
-  box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.5);
-}
-
-.status-badge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
-  background: rgba(var(--accent-rgb), 0.15);
-  color: var(--accent-color);
-  border-radius: 100px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.status-dot {
-  width: 6px;
-  height: 6px;
-  background: var(--accent-color);
-  border-radius: 50%;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-.dashboard-items {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.dashboard-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 12px;
-  border-radius: 12px;
-  transition: background var(--motion-duration-fast) var(--motion-ease-out);
-}
-
-.dashboard-item:hover {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.dashboard-item-left {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.dashboard-route {
-  font-weight: 600;
-  font-size: 14px;
-  color: #ffffff;
-}
-
-.dashboard-meta {
-  font-size: 12px;
-  color: #a0a0a0;
-}
-
-.dashboard-price {
-  font-weight: 700;
-  color: var(--accent-color);
-  font-size: 15px;
-  font-variant-numeric: tabular-nums;
-}
-
-.dashboard-empty {
-  padding: 20px;
-  text-align: center;
-  color: #a0a0a0;
-  font-size: 14px;
-}
-
-.dashboard-footer {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.dashboard-footer-text {
-  font-size: 12px;
-  color: #a0a0a0;
-  white-space: nowrap;
-}
-
-.dashboard-progress {
-  flex: 1;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.dashboard-progress-bar {
-  height: 100%;
-  width: 72%;
-  background: linear-gradient(90deg, var(--accent-color), var(--accent-2));
-  border-radius: 2px;
-}
-
-.social-proof {
-  padding: 48px 0 64px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.social-label {
-  text-align: center;
-  font-size: 13px;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: 500;
-  margin-bottom: 32px;
-}
-
-.logos-track {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 48px;
-  flex-wrap: wrap;
-}
-
-.logo-item {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text-muted);
-  opacity: 0.5;
-  transition: all var(--motion-duration-base) var(--motion-ease-out);
-  letter-spacing: -0.01em;
-}
-
-.logo-item:hover {
-  opacity: 1;
-  color: var(--text-secondary);
-}
-
-.logo-animate {
-  transition: transform 0.3s ease, opacity 0.3s ease, color 0.3s ease;
-}
-
-.logo-animate:hover {
-  transform: translateY(-5px) scale(1.05);
-}
-
-.features {
-  padding: 100px 0;
-}
-
-.live-orders {
-  padding: 80px 0;
-  background: var(--hero-bg);
-}
-
-.process {
-  padding: 100px 0;
-}
-
-.faq {
-  padding: 80px 0;
-  background: var(--hero-bg);
-}
-
-.cta-fullwidth {
-  width: 100%;
-  background: var(--hero-bg);
-  padding: 80px 0;
-  margin: 0;
-  position: relative;
-  overflow: hidden;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-[data-theme="light"] .features {
-  background: #ffffff;
-}
-
-[data-theme="dark"] .features {
-  background: var(--hero-bg);
-}
-
-[data-theme="light"] .process {
-  background: #ffffff;
-}
-
-[data-theme="dark"] .process {
-  background: var(--hero-bg);
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-}
-
-.feature-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
-  padding: 32px 24px;
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.feature-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(var(--accent-rgb), 0.3);
-  box-shadow: 0 20px 40px -12px var(--shadow-color);
-}
-
-[data-theme="light"] .feature-card {
-  background: #ffffff;
-  border-color: #e0e0e0;
-}
-
-[data-theme="dark"] .feature-card {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-.feature-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), 0.3), transparent);
-  opacity: 0;
-  transition: opacity var(--motion-duration-base) var(--motion-ease-out);
-}
-
-.feature-card:hover::before {
-  opacity: 1;
-}
-
-.feature-icon-wrap {
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(var(--accent-rgb), 0.1);
-  border-radius: 14px;
-  margin-bottom: 20px;
-  color: var(--accent-color);
-  border: 1px solid rgba(var(--accent-rgb), 0.15);
-}
-
-.feature-title {
-  font-size: 17px;
-  font-weight: 700;
-  margin-bottom: 10px;
-  letter-spacing: -0.01em;
-}
-
-[data-theme="light"] .feature-title {
-  color: #1a1a1a;
-}
-
-[data-theme="dark"] .feature-title {
-  color: #ffffff;
-}
-
-.feature-text {
-  font-size: 14px;
-  line-height: 1.6;
-  margin-bottom: 20px;
-}
-
-[data-theme="light"] .feature-text {
-  color: #4a4a4a;
-}
-
-[data-theme="dark"] .feature-text {
-  color: #b0b0b0;
-}
-
-.live-orders__filters {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 20px;
-  margin-bottom: 48px;
-}
-
-.filter-group {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.filter-chip {
-  padding: 8px 18px;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 100px;
-  font-size: 13px;
-  font-weight: 500;
-  color: #b0b0b0;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.filter-chip:hover {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-}
-
-.filter-chip.active {
-  background: rgba(var(--accent-rgb), 0.15);
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-}
-
-.search-group {
-  position: relative;
-}
-
-.search-group svg {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #a0a0a0;
-}
-
-.search-input {
-  padding: 12px 16px 12px 42px;
-  width: 280px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 40px;
-  color: #ffffff;
-  font-size: 14px;
-  outline: none;
-  transition: all 0.2s ease;
-}
-
-.search-input:focus {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.08);
-}
-
-.live-orders__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: 24px;
-}
-
-.order-list-move,
-.order-list-enter-active,
-.order-list-leave-active {
-  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.order-list-enter-from,
-.order-list-leave-to {
-  opacity: 0;
-  transform: scale(0.96) translateY(12px);
-}
-
-.order-list-leave-active {
-  position: absolute;
-  width: calc(100% - 24px);
-}
-
-.order-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-  padding: 24px;
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.order-card:hover {
-  transform: translateY(-5px);
-  border-color: rgba(var(--accent-rgb), 0.3);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
-}
-
-.order-card__badge {
-  display: inline-block;
-  padding: 5px 12px;
-  border-radius: 100px;
-  font-size: 11px;
-  font-weight: 600;
-  margin-bottom: 16px;
-}
-
-.badge--high {
-  background: rgba(var(--danger-rgb), 0.2);
-  color: var(--danger);
-}
-
-.badge--medium {
-  background: rgba(245, 158, 11, 0.2);
-  color: var(--warm);
-}
-
-.badge--low {
-  background: rgba(var(--accent-rgb), 0.2);
-  color: var(--accent-color);
-}
-
-.order-card__route {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 17px;
-  font-weight: 700;
-  margin-bottom: 20px;
-  color: #ffffff;
-}
-
-.order-card__details {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
-  padding: 12px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.order-detail {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.order-detail__label {
-  font-size: 13px;
-  color: #a0a0a0;
-}
-
-.order-detail__value {
-  font-size: 14px;
-  font-weight: 500;
-  color: #ffffff;
-}
-
-.order-card__footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.order-price__label {
-  font-size: 11px;
-  color: #a0a0a0;
-  display: block;
-}
-
-.order-price__value {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--accent-color);
-}
-
-.private-badge {
-  font-size: 12px;
-  color: #a0a0a0;
-  font-weight: 500;
-}
-
-.order-card__bids {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.bid-avatars {
-  display: flex;
-  align-items: center;
-}
-
-.bid-avatar {
-  width: 28px;
-  height: 28px;
-  background: rgba(var(--accent-rgb), 0.15);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  margin-left: -6px;
-  border: 1px solid #000000;
-  color: #ffffff;
-}
-
-.bid-avatar:first-child {
-  margin-left: 0;
-}
-
-.bid-count {
-  width: 28px;
-  height: 28px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: 600;
-  margin-left: -6px;
-  color: #ffffff;
-}
-
-.bid-text {
-  font-size: 12px;
-  color: #a0a0a0;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 80px 24px;
-  grid-column: 1 / -1;
-}
-
-.empty-icon {
-  color: #a0a0a0;
-  margin-bottom: 16px;
-  opacity: 0.5;
-}
-
-.empty-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: #ffffff;
-}
-
-.empty-text {
-  color: #a0a0a0;
-  font-size: 14px;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity var(--motion-duration-fast) var(--motion-ease-out);
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.process-steps {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-  position: relative;
-}
-
-.process-step {
-  text-align: center;
-  position: relative;
-}
-
-.step-visual {
-  position: relative;
-  margin-bottom: 24px;
-  display: flex;
-  justify-content: center;
-}
-
-.step-number {
-  width: 56px;
-  height: 56px;
-  background: linear-gradient(135deg, var(--accent-color), var(--accent-strong));
-  color: white;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  font-weight: 800;
-  position: relative;
-  z-index: 2;
-  transition: all var(--motion-duration-base) var(--motion-ease-spring);
-  box-shadow: 0 4px 16px rgba(var(--accent-rgb), 0.3);
-}
-
-.process-step:hover .step-number {
-  transform: scale(1.1) rotate(-3deg);
-  box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.4);
-}
-
-.step-connector {
-  position: absolute;
-  top: 50%;
-  left: calc(50% + 36px);
-  right: calc(-50% + 36px);
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  z-index: 1;
-}
-
-.step-connector-line {
-  flex: 1;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent-color), rgba(var(--accent-rgb), 0.2));
-  border-radius: 1px;
-}
-
-.step-connector-dot {
-  width: 6px;
-  height: 6px;
-  background: var(--accent-color);
-  border-radius: 50%;
-  opacity: 0.4;
-}
-
-.step-title {
-  font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 10px;
-  letter-spacing: -0.01em;
-}
-
-[data-theme="light"] .step-title {
-  color: #1a1a1a;
-}
-
-[data-theme="dark"] .step-title {
-  color: #ffffff;
-}
-
-.step-text {
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-[data-theme="light"] .step-text {
-  color: #4a4a4a;
-}
-
-[data-theme="dark"] .step-text {
-  color: #b0b0b0;
-}
-
-.faq__grid {
-  max-width: 800px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.faq-item {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  overflow: hidden;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.section-visible .faq-item {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.section-visible .faq-item:nth-child(1) { transition-delay: 0.05s; }
-.section-visible .faq-item:nth-child(2) { transition-delay: 0.1s; }
-.section-visible .faq-item:nth-child(3) { transition-delay: 0.15s; }
-.section-visible .faq-item:nth-child(4) { transition-delay: 0.2s; }
-
-.faq-item__question {
-  padding: 20px 24px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: color 0.2s ease;
-  color: #ffffff;
-}
-
-.faq-item__question:hover {
-  color: var(--accent-color);
-}
-
-.faq-item__question svg {
-  transition: transform 0.2s ease;
-  color: var(--accent-color);
-}
-
-.faq-item__question svg.rotated {
-  transform: rotate(180deg);
-}
-
-.faq-item__answer {
-  padding: 0 24px 24px;
-  font-size: 15px;
-  color: #b0b0b0;
-  line-height: 1.6;
-}
-
-.faq-expand-enter-active,
-.faq-expand-leave-active {
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  overflow: hidden;
-}
-
-.faq-expand-enter-from,
-.faq-expand-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.cta-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 24px;
-  position: relative;
-  z-index: 2;
-}
-
-.cta-layout {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 40px;
-  flex-wrap: wrap;
-}
-
-.cta-stat-side {
-  flex: 1;
-  text-align: center;
-  min-width: 160px;
-}
-
-.cta-stat-side .cta-stat-value {
-  font-size: 42px;
-  font-weight: 800;
-  color: var(--accent-color);
-  margin-bottom: 8px;
-  white-space: nowrap;
-}
-
-.cta-stat-side .cta-stat-label {
-  font-size: 14px;
-  color: #b0b0b0;
-}
-
-.cta-content {
-  flex: 2;
-  text-align: center;
-  min-width: 280px;
-}
-
-.cta-badge {
-  display: inline-block;
-  background: rgba(var(--accent-rgb), 0.15);
-  color: var(--accent-color);
-  padding: 6px 16px;
-  border-radius: 100px;
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 24px;
-  border: 1px solid rgba(var(--accent-rgb), 0.3);
-}
-
-.cta-title {
-  font-size: clamp(28px, 4vw, 42px);
-  font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-  margin-bottom: 20px;
-  color: #ffffff;
-}
-
-.cta-text {
-  font-size: 18px;
-  color: #b0b0b0;
-  margin-bottom: 32px;
-  line-height: 1.6;
-}
-
-.cta-buttons {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
-}
-
-.cta-note {
-  font-size: 14px;
-  color: #888888;
-  display: block;
-}
-
-.cta-inner .btn-primary {
-  background: linear-gradient(135deg, var(--accent-color), var(--accent-strong));
-  box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.3);
-}
-
-.cta-inner .btn-primary:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 32px rgba(var(--accent-rgb), 0.4);
-}
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.modal-content {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 24px;
-  padding: 40px;
-  max-width: 600px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-  animation: slideUp 0.3s ease;
-}
-
-@keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-}
-
-.modal-header h2 {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.modal-close:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-primary);
-}
-
-.modal-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.form-group label {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.form-group input,
-.form-group select {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 12px 16px;
-  color: var(--text-primary);
-  font-size: 15px;
-  outline: none;
-  transition: all 0.2s ease;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1);
-}
-
-.form-group select {
-  cursor: pointer;
-}
-
-.form-group select option {
-  background: var(--bg-card);
-  color: var(--text-primary);
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.access-type-selector {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.access-type-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 2px solid var(--border-color);
-  border-radius: 12px;
-  padding: 16px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.access-type-card:hover {
-  border-color: rgba(var(--accent-rgb), 0.3);
-}
-
-.access-type-card.active {
-  border-color: var(--accent-color);
-  background: rgba(var(--accent-rgb), 0.05);
-}
-
-.access-type-card svg {
-  width: 24px;
-  height: 24px;
-  color: var(--accent-color);
-  flex-shrink: 0;
-}
-
-.access-type-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 2px;
-}
-
-.access-type-desc {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.form-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 8px;
-}
-
-.btn-cancel {
-  flex: 1;
-  padding: 14px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  color: var(--text-primary);
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-cancel:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.btn-submit {
-  flex: 1;
-  padding: 14px;
-  background: linear-gradient(135deg, var(--accent-color), var(--accent-strong));
-  border: none;
-  border-radius: 12px;
-  color: white;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.2);
-}
-
-.btn-submit:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3);
-}
-
 @media (max-width: 1024px) {
-  .hero-grid {
-    grid-template-columns: 1fr;
-    gap: 48px;
-  }
-
-  .hero-visual {
-    max-width: 500px;
-    margin: 0 auto;
-  }
-
-  .features-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .process-steps {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 40px;
-  }
-
-  .step-connector {
-    display: none;
-  }
-  
-  .cta-layout {
-    flex-direction: column;
-    gap: 32px;
-  }
-  
-  .cta-stat-side {
-    flex: auto;
-    width: 100%;
-  }
-  
-  .cta-stat-side .cta-stat-value {
-    font-size: 32px;
-  }
+  .tnd-hero__grid { grid-template-columns: 1fr; }
+  .live { max-width: 520px; }
+  .steps-grid { grid-template-columns: repeat(2, 1fr); }
+  .step-card::after { display: none; }
+  .save-grid, .faq-wrap { grid-template-columns: 1fr; gap: 32px; }
+  .tnd-cta { flex-direction: column; align-items: flex-start; }
 }
-
-@media (max-width: 768px) {
-  .hero {
-    padding: 100px 0 60px;
-  }
-
-  .hero-stats {
-    gap: 12px;
-  }
-
-  .hero-stat {
-    min-width: 100px;
-    padding: 12px 14px;
-  }
-
-  .hero-stat-value {
-    font-size: 22px;
-  }
-
-  .features-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .process-steps {
-    grid-template-columns: 1fr;
-  }
-
-  .live-orders__filters {
-    flex-direction: column;
-  }
-
-  .search-group {
-    width: 100%;
-  }
-
-  .search-input {
-    width: 100%;
-  }
-
-  .live-orders__grid {
-    grid-template-columns: 1fr;
-  }
-
-  .section-title {
-    font-size: 28px;
-  }
-
-  .filter-group {
-    justify-content: center;
-  }
-
-  .cta-fullwidth {
-    padding: 60px 0;
-  }
-
-  .cta-title {
-    font-size: 28px;
-  }
-
-  .cta-text {
-    font-size: 16px;
-    margin-bottom: 32px;
-  }
-
-  .cta-buttons {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .logos-track {
-    gap: 24px;
-  }
-
-  .logo-item {
-    font-size: 14px;
-  }
-
-  .modal-content {
-    padding: 30px 20px;
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-
-  .access-type-selector {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-.applied-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 18px;
-  border-radius: 10px;
-  background: rgba(var(--accent-rgb), 0.15);
-  color: var(--accent-color);
-  font-weight: 600;
-  font-size: 13px;
-  border: 1px solid rgba(var(--accent-rgb), 0.3);
-}
-.cta-layout-text {
-  text-align: center;
-  max-width: 700px;
-  margin: 0 auto;
-}
-
-.modal-form select {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 12px 16px;
-  color: var(--text-primary);
-  font-size: 15px;
-  outline: none;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  width: 100%;
-}
-
-.modal-form select:focus {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1);
-}
-
-.modal-form select option {
-  background: var(--bg-card);
-  color: var(--text-primary);
-}
-
-.modal-form input[type="date"] {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 12px 16px;
-  color: var(--text-primary);
-  font-size: 15px;
-  outline: none;
-  transition: all 0.2s ease;
-  width: 100%;
-}
-
-.modal-form input[type="date"]:focus {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1);
-}
-
-.modal-form input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(1);
-  cursor: pointer;
-}
-
-.modal-form input[type="number"] {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 12px 16px;
-  color: var(--text-primary);
-  font-size: 15px;
-  outline: none;
-  transition: all 0.2s ease;
-  width: 100%;
-}
-
-.modal-form input[type="number"]:focus {
-  border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1);
-}
-
-.modal-form input[type="number"]::-webkit-inner-spin-button,
-.modal-form input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+@media (max-width: 640px) {
+  section { padding: 76px 0; }
+  .container { padding: 0 16px; }
+  .steps-grid, .feature-grid { grid-template-columns: 1fr; }
+  .lot { grid-template-columns: 1fr; gap: 14px; }
+  .lot__facts { grid-template-columns: 1fr 1fr; }
+  .lot__action { justify-self: stretch; }
+  .lot__btn { width: 100%; }
+  .board-search { min-width: 0; width: 100%; }
+  .board-tools { width: 100%; }
+  .form-row, .access { grid-template-columns: 1fr; }
+  .tnd-cta { padding: 32px 24px; }
+  .tnd-stats { gap: 22px; }
+  .save-card { padding: 22px; }
+  .save-card__result { grid-template-columns: 1fr; }
 }
 </style>

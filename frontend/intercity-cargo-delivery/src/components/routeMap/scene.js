@@ -63,7 +63,7 @@ async function loadHeightSampler() {
 const toWorld = (x, y, h) => new THREE.Vector3(x, h, -y);
 
 function buildTerrain(relief, heightTex) {
-  const geo = new THREE.PlaneGeometry(EW, EH, 520, 242);
+  const geo = new THREE.PlaneGeometry(EW, EH, 400, 186);
   geo.rotateX(-Math.PI / 2);
   geo.translate((EX0 + EX1) / 2, 0, -(EY0 + EY1) / 2);
   const material = new THREE.ShaderMaterial({
@@ -209,7 +209,7 @@ function buildRoute(from, to, index, sample) {
   const mid = a.clone().lerp(b, 0.5);
   mid.y = Math.max(a.y, b.y) + Math.min(1.6 + dist * 0.2, 11);
   const curve = new THREE.QuadraticBezierCurve3(a, mid, b);
-  const geo = new THREE.TubeGeometry(curve, Math.max(24, Math.round(dist * 2.2)), 0.085, 6, false);
+  const geo = new THREE.TubeGeometry(curve, Math.max(24, Math.round(dist * 2.2)), 0.13, 8, false);
   const material = new THREE.ShaderMaterial({
     transparent: true,
     depthWrite: false,
@@ -234,7 +234,7 @@ function buildRoute(from, to, index, sample) {
         float dashes = fract(vT * uLen * 0.16 - uTime * 0.8 - uOffset);
         float flow = smoothstep(0.0, 0.25, dashes) * smoothstep(0.7, 0.25, dashes);
         float ends = smoothstep(0.0, 0.04, vT) * smoothstep(1.0, 0.96, vT);
-        float glow = (0.2 + flow * 0.5) * (1.0 - uDim * 0.8) + uHighlight * (0.55 + flow * 1.3);
+        float glow = (0.32 + flow * 0.7) * (1.0 - uDim * 0.8) + uHighlight * (0.7 + flow * 1.5);
         gl_FragColor = vec4(mix(uColor, uColor2, vT) * (1.0 + uHighlight), glow * ends);
       }
     `,
@@ -244,7 +244,7 @@ function buildRoute(from, to, index, sample) {
   return mesh;
 }
 
-export async function createRouteMap(container, { onFeatured, onLabels, onReady } = {}) {
+export async function createRouteMap(container, { onFeatured, onLabels, onReady, onSelect, tracking = null, layout = 'center' } = {}) {
   const width = () => container.clientWidth || 1;
   const height = () => container.clientHeight || 1;
   const isSmall = () => width() < 760;
@@ -258,8 +258,10 @@ export async function createRouteMap(container, { onFeatured, onLabels, onReady 
   relief.colorSpace = THREE.SRGBColorSpace;
   relief.anisotropy = 8;
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+  const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true, powerPreference: 'high-performance' });
+  // Качество подстраивается под устройство: начинаем с 1.5 и снижаем, если кадры не успевают
+  let pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+  renderer.setPixelRatio(pixelRatio);
   renderer.setSize(width(), height());
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 0.9;
@@ -275,6 +277,8 @@ export async function createRouteMap(container, { onFeatured, onLabels, onReady 
   scene.add(world);
 
   const terrain = buildTerrain(relief, heightTex);
+  // рельеф полупрозрачный по краям — рисуем его первым, иначе он перекрывает «дальние» маршруты
+  terrain.renderOrder = -1;
   world.add(terrain);
 
   const layers = {
@@ -290,20 +294,24 @@ export async function createRouteMap(container, { onFeatured, onLabels, onReady 
 
   const routes = ROUTES.filter(([f, t]) => cityById[f] && cityById[t])
     .map(([f, t], i) => buildRoute(cityById[f], cityById[t], i, sample));
-  routes.forEach((r) => world.add(r));
+  routes.forEach((r) => { r.renderOrder = 2; world.add(r); });
 
   const truckGeo = new THREE.BufferGeometry();
   const truckPos = new Float32Array(routes.length * 3);
   truckGeo.setAttribute('position', new THREE.BufferAttribute(truckPos, 3));
   const trucks = new THREE.Points(truckGeo, new THREE.PointsMaterial({
-    size: 2.2, map: makeGlowTexture(), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    size: 3.2, map: makeGlowTexture(), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
   }));
   world.add(trucks);
 
-  const composer = new EffectComposer(renderer);
+  const composerTarget = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: renderer.capabilities.isWebGL2 && pixelRatio < 1.5 ? 4 : 0 });
+  const composer = new EffectComposer(renderer, composerTarget);
   composer.addPass(new RenderPass(scene, camera));
   const bloom = new UnrealBloomPass(new THREE.Vector2(width(), height()), 0.6, 0.45, 0.42);
   composer.addPass(bloom);
+  // свечение считаем в половинном разрешении — на глаз не отличить, а видеокарте вдвое легче
+  const sizeBloom = () => bloom.setSize(Math.round(width() * pixelRatio * 0.5), Math.round(height() * pixelRatio * 0.5));
+  sizeBloom();
   composer.addPass(new OutputPass());
 
   // ─── Камера: карта по центру, вписана по ширине ───
@@ -324,6 +332,7 @@ export async function createRouteMap(container, { onFeatured, onLabels, onReady 
   let viewShiftY = null;
   // Только в разработке: фиксированный ракурс для рендера картинок внутренних страниц
   let still = null;
+  let forcedRoute = null;
   function placeStill() {
     const { x, z, dist, tilt, yaw } = still;
     target.set(x, 0, -z);
@@ -341,24 +350,41 @@ export async function createRouteMap(container, { onFeatured, onLabels, onReady 
     camera.lookAt(target);
   }
 
+  // ─── Управление: перетаскивание, приближение, фокус на городе ───
+  const view = { yaw: 0, tilt: 0, zoom: 1, yawGoal: 0, tiltGoal: 0, zoomGoal: 1 };
+  // доля приближения к цели за кадр, пересчитанная под длину кадра (60 Гц = как задано)
+  let frameK = 1;
+  const ease = (k) => 1 - (1 - k) ** frameK;
+  const baseTarget = new THREE.Vector3(2, 0, 1);
+  const targetGoal = baseTarget.clone();
+  let focusLocal = null; // точка на карте (в координатах карты), к которой летит камера
+
   function placeCamera() {
     if (still) {
       placeStill();
       return;
     }
+    view.yaw += (view.yawGoal - view.yaw) * ease(0.14);
+    view.tilt += (view.tiltGoal - view.tilt) * ease(0.14);
+    view.zoom += (view.zoomGoal - view.zoom) * ease(0.09);
+    if (focusLocal) targetGoal.copy(world.localToWorld(focusLocal.clone()));
+    else targetGoal.copy(baseTarget);
+    target.lerp(targetGoal, ease(0.08));
     const aspect = width() / height();
     const small = isSmall();
     // Карта опускается в нижнюю часть экрана — сверху остаётся место под заголовок
-    const shiftY = small ? -0.24 : -0.19;
+    // center — карта под заголовком (главная); right — текст слева, карта справа (трекинг)
+    const shiftY = small ? -0.24 : layout === 'right' ? -0.04 : -0.19;
+    const shiftX = !small && layout === 'right' ? -0.2 : 0;
     if (shiftY !== viewShiftY) {
       viewShiftY = shiftY;
-      camera.setViewOffset(width(), height(), 0, height() * shiftY, width(), height());
+      camera.setViewOffset(width(), height(), width() * shiftX, height() * shiftY, width(), height());
     }
     const vfov = THREE.MathUtils.degToRad(camera.fov);
     const hfov = 2 * Math.atan(Math.tan(vfov / 2) * aspect);
     const fitW = small ? 104 : Math.max(126, 150 - aspect * 14); // сколько единиц карты должно влезть по ширине
-    const dist = (fitW / 2) / Math.tan(hfov / 2) * 0.86;
-    const tilt = THREE.MathUtils.degToRad(44 + scrollK * 16);
+    const dist = (fitW / 2) / Math.tan(hfov / 2) * 0.86 * view.zoom;
+    const tilt = THREE.MathUtils.degToRad(THREE.MathUtils.clamp(44 + scrollK * 16 + view.tilt, 22, 78));
     camera.position.set(
       target.x + smooth.x * 5,
       target.y + Math.sin(tilt) * dist - smooth.y * 2,
@@ -367,19 +393,156 @@ export async function createRouteMap(container, { onFeatured, onLabels, onReady 
     camera.lookAt(target.x + smooth.x * 1.5, target.y, target.z);
   }
 
-  // Наведение на город
+  // Наведение и клик по городу: невидимые увеличенные «мишени», чтобы легко попадать
   const raycaster = new THREE.Raycaster();
-  const hoverTargets = cities.map((c) => c.userData.core);
+  const hitGeo = new THREE.SphereGeometry(1.5, 10, 10);
+  const hitMat = new THREE.MeshBasicMaterial({ visible: false });
+  const hoverTargets = cities.map((c) => {
+    const m = new THREE.Mesh(hitGeo, hitMat);
+    m.position.y = 0.4;
+    c.add(m);
+    return m;
+  });
   let hoveredCity = null;
-  const onMove = (e) => {
-    const r = renderer.domElement.getBoundingClientRect();
+  let selectedCity = null;
+  const canvas = renderer.domElement;
+  // курсор меняем только при смене состояния — каждая запись в style пересчитывает стили страницы
+  let cursor = '';
+  const setCursor = (c) => { if (c !== cursor) { cursor = c; canvas.style.cursor = c; } };
+  canvas.style.touchAction = 'pan-y';
+  const pick = (e) => {
+    const r = canvas.getBoundingClientRect();
     const ndc = new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
     raycaster.setFromCamera(ndc, camera);
     const hit = raycaster.intersectObjects(hoverTargets, false)[0];
-    hoveredCity = hit ? hit.object.parent.userData.city.id : null;
-    renderer.domElement.style.cursor = hoveredCity ? 'pointer' : '';
+    return hit ? hit.object.parent.userData.city.id : null;
   };
-  renderer.domElement.addEventListener('pointermove', onMove);
+
+  const drag = { on: false, x: 0, y: 0, moved: 0, vx: 0, vy: 0, t: 0, mouse: true };
+  const inertia = { x: 0, y: 0 };
+  // мягкие границы поворота: у края карта «упирается», а не встаёт колом
+  const soft = (v, min, max) => (v < min ? min + (v - min) * 0.25 : v > max ? max + (v - max) * 0.25 : v);
+  let hoverEvent = null;
+  const onDown = (e) => {
+    if (e.button !== undefined && e.button !== 0) return;
+    drag.on = true;
+    drag.x = e.clientX;
+    drag.y = e.clientY;
+    drag.moved = 0;
+    drag.vx = 0;
+    drag.vy = 0;
+    drag.t = performance.now();
+    drag.mouse = e.pointerType === 'mouse';
+    inertia.x = 0;
+    inertia.y = 0;
+    // курсор может уйти с карты на подписи и карточки — перетаскивание не должно обрываться
+    try { canvas.setPointerCapture(e.pointerId); } catch { /* нет поддержки */ }
+  };
+  const onMove = (e) => {
+    if (drag.on) {
+      const dx = e.clientX - drag.x;
+      const dy = e.clientY - drag.y;
+      const now = performance.now();
+      const dtm = Math.max(1, now - drag.t);
+      drag.x = e.clientX;
+      drag.y = e.clientY;
+      drag.t = now;
+      drag.moved += Math.abs(dx) + Math.abs(dy);
+      // скорость в пикселях за кадр 60 Гц, сглаженная — для инерции после отпускания
+      drag.vx = drag.vx * 0.6 + (dx / dtm) * 16.7 * 0.4;
+      drag.vy = drag.vy * 0.6 + (dy / dtm) * 16.7 * 0.4;
+      view.yawGoal = soft(view.yawGoal + dx * 0.0042, -0.9, 0.9);
+      if (drag.mouse) view.tiltGoal = soft(view.tiltGoal - dy * 0.12, -18, 26);
+      if (drag.moved > 6) setCursor('grabbing');
+      return;
+    }
+    hoverEvent = e;
+  };
+  const describe = (id) => {
+    const c = cityById[id];
+    const list = ROUTES.filter(([f, t]) => f === id || t === id).map(([f, t]) => routeInfo(id, f === id ? t : f));
+    return { id, name: c.name, routes: list };
+  };
+  const selectCity = (id) => {
+    selectedCity = id;
+    if (id) {
+      const c = cityById[id];
+      focusLocal = toWorld(c.x, c.y, sample(c.x, c.y));
+      view.zoomGoal = 0.6;
+    } else if (!tracking) {
+      focusLocal = null;
+      view.zoomGoal = 1;
+    }
+    if (onSelect) onSelect(id ? describe(id) : null);
+  };
+  const onUp = (e) => {
+    if (!drag.on) return;
+    drag.on = false;
+    try { canvas.releasePointerCapture(e.pointerId); } catch { /* уже отпущен */ }
+    // бросок: карта продолжает плавно вращаться и останавливается
+    if (performance.now() - drag.t < 80) {
+      inertia.x = drag.vx * 0.0042;
+      inertia.y = drag.mouse ? -drag.vy * 0.12 : 0;
+    }
+    setCursor(hoveredCity ? 'pointer' : 'grab');
+    if (e.type !== 'pointercancel' && drag.moved < 6 && !tracking && e.target === canvas) selectCity(pick(e));
+  };
+  const onWheel = (e) => {
+    // колесо приближает только с Ctrl, чтобы не мешать прокрутке страницы
+    if (!e.ctrlKey) return;
+    e.preventDefault();
+    view.zoomGoal = THREE.MathUtils.clamp(view.zoomGoal * (e.deltaY > 0 ? 1.12 : 0.89), 0.4, 1.35);
+  };
+  const reset = () => {
+    view.yawGoal = 0;
+    view.tiltGoal = 0;
+    view.zoomGoal = tracking ? 0.62 : 1;
+    if (!tracking) selectCity(null);
+  };
+  canvas.addEventListener('pointerdown', onDown);
+  canvas.addEventListener('pointermove', onMove);
+  canvas.addEventListener('pointerup', onUp);
+  canvas.addEventListener('pointercancel', onUp);
+  canvas.addEventListener('pointerleave', () => { hoverEvent = null; if (hoveredCity && !drag.on) { hoveredCity = null; setCursor('grab'); } });
+  canvas.addEventListener('wheel', onWheel, { passive: false });
+  canvas.addEventListener('dblclick', reset);
+  setCursor('grab');
+
+  // Трекинг одного груза: крупная метка едет по маршруту
+  let trackRoute = null;
+  let trackProgress = 0;
+  const trackMarker = new THREE.Group();
+  const trackGlow = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: makeGlowTexture(), color: '#FFFFFF', transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+  }));
+  trackGlow.scale.setScalar(4);
+  trackMarker.add(trackGlow);
+  const trackRing = new THREE.Mesh(new THREE.RingGeometry(0.9, 1.15, 48), new THREE.MeshBasicMaterial({
+    color: '#F2B84B', transparent: true, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false,
+  }));
+  trackRing.rotation.x = -Math.PI / 2;
+  trackMarker.add(trackRing);
+  trackMarker.visible = false;
+  world.add(trackMarker);
+  const setTracking = (from, to, progress = 0.5) => {
+    trackRoute = routes.find((r) => (r.userData.from === from && r.userData.to === to)
+      || (r.userData.from === to && r.userData.to === from)) || null;
+    if (!trackRoute) {
+      trackRoute = buildRoute(cityById[from], cityById[to], routes.length, sample);
+      trackRoute.userData.material.uniforms.uReveal.value = 1;
+      trackRoute.renderOrder = 2;
+      world.add(trackRoute);
+      routes.push(trackRoute);
+    }
+    trackRoute.userData.reverse = trackRoute.userData.from !== from;
+    trackProgress = progress;
+    forcedRoute = [trackRoute.userData.from, trackRoute.userData.to];
+    trackMarker.visible = true;
+    const p = trackRoute.userData.curve.getPoint(0.5);
+    focusLocal = p.clone().setY(0);
+    view.zoomGoal = 0.62;
+  };
+  if (tracking) setTracking(tracking.from, tracking.to, tracking.progress);
 
   let featuredIndex = 0;
   let featuredAt = 0;
@@ -396,15 +559,58 @@ export async function createRouteMap(container, { onFeatured, onLabels, onReady 
   let running = true;
   let reveal = 0;
 
+  // Автоподстройка: если в среднем меньше ~40 кадров/с — снижаем разрешение, затем выключаем свечение
+  const perf = { sum: 0, n: 0, level: 0, skip: 90 };
+  function adaptQuality(dt) {
+    if (perf.skip > 0) { perf.skip -= 1; return; } // первые кадры — загрузка текстур, не считаем
+    perf.sum += dt;
+    perf.n += 1;
+    if (perf.n < 120) return;
+    const avg = perf.sum / perf.n;
+    perf.sum = 0;
+    perf.n = 0;
+    if (avg < 1 / 40 || perf.level >= 2) return;
+    perf.level += 1;
+    if (perf.level === 1 && pixelRatio > 1) {
+      pixelRatio = 1;
+      renderer.setPixelRatio(1);
+      composer.setPixelRatio(1);
+      resize();
+    } else {
+      perf.level = 2;
+      bloom.enabled = false;
+    }
+    perf.skip = 60;
+  }
+
   function frame() {
     if (!running) return;
     raf = requestAnimationFrame(frame);
     const dt = Math.min(clock.getDelta(), 0.05);
     const t = clock.elapsedTime;
+    frameK = dt * 60;
+    if (!drag.on && (Math.abs(inertia.x) > 1e-4 || Math.abs(inertia.y) > 1e-3)) {
+      view.yawGoal = THREE.MathUtils.clamp(view.yawGoal + inertia.x * frameK, -0.9, 0.9);
+      view.tiltGoal = THREE.MathUtils.clamp(view.tiltGoal + inertia.y * frameK, -18, 26);
+      const decay = 0.92 ** frameK;
+      inertia.x *= decay;
+      inertia.y *= decay;
+    }
+    // после отпускания мягко возвращаем за границы вышедший поворот
+    if (!drag.on) {
+      view.yawGoal = THREE.MathUtils.clamp(view.yawGoal, -0.9, 0.9);
+      view.tiltGoal = THREE.MathUtils.clamp(view.tiltGoal, -18, 26);
+    }
+    if (hoverEvent) {
+      hoveredCity = pick(hoverEvent);
+      setCursor(hoveredCity ? 'pointer' : 'grab');
+      hoverEvent = null;
+    }
+    adaptQuality(dt);
 
     reveal = reduceMotion ? 1 : Math.min(1, reveal + dt * 0.4);
-    smooth.lerp(pointer, 0.04);
-    world.rotation.y = still ? 0 : Math.sin(t * 0.07) * 0.025 + smooth.x * 0.03;
+    smooth.lerp(pointer, ease(0.04));
+    world.rotation.y = still ? 0 : Math.sin(t * 0.07) * 0.02 + smooth.x * 0.02 + view.yaw;
     placeCamera();
 
     terrain.material.uniforms.uReveal.value = reveal;
@@ -415,22 +621,24 @@ export async function createRouteMap(container, { onFeatured, onLabels, onReady 
     layers.roads.material.opacity = 0.42 * fade;
     layers.outline.material.opacity = 0.95 * Math.min(1, reveal * 1.6);
 
-    if (t - featuredAt > 4.5) {
+    if (t - featuredAt > 4.5 && !selectedCity && !trackRoute) {
       featuredAt = t;
       featuredIndex += 1;
       emitFeatured();
     }
-    const [ff, ft] = FEATURED[featuredIndex % FEATURED.length];
+    const [ff, ft] = forcedRoute || FEATURED[featuredIndex % FEATURED.length];
 
     routes.forEach((r, i) => {
       const u = r.userData.material.uniforms;
       u.uTime.value = t;
       u.uReveal.value = Math.min(1, Math.max(0, reveal * 1.7 - 0.6 - i * 0.01));
       const featured = r.userData.from === ff && r.userData.to === ft;
-      const touched = hoveredCity && (r.userData.from === hoveredCity || r.userData.to === hoveredCity);
-      const goal = touched || (!hoveredCity && featured) ? 1 : 0;
+      const focusCity = hoveredCity || selectedCity;
+      const touched = focusCity && (r.userData.from === focusCity || r.userData.to === focusCity);
+      const goal = touched || (!focusCity && featured) ? 1 : 0;
       u.uHighlight.value += (goal - u.uHighlight.value) * 0.08;
-      u.uDim.value += ((hoveredCity && !touched ? 1 : 0) - u.uDim.value) * 0.08;
+      const dim = (focusCity && !touched) || (trackRoute && r !== trackRoute) ? 1 : 0;
+      u.uDim.value += (dim - u.uDim.value) * 0.08;
 
       r.userData.t = (r.userData.t + dt * r.userData.speed * (reduceMotion ? 0 : 1)) % 1;
       r.userData.curve.getPoint(r.userData.t, tmp);
@@ -440,10 +648,20 @@ export async function createRouteMap(container, { onFeatured, onLabels, onReady 
       truckPos[i * 3 + 2] = tmp.z;
     });
     truckGeo.attributes.position.needsUpdate = true;
+    if (trackRoute) {
+      // груз медленно ползёт вперёд от заданного прогресса
+      trackProgress = Math.min(0.97, trackProgress + dt * 0.004);
+      const k = trackRoute.userData.reverse ? 1 - trackProgress : trackProgress;
+      trackRoute.userData.curve.getPoint(k, tmp);
+      trackMarker.position.copy(tmp);
+      const pk = (t * 0.8) % 1;
+      trackRing.scale.setScalar(1 + pk * 2.5);
+      trackRing.material.opacity = (1 - pk) * 0.9;
+    }
 
     cities.forEach((c) => {
       const { ring, phase, beamMat, city } = c.userData;
-      const active = hoveredCity === city.id || ff === city.id || ft === city.id;
+      const active = hoveredCity === city.id || selectedCity === city.id || ff === city.id || ft === city.id;
       if (ring) {
         const k = ((t * 0.7 + phase) % 1.6) / 1.6;
         ring.scale.setScalar(1 + k * (city.tier === 1 ? 3.4 : 2));
@@ -456,7 +674,10 @@ export async function createRouteMap(container, { onFeatured, onLabels, onReady 
       const w = width();
       const h = height();
       onLabels(cities.map((c) => {
-        c.localToWorld(tmp.copy(c.userData.labelAnchor));
+        // при приближении подпись опускается к городу, чтобы не «улетать» вверх
+        tmp.copy(c.userData.labelAnchor);
+        tmp.y = Math.max(0.4, tmp.y * Math.min(1, view.zoom * view.zoom));
+        c.localToWorld(tmp);
         tmp.project(camera);
         const { city } = c.userData;
         return {
@@ -465,7 +686,7 @@ export async function createRouteMap(container, { onFeatured, onLabels, onReady 
           tier: city.tier,
           x: (tmp.x * 0.5 + 0.5) * w,
           y: (-tmp.y * 0.5 + 0.5) * h,
-          active: hoveredCity === city.id || ff === city.id || ft === city.id,
+          active: hoveredCity === city.id || selectedCity === city.id || ff === city.id || ft === city.id,
           visible: tmp.z < 1 && fade > 0.6,
         };
       }));
@@ -477,6 +698,7 @@ export async function createRouteMap(container, { onFeatured, onLabels, onReady 
   const resize = () => {
     renderer.setSize(width(), height());
     composer.setSize(width(), height());
+    sizeBloom();
     camera.aspect = width() / height();
     viewShiftY = null;
     placeCamera();
@@ -502,11 +724,17 @@ export async function createRouteMap(container, { onFeatured, onLabels, onReady 
   if (import.meta.env.DEV) {
     window.__icMap = {
       setStill(view) { still = view; reveal = 1; },
+      setRoute(pair) { forcedRoute = pair; },
+      zoom(z) { view.zoomGoal = z; view.zoom = z; },
     };
   }
   if (onReady) onReady();
 
   return {
+    zoomBy(f) { view.zoomGoal = THREE.MathUtils.clamp(view.zoomGoal * f, 0.4, 1.35); },
+    reset,
+    selectCity,
+    setTracking,
     destroy() {
       running = false;
       cancelAnimationFrame(raf);
@@ -515,7 +743,12 @@ export async function createRouteMap(container, { onFeatured, onLabels, onReady 
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('pointermove', onPointer);
       window.removeEventListener('scroll', onScroll);
-      renderer.domElement.removeEventListener('pointermove', onMove);
+      canvas.removeEventListener('pointerdown', onDown);
+      canvas.removeEventListener('pointermove', onMove);
+      canvas.removeEventListener('pointerup', onUp);
+      canvas.removeEventListener('pointercancel', onUp);
+      canvas.removeEventListener('wheel', onWheel);
+      canvas.removeEventListener('dblclick', reset);
       scene.traverse((obj) => {
         if (obj.geometry) obj.geometry.dispose();
         const mats = Array.isArray(obj.material) ? obj.material : obj.material ? [obj.material] : [];

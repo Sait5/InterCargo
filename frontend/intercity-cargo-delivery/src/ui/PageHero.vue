@@ -13,7 +13,7 @@
 import HeroBackdrop from '@/ui/HeroBackdrop.vue';
 
 defineProps({
-  view: { type: String, default: 'overview' },
+  view: { type: String, default: 'news-port' },
   eyebrow: { type: String, default: '' },
   title: { type: String, default: '' },
   lead: { type: String, default: '' },
@@ -24,7 +24,7 @@ defineProps({
 .page-hero {
   position: relative;
   overflow: hidden;
-  padding: 96px 0 88px;
+  padding: calc(var(--header-h) + 80px) 0 88px;
   background:
     radial-gradient(60% 90% at 80% 0%, rgba(var(--accent-rgb), 0.16), transparent 65%),
     var(--hero-bg);

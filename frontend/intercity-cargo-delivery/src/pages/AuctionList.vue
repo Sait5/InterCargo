@@ -1,12 +1,12 @@
 <template>
 <div class="saas-landing">
 <Header />
+<PageHero view="auctions-cranes" eyebrow="Спот-аукционы">
+<template #title>Все <span class="ic-accent">аукционы</span></template>
+Активные торги и завершённые аукционы. Ставки идут на понижение — побеждает лучшая цена.
+</PageHero>
 <main class="auction-list-page">
 <div class="container">
-<div class="page-header">
-<h1 class="page-title">Все <span class="gradient-text">аукционы</span></h1>
-<p class="page-subtitle">Активные торги и завершённые аукционы</p>
-</div>
 
 <div class="filter-tabs">
 <button class="filter-tab" :class="{ active: filter === 'active' }" @click="filter = 'active'">
@@ -41,7 +41,7 @@
 </div>
 
 <div v-else class="auctions-grid">
-<div v-for="auction in filteredAuctions" :key="auction._id" class="auction-card" @click="$router.push(`/auction/${auction._id}`)">
+<div v-for="auction in filteredAuctions" :key="auction._id" class="auction-card" :class="{ example: auction.example }" @click="auction.example ? toast.success('Это пример — так выглядит аукцион в списке') : $router.push(`/auction/${auction._id}`)">
 <div class="auction-card-header">
 <div class="auction-status" :class="auction.status">{{ getStatusLabel(auction.status) }}</div>
 <div class="auction-timer" :class="{ urgent: getTimeLeft(auction.endsAt) < 3600 }">
@@ -103,6 +103,10 @@
 </template>
 
 <script setup>
+import { exampleAuctions } from '@/data/examples';
+import { useToastStore } from '@/stores/toast';
+const toast = useToastStore();
+import PageHero from '@/ui/PageHero.vue';
 import { ref, computed, onMounted } from 'vue';
 import { useUserStore } from '@/stores/user';
 import { useAuctionStore } from '@/stores/auctions';
@@ -120,10 +124,13 @@ const auctions = computed(() => auctionStore.auctions);
 const activeAuctions = computed(() => auctions.value.filter(a => a.status === 'active'));
 const completedAuctions = computed(() => auctions.value.filter(a => a.status === 'completed' || a.status === 'cancelled'));
 
+// Пока аукционов нет — показываем образцы с пометкой «Пример»
+const exampleMode = computed(() => !auctionStore.loading && auctions.value.length === 0);
 const filteredAuctions = computed(() => {
-if (filter.value === 'active') return activeAuctions.value;
-if (filter.value === 'completed') return completedAuctions.value;
-return auctions.value;
+const src = exampleMode.value ? exampleAuctions : null;
+if (filter.value === 'active') return src ? src.filter((a) => a.status === 'active') : activeAuctions.value;
+if (filter.value === 'completed') return src ? src.filter((a) => a.status === 'completed') : completedAuctions.value;
+return src || auctions.value;
 });
 
 const getStatusLabel = (status) => {
@@ -173,8 +180,9 @@ await auctionStore.fetchAll();
 .page-subtitle { font-size: 17px; color: var(--text-muted); }
 
 .filter-tabs { display: flex; gap: 12px; margin-bottom: 32px; justify-content: center; flex-wrap: wrap; }
-.filter-tab { display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-secondary); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
-.filter-tab:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); }
+@media (max-width: 480px) { .filter-tabs { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; gap: 8px; margin: 0 -16px 24px; padding: 0 16px 4px; scrollbar-width: none; } .filter-tabs > * { flex-shrink: 0; } }
+.filter-tab { display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-secondary); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+.filter-tab:hover { background: var(--bg-card); color: var(--text-primary); }
 .filter-tab.active { background: rgba(var(--accent-rgb), 0.1); border-color: var(--accent-color); color: var(--accent-color); }
 .tab-count { background: rgba(255, 255, 255, 0.1); padding: 2px 8px; border-radius: 8px; font-size: 12px; }
 .filter-tab.active .tab-count { background: rgba(var(--accent-rgb), 0.2); }
@@ -184,36 +192,38 @@ await auctionStore.fetchAll();
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-state p { color: var(--text-muted); }
 
+.auction-card.example { position: relative; border-style: dashed !important; }
+.auction-card.example::before { content: 'Пример'; position: absolute; top: -10px; left: 18px; padding: 3px 10px; border-radius: 999px; background: #1a1408; color: var(--warm); border: 1px solid rgba(242,184,75,0.4); font-size: 11px; font-weight: 800; text-transform: uppercase; }
 .empty-state { text-align: center; padding: 80px 20px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; }
 .empty-state svg { color: var(--text-muted); opacity: 0.3; margin-bottom: 20px; }
 .empty-state h3 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
 .empty-state p { font-size: 15px; color: var(--text-muted); margin-bottom: 24px; }
 .btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); color: white; border: none; border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.3s ease; }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); }
+.btn-primary:hover { box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); }
 
 .auctions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; }
 .auction-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; padding: 24px; cursor: pointer; transition: all 0.3s ease; display: flex; flex-direction: column; gap: 16px; }
-.auction-card:hover { border-color: rgba(var(--accent-rgb), 0.3); transform: translateY(-4px); box-shadow: 0 10px 30px var(--shadow-color); }
+.auction-card:hover { border-color: rgba(var(--accent-rgb), 0.3); box-shadow: 0 10px 30px var(--shadow-color); }
 
 .auction-card-header { display: flex; justify-content: space-between; align-items: center; }
 .auction-status { padding: 6px 14px; border-radius: 100px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
 .auction-status.active { background: rgba(var(--accent-rgb), 0.15); color: var(--accent-color); border: 1px solid rgba(var(--accent-rgb), 0.3); }
 .auction-status.completed { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
 .auction-status.cancelled { background: rgba(var(--danger-rgb), 0.15); color: var(--danger); border: 1px solid rgba(var(--danger-rgb), 0.3); }
-.auction-timer { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; padding: 6px 12px; background: rgba(255, 255, 255, 0.03); border-radius: 8px; }
+.auction-timer { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; padding: 6px 12px; background: var(--bg-card); border-radius: 8px; }
 .auction-timer.urgent { color: var(--danger); background: rgba(var(--danger-rgb), 0.1); }
 
 .auction-route { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; }
 .auction-route svg { color: var(--accent-color); flex-shrink: 0; }
 .auction-title { font-size: 14px; color: var(--text-secondary); }
 
-.auction-details { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 16px; background: rgba(255, 255, 255, 0.02); border-radius: 12px; }
+.auction-details { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 16px; background: var(--bg-card); border-radius: 12px; }
 .detail-item { display: flex; flex-direction: column; gap: 4px; }
 .detail-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
 .detail-value { font-size: 13px; font-weight: 600; }
 
 .auction-pricing { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.price-block { padding: 12px; background: rgba(255, 255, 255, 0.02); border-radius: 10px; }
+.price-block { padding: 12px; background: var(--bg-card); border-radius: 10px; }
 .price-block.current { background: rgba(var(--accent-rgb), 0.08); border: 1px solid rgba(var(--accent-rgb), 0.2); }
 .price-label { display: block; font-size: 11px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
 .price-value { font-size: 16px; font-weight: 800; }
@@ -226,5 +236,5 @@ await auctionStore.fetchAll();
 .auction-type.private { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; }
 
 @media (max-width: 1024px) { .auctions-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); } }
-@media (max-width: 768px) { .auction-list-page { padding: 40px 0 60px; } .page-title { font-size: 28px; } .auctions-grid { grid-template-columns: 1fr; } .auction-details { grid-template-columns: 1fr; } .auction-pricing { grid-template-columns: 1fr; } }
+@media (max-width: 768px) { .auction-list-page { padding: 40px 0 60px; } .page-title { font-size: 28px; } .auctions-grid { grid-template-columns: 1fr; } .auction-details { grid-template-columns: 1fr 1fr; } .auction-pricing { grid-template-columns: 1fr; } }
 </style>

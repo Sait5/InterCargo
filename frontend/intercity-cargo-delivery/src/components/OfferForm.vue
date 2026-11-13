@@ -31,11 +31,13 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue';
+import { reactive, ref, watch } from 'vue';
 import { api } from '@/api/client';
 import { useToastStore } from '@/stores/toast';
 
-defineProps({
+const props = defineProps({
+  // Текст из калькулятора — подставляется в поле «Что везём?»
+  prefill: { type: String, default: '' },
   withMessage: { type: Boolean, default: true },
   submitText: { type: String, default: 'Получить расчёт' },
 });
@@ -43,6 +45,7 @@ defineProps({
 const toast = useToastStore();
 const sending = ref(false);
 const form = reactive({ name: '', phone: '', email: '', message: '' });
+watch(() => props.prefill, (v) => { if (v) form.message = v; });
 const errors = reactive({ name: '', phone: '', email: '' });
 
 // Маска +7 (XXX) XXX-XX-XX

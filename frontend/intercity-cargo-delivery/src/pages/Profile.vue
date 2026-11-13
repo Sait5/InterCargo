@@ -166,7 +166,7 @@
           <span class="quick-hint">Часто используемые функции</span>
         </div>
         <div class="actions-grid">
-          <div class="action-card" @click="$router.push('/transport-tender')">
+          <div class="action-card" @click="$router.push('/transport-tender?create=1')">
             <div class="action-icon green">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             </div>
@@ -397,7 +397,7 @@ const handleLogout = () => {
 .header-actions { display: flex; gap: 10px; }
 .notif-wrapper { position: relative; }
 .icon-btn { width: 44px; height: 44px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; color: var(--text-secondary); position: relative; }
-.icon-btn:hover { border-color: var(--accent-color); color: var(--accent-color); transform: translateY(-2px); }
+.icon-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
 .icon-btn svg { width: 20px; height: 20px; }
 .notif-dot { position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; background: var(--danger); border-radius: 50%; border: 2px solid var(--bg-card); }
 .notif-dropdown { position: absolute; top: calc(100% + 12px); right: 0; width: 360px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); z-index: 1000; animation: dropdownFade 0.2s ease; overflow: hidden; }
@@ -442,7 +442,7 @@ const handleLogout = () => {
 .form-group input:disabled, .form-group input.readonly-input { opacity: 0.7; cursor: not-allowed; background: rgba(255, 255, 255, 0.02); }
 .btn-primary, .btn-secondary { width: 100%; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; border: none; margin-top: 8px; }
 .btn-primary { background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); color: white; box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.2); }
-.btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); }
+.btn-primary:hover:not(:disabled) { box-shadow: 0 8px 25px rgba(var(--accent-rgb), 0.3); }
 .btn-secondary { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); border: 1px solid var(--border-color); }
 .btn-secondary:hover:not(:disabled) { background: rgba(255, 255, 255, 0.08); border-color: var(--accent-color); }
 .btn-primary:disabled, .btn-secondary:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -452,7 +452,7 @@ const handleLogout = () => {
 .quick-hint { font-size: 13px; color: var(--text-muted); }
 .actions-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 .action-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; padding: 24px; cursor: pointer; transition: all 0.3s ease; }
-.action-card:hover { transform: translateY(-4px); border-color: rgba(var(--accent-rgb), 0.3); box-shadow: 0 10px 30px var(--shadow-color); }
+.action-card:hover { border-color: rgba(var(--accent-rgb), 0.3); box-shadow: 0 10px 30px var(--shadow-color); }
 .action-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
 .action-icon svg { width: 24px; height: 24px; }
 .action-icon.green { background: rgba(var(--accent-rgb), 0.1); color: var(--accent-color); }

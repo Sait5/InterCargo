@@ -1,7 +1,7 @@
 <template>
   <div class="privacy-page">
     <Header />
-    <PageHero eyebrow="Документы" title="Политика и условия" lead="Как мы обращаемся с данными и на каких условиях работает платформа." />
+    <PageHero view="privacy-office" eyebrow="Документы" title="Политика и условия" lead="Как мы обращаемся с данными и на каких условиях работает платформа." />
 
     <div class="ic-container layout">
       <nav class="toc" aria-label="Содержание">

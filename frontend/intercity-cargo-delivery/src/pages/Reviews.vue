@@ -29,6 +29,11 @@
         </div>
       </div>
 
+      <div v-if="exampleMode" class="example-banner">
+        <span class="ex-chip">Пример</span>
+        <span>Отзывов пока нет — так они будут выглядеть после выполненных рейсов. Рейтинг влияет на то, как часто вас выбирают заказчики.</span>
+      </div>
+
       <div v-if="reviews.length === 0" class="empty-state">
         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
@@ -38,7 +43,7 @@
       </div>
 
       <div v-else class="reviews-list">
-        <div v-for="review in reviews" :key="review.id" class="review-card">
+        <div v-for="review in reviews" :key="review.id" class="review-card" :class="{ example: review.example }">
           <div class="review-header">
             <div class="reviewer-info">
               <div class="reviewer-avatar">{{ getReviewerInitials(review) }}</div>
@@ -71,12 +76,14 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
 import { useReviewStore } from '@/stores/reviews';
+import { exampleReviews } from '@/data/examples';
 
 const router = useRouter();
 const userStore = useUserStore();
 const reviewStore = useReviewStore();
 
 const reviews = ref([]);
+const exampleMode = ref(false);
 
 const roleLabel = computed(() => {
   if (userStore.user?.accountType === 'carrier') return 'Перевозчик';
@@ -139,6 +146,10 @@ onMounted(async () => {
       date: r.createdAt,
     };
   });
+  if (!reviews.value.length) {
+    reviews.value = exampleReviews;
+    exampleMode.value = true;
+  }
 });
 </script>
 
@@ -173,6 +184,10 @@ onMounted(async () => {
 .content-header h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-color) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 .content-header p { font-size: 16px; color: var(--text-muted); }
 .reviews-summary { margin-bottom: 32px; }
+.example-banner { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 16px 20px; margin-bottom: 16px; border-radius: 16px; border: 1px dashed rgba(var(--accent-rgb), 0.45); background: rgba(var(--accent-rgb), 0.06); color: var(--text-secondary); font-size: 14px; }
+.example-banner span:nth-child(2) { flex: 1; min-width: 220px; }
+.ex-chip { padding: 4px 10px; border-radius: 999px; background: rgba(242, 184, 75, 0.16); color: var(--warm); font-size: 12px; font-weight: 800; text-transform: uppercase; }
+.review-card.example { border-style: dashed !important; }
 .summary-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; padding: 32px; display: flex; gap: 40px; align-items: center; }
 .summary-rating { text-align: center; min-width: 160px; }
 .rating-value { font-size: 56px; font-weight: 800; color: var(--accent-color); line-height: 1; }
@@ -192,7 +207,7 @@ onMounted(async () => {
 .empty-state p { font-size: 15px; color: var(--text-muted); }
 .reviews-list { display: flex; flex-direction: column; gap: 16px; }
 .review-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; padding: 24px; transition: all 0.3s ease; }
-.review-card:hover { border-color: rgba(var(--accent-rgb), 0.3); transform: translateY(-2px); box-shadow: 0 10px 30px var(--shadow-color); }
+.review-card:hover { border-color: rgba(var(--accent-rgb), 0.3); box-shadow: 0 10px 30px var(--shadow-color); }
 .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .reviewer-info { display: flex; align-items: center; gap: 12px; }
 .reviewer-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #2563eb); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: 700; flex-shrink: 0; }

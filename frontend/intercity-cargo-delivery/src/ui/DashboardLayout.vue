@@ -96,7 +96,8 @@ const roleLabel = computed(() => {
   return userStore.isCarrier ? 'Перевозчик' : 'Заказчик';
 });
 
-const activeChats = computed(() => chatStore.chats.filter((c) => c.status === 'active').length);
+// на пункте «Чат» — число непрочитанных сообщений
+const unreadChats = computed(() => chatStore.unreadTotal);
 
 const links = computed(() => {
   const list = [{ to: '/profile', title: 'Профиль', icon: UserRound }];
@@ -120,7 +121,7 @@ const links = computed(() => {
       { to: '/documents', title: 'Документы', icon: FileText },
     );
   }
-  list.push({ to: '/chat', title: 'Чат', icon: MessagesSquare, badge: activeChats.value || null });
+  list.push({ to: '/chat', title: 'Чат', icon: MessagesSquare, badge: unreadChats.value || null });
   return list;
 });
 
@@ -451,12 +452,16 @@ onMounted(() => {
     top: 0;
     z-index: 60;
     transform: translateX(-100%);
-    transition: transform 0.3s var(--motion-ease-out);
-    box-shadow: 30px 0 60px -30px rgba(0, 0, 0, 0.7);
+    visibility: hidden;
+    /* закрытое меню не отбрасывает тень на экран и не ловит фокус клавиатуры */
+    transition: transform 0.3s var(--motion-ease-out), box-shadow 0.3s ease, visibility 0s linear 0.3s;
   }
 
   .side.open {
     transform: none;
+    visibility: visible;
+    box-shadow: 30px 0 60px -30px rgba(0, 0, 0, 0.7);
+    transition: transform 0.3s var(--motion-ease-out), box-shadow 0.3s ease, visibility 0s;
   }
 
   .scrim {

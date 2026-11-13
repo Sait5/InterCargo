@@ -25,6 +25,18 @@ const chatSchema = new mongoose.Schema({
   carrierId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   status: { type: String, enum: ['active', 'closed'], default: 'active' },
   messages: [messageSchema],
+  // Последнее сообщение — для списка диалогов без загрузки всей переписки
+  lastMessage: {
+    senderId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    type: { type: String },
+    text: { type: String, maxlength: 200 },
+    createdAt: { type: Date },
+  },
+  // Когда каждая сторона последний раз читала чат — для счётчика непрочитанных
+  readAt: {
+    customer: { type: Date, default: null },
+    carrier: { type: Date, default: null },
+  },
   createdAt: { type: Date, default: Date.now },
 });
 chatSchema.set('toJSON', toId);

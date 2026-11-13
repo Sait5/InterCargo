@@ -1,6 +1,6 @@
-import newRoutes from '@/assets/images/new-routes.webp';
-import topTen from '@/assets/images/news-1.webp';
-import driverApp from '@/assets/images/news-2.webp';
+import newRoutes from '@/assets/photos/news-route.webp';
+import topTen from '@/assets/photos/news-fleet.webp';
+import driverApp from '@/assets/photos/news-driver.webp';
 
 // Новости компании — общие для главной и страницы «Новости»
 export const news = [

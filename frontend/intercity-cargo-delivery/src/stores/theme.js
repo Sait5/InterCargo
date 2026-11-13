@@ -7,7 +7,7 @@ const media = typeof window !== 'undefined' && typeof window.matchMedia === 'fun
 
 // Применить тему к документу. 'auto' следует настройке системы.
 export function applyTheme(preference) {
-  const pref = ['light', 'dark', 'auto'].includes(preference) ? preference : 'dark'
+  const pref = ['light', 'dark', 'auto'].includes(preference) ? preference : 'light'
   const resolved = pref === 'auto' ? (media && media.matches ? 'light' : 'dark') : pref
   document.documentElement.setAttribute('data-theme', resolved)
   return resolved
@@ -15,16 +15,16 @@ export function applyTheme(preference) {
 
 export function savedThemePreference() {
   try {
-    return localStorage.getItem(STORAGE_KEY) || 'dark'
+    return localStorage.getItem(STORAGE_KEY) || 'light'
   } catch {
-    return 'dark'
+    return 'light'
   }
 }
 
 export const useThemeStore = defineStore('theme', {
   state: () => ({
     preference: savedThemePreference(),
-    resolved: 'dark',
+    resolved: 'light',
   }),
 
   getters: {

@@ -1,374 +1,628 @@
 <template>
-<DashboardLayout flush>
-<div class="main-content chat-layout">
-<aside class="chat-sidebar">
-<div class="chat-sidebar-header">
-<h2>Диалоги</h2>
-<span class="chat-count">{{ myChats.length }}</span>
-</div>
-<div class="chat-list">
-<div v-if="myChats.length === 0" class="chat-empty">
-<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-<p>У вас пока нет активных чатов</p>
-</div>
-<div v-for="chat in myChats" :key="chat.id" class="chat-item" :class="{ active: selectedChatId === chat.id }" @click="selectChat(chat.id)">
-<div class="chat-item-header">
-<div class="chat-item-avatar">{{ getInterlocutorInitials(chat) }}</div>
-<div class="chat-item-info">
-<div class="chat-item-name">{{ getInterlocutorName(chat) }}</div>
-<div class="chat-item-route">{{ chat.orderId?.route || 'Заказ' }}</div>
-</div>
-</div>
-<div class="chat-item-status" :class="chat.status">{{ chat.status === 'active' ? 'Активен' : 'Завершен' }}</div>
-</div>
-</div>
-</aside>
-<section class="chat-main" v-if="selectedChat">
-<div class="chat-header">
-<div class="chat-header-info">
-<div class="chat-header-avatar">{{ getInterlocutorInitials(selectedChat) }}</div>
-<div>
-<div class="chat-header-name">{{ getInterlocutorName(selectedChat) }}</div>
-<div class="chat-header-route">{{ selectedChat.orderId?.route }}</div>
-</div>
-</div>
-<button v-if="selectedChat.status === 'active'" class="btn-close-chat" @click="closeCurrentChat">
-<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-Завершить чат
-</button>
-<div v-else class="chat-closed-badge">Чат завершен</div>
-</div>
-<div class="chat-messages" ref="messagesContainer">
-<div v-for="msg in selectedChat.messages" :key="msg.id" class="message-row" :class="{ own: msg.senderId === userStore.user?.id }">
-<div class="message-bubble" :class="msg.type">
-<div v-if="msg.type === 'text'" class="message-text">{{ msg.text }}</div>
-<div v-else class="message-voice">
-<button class="voice-play-btn" @click="togglePlay(msg)">
-<svg v-if="playingMsgId !== msg.id" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-<svg v-else width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
-</button>
-<div class="voice-wave">
-<span v-for="i in 20" :key="i" :style="{ height: waveHeight(msg.id, i) + '%' }"></span>
-</div>
-<span class="voice-duration">{{ formatDuration(msg.duration) }}</span>
-<audio :src="msg.text" :ref="el => setAudioRef(msg.id, el)" @ended="stopPlay"></audio>
-</div>
-<div class="message-time">{{ formatTime(msg.createdAt) }}</div>
-</div>
-</div>
-<div v-if="selectedChat.status === 'closed'" class="chat-closed-notice">
-<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-Переписка завершена. Отправка сообщений недоступна.
-</div>
-</div>
-<div class="chat-input-area" v-if="selectedChat.status === 'active'">
-<div v-if="!isRecording" class="input-row">
-<button class="icon-btn mic-btn" @click="startRecording">
-<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-</button>
-<input v-model="newMessage" type="text" placeholder="Введите сообщение..." @keyup.enter="sendText" class="chat-input" />
-<button class="icon-btn send-btn" @click="sendText" :disabled="!newMessage.trim()">
-<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-</button>
-</div>
-<div v-else class="recording-row">
-<div class="recording-indicator">
-<div class="recording-dot"></div>
-<span class="recording-time">{{ formatDuration(recordingTime) }}</span>
-</div>
-<div class="recording-actions">
-<button class="btn-cancel-rec" @click="stopRecording(false)">Отмена</button>
-<button class="btn-send-rec" @click="stopRecording(true)">
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-Отправить
-</button>
-</div>
-</div>
-</div>
-</section>
-<section class="chat-main empty-chat" v-else>
-<div class="empty-chat-content">
-<svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-<h3>Выберите диалог</h3>
-<p>Выберите чат из списка слева, чтобы начать общение</p>
-</div>
-</section>
-</div>
-</DashboardLayout>
+  <DashboardLayout flush>
+    <div class="chat" :class="{ 'is-open': !!selectedChat }">
+      <!-- ─── Список диалогов ─── -->
+      <aside class="list">
+        <div class="list__head">
+          <h2>Сообщения</h2>
+          <span v-if="totalUnread" class="list__unread">{{ totalUnread }}</span>
+        </div>
+        <label class="list__search">
+          <Search />
+          <input v-model.trim="query" type="search" placeholder="Поиск по имени или маршруту" aria-label="Поиск диалогов">
+        </label>
+        <div class="list__tabs" role="tablist">
+          <button v-for="t in tabs" :key="t.id" type="button" role="tab" :class="{ on: tab === t.id }" :aria-selected="tab === t.id" @click="tab = t.id">
+            {{ t.label }}<span v-if="t.count">{{ t.count }}</span>
+          </button>
+        </div>
+
+        <div class="list__items">
+          <p v-if="exampleMode" class="example-note">
+            <span class="ex-chip">Пример</span>
+            Так выглядит переписка с перевозчиком. Настоящий чат открывается, когда заказчик одобряет заявку.
+          </p>
+          <div v-if="!chatStore.loaded" class="skeletons">
+            <div v-for="i in 4" :key="i" class="skeleton"></div>
+          </div>
+          <button
+            v-for="chat in visibleChats"
+            :key="chat.id"
+            type="button"
+            class="item"
+            :class="{ on: selectedChatId === chat.id, unread: chat.unread }"
+            @click="selectChat(chat.id)"
+          >
+            <span class="avatar" :style="avatarStyle(chat)">{{ initials(chat) }}</span>
+            <span class="item__body">
+              <span class="item__top">
+                <b>{{ partnerName(chat) }}</b>
+                <time v-if="chat.lastMessage">{{ shortDate(chat.lastMessage.createdAt) }}</time>
+              </span>
+              <span class="item__route">{{ chat.orderId?.route || 'Заказ' }}</span>
+              <span class="item__bottom">
+                <span class="item__preview">{{ previewText(chat) }}</span>
+                <span v-if="chat.unread" class="item__badge">{{ chat.unread }}</span>
+                <span v-else-if="chat.status === 'closed'" class="item__closed">Завершён</span>
+              </span>
+            </span>
+          </button>
+          <div v-if="chatStore.loaded && !visibleChats.length" class="list__empty">
+            <MessagesSquare />
+            <p>{{ query || tab !== 'all' ? 'Ничего не найдено' : 'Пока нет диалогов' }}</p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ─── Переписка ─── -->
+      <section v-if="selectedChat" class="room">
+        <header class="room__head">
+          <button type="button" class="icon-btn room__back" aria-label="К списку диалогов" @click="selectedChatId = null"><ArrowLeft /></button>
+          <span class="avatar" :style="avatarStyle(selectedChat)">{{ initials(selectedChat) }}</span>
+          <div class="room__who">
+            <b>{{ partnerName(selectedChat) }}</b>
+            <span>{{ partnerRole(selectedChat) }}<template v-if="partnerCompany(selectedChat)"> · {{ partnerCompany(selectedChat) }}</template></span>
+          </div>
+          <div class="room__actions">
+            <RouterLink v-if="!isExample" to="/orders" class="icon-btn" title="Открыть заказы" aria-label="Открыть заказы"><ClipboardList /></RouterLink>
+            <div v-if="selectedChat.status === 'active'" class="close-wrap">
+              <button type="button" class="ghost-danger" @click="confirmClose = !confirmClose">Завершить</button>
+              <Transition name="pop">
+                <div v-if="confirmClose" class="confirm" role="dialog" aria-label="Завершить чат">
+                  <p>Завершить переписку? Писать в этот чат станет нельзя.</p>
+                  <div>
+                    <button type="button" class="confirm__no" @click="confirmClose = false">Отмена</button>
+                    <button type="button" class="confirm__yes" @click="closeCurrentChat">Завершить</button>
+                  </div>
+                </div>
+              </Transition>
+            </div>
+            <span v-else class="closed-chip">Чат завершён</span>
+          </div>
+        </header>
+
+        <!-- Заказ, по которому идёт переписка -->
+        <div v-if="selectedChat.orderId" class="order">
+          <span class="order__icon"><Truck /></span>
+          <div class="order__main">
+            <b>{{ selectedChat.orderId.route }}</b>
+            <span>
+              <template v-if="selectedChat.orderId.type">{{ selectedChat.orderId.type }}</template>
+              <template v-if="selectedChat.orderId.volume"> · {{ selectedChat.orderId.volume }}</template>
+              <template v-if="selectedChat.orderId.dateFrom"> · {{ dayMonth(selectedChat.orderId.dateFrom) }} — {{ dayMonth(selectedChat.orderId.dateTo) }}</template>
+            </span>
+          </div>
+          <strong v-if="selectedChat.orderId.price" class="order__price">{{ Number(selectedChat.orderId.price).toLocaleString('ru-RU') }} ₽</strong>
+        </div>
+
+        <div ref="scroller" class="feed" @scroll.passive="onFeedScroll">
+          <div v-if="loadingRoom" class="feed__loading">Загружаем переписку…</div>
+          <template v-for="group in grouped" :key="group.day">
+            <div class="day"><span>{{ group.label }}</span></div>
+            <div
+              v-for="(msg, i) in group.items"
+              :key="msg.id"
+              class="msg"
+              :class="{ own: isOwn(msg), chain: i > 0 && isOwn(group.items[i - 1]) === isOwn(msg) && closeInTime(group.items[i - 1], msg) }"
+            >
+              <div class="bubble" :class="msg.type">
+                <p v-if="msg.type === 'text'" class="bubble__text">{{ msg.text }}</p>
+                <div v-else class="voice">
+                  <button type="button" class="voice__play" :aria-label="playingId === msg.id ? 'Пауза' : 'Слушать'" @click="togglePlay(msg)">
+                    <Pause v-if="playingId === msg.id" /><Play v-else />
+                  </button>
+                  <div class="voice__wave" :style="{ '--p': playingId === msg.id ? progress : 0 }">
+                    <span v-for="n in 26" :key="n" :style="{ height: waveHeight(msg.id, n) + '%' }"></span>
+                  </div>
+                  <span class="voice__time">{{ formatDuration(msg.duration) }}</span>
+                </div>
+                <span class="bubble__meta">
+                  {{ timeOf(msg.createdAt) }}
+                  <template v-if="isOwn(msg)">
+                    <CheckCheck v-if="isRead(msg)" class="read" aria-label="Прочитано" />
+                    <Check v-else aria-label="Отправлено" />
+                  </template>
+                </span>
+              </div>
+            </div>
+          </template>
+          <div v-if="selectedChat.status === 'closed'" class="feed__closed">
+            <Lock /> Переписка завершена — отправка сообщений недоступна.
+          </div>
+        </div>
+
+        <Transition name="pop">
+          <button v-if="newBelow" type="button" class="to-bottom" @click="scrollToBottom(true)">
+            <ArrowDown /> Новые сообщения
+          </button>
+        </Transition>
+
+        <footer v-if="selectedChat.status === 'active'" class="composer">
+          <div v-if="!message && !isRecording" class="quick">
+            <button v-for="q in quickReplies" :key="q" type="button" @click="message = q; focusInput()">{{ q }}</button>
+          </div>
+          <div v-if="!isRecording" class="composer__row">
+            <button type="button" class="icon-btn" aria-label="Записать голосовое" @click="startRecording"><Mic /></button>
+            <textarea
+              ref="input"
+              v-model="message"
+              rows="1"
+              maxlength="4000"
+              placeholder="Сообщение…"
+              aria-label="Сообщение"
+              @input="autosize"
+              @keydown.enter.exact="onEnter"
+            ></textarea>
+            <button type="button" class="send" :disabled="!message.trim() || sending" aria-label="Отправить" @click="sendText"><SendHorizontal /></button>
+          </div>
+          <div v-else class="recording">
+            <span class="recording__dot"></span>
+            <span class="recording__time">{{ formatDuration(recordingTime) }}</span>
+            <span class="recording__hint">Идёт запись…</span>
+            <button type="button" class="recording__cancel" @click="stopRecording(false)">Отмена</button>
+            <button type="button" class="send" aria-label="Отправить запись" @click="stopRecording(true)"><SendHorizontal /></button>
+          </div>
+          <p class="composer__hint">Enter — отправить · Shift + Enter — новая строка</p>
+        </footer>
+      </section>
+
+      <section v-else class="room room--empty">
+        <div>
+          <MessagesSquare />
+          <h3>Выберите диалог</h3>
+          <p>Здесь будет переписка с {{ userStore.isCarrier ? 'заказчиком' : 'перевозчиком' }} по заказу.</p>
+        </div>
+      </section>
+    </div>
+  </DashboardLayout>
 </template>
 
 <script setup>
-import DashboardLayout from '@/ui/DashboardLayout.vue';
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import {
+  Search, MessagesSquare, ArrowLeft, ArrowDown, ClipboardList, Truck, Play, Pause, Check, CheckCheck, Lock, Mic, SendHorizontal,
+} from 'lucide-vue-next';
+import DashboardLayout from '@/ui/DashboardLayout.vue';
 import { useUserStore } from '@/stores/user';
 import { useChatStore } from '@/stores/chat';
 import { useToastStore } from '@/stores/toast';
+import { exampleChat } from '@/data/examples';
 
-const router = useRouter();
 const userStore = useUserStore();
 const chatStore = useChatStore();
 const toast = useToastStore();
+const myId = computed(() => userStore.user?.id);
 
-const newMessage = ref('');
-const messagesContainer = ref(null);
+// ─── Пример, пока своих диалогов нет ───
+const exampleMode = computed(() => chatStore.loaded && chatStore.chats.length === 0);
+const exampleMessages = computed(() => exampleChat.messages.map((m) => ({ ...m, senderId: m.fromOther ? 'other' : myId.value })));
+const exampleItem = computed(() => {
+  const last = exampleMessages.value[exampleMessages.value.length - 1];
+  return { ...exampleChat, customerId: { ...exampleChat.customerId, id: myId.value }, lastMessage: last };
+});
+const allChats = computed(() => (exampleMode.value ? [exampleItem.value] : chatStore.chats));
+
+// ─── Список ───
+const query = ref('');
+const tab = ref('all');
+const totalUnread = computed(() => chatStore.unreadTotal);
+const tabs = computed(() => [
+  { id: 'all', label: 'Все' },
+  { id: 'unread', label: 'Непрочитанные', count: allChats.value.filter((c) => c.unread).length },
+  { id: 'closed', label: 'Завершённые' },
+]);
+const visibleChats = computed(() => {
+  const q = query.value.toLowerCase();
+  return allChats.value.filter((c) => {
+    if (tab.value === 'unread' && !c.unread) return false;
+    if (tab.value === 'closed' && c.status !== 'closed') return false;
+    if (!q) return true;
+    return `${partnerName(c)} ${partnerCompany(c)} ${c.orderId?.route || ''}`.toLowerCase().includes(q);
+  });
+});
+
+const sameId = (a, b) => String(a?.id || a?._id || a) === String(b);
+const iAmCustomer = (chat) => sameId(chat.customerId, myId.value);
+const partner = (chat) => (iAmCustomer(chat) ? chat.carrierId : chat.customerId) || {};
+const partnerName = (chat) => {
+  const p = partner(chat);
+  return `${p.firstName || ''} ${p.lastName || ''}`.trim() || p.company || 'Пользователь';
+};
+const partnerCompany = (chat) => partner(chat).company || '';
+const partnerRole = (chat) => (iAmCustomer(chat) ? 'Перевозчик' : 'Заказчик');
+const initials = (chat) => partnerName(chat).split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2) || '?';
+// у каждого собеседника свой цвет аватара
+const avatarStyle = (chat) => {
+  const hue = [...partnerName(chat)].reduce((a, ch) => a + ch.charCodeAt(0), 0) % 360;
+  return { background: `linear-gradient(135deg, hsl(${hue} 62% 52%), hsl(${(hue + 40) % 360} 62% 40%))` };
+};
+const previewText = (chat) => {
+  const m = chat.lastMessage;
+  if (!m) return 'Нет сообщений';
+  const body = m.type === 'voice' ? 'Голосовое сообщение' : m.text;
+  return sameId(m.senderId, myId.value) ? `Вы: ${body}` : body;
+};
+
+// ─── Даты ───
+const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+const dayDiff = (iso) => Math.round((startOfDay(new Date()) - startOfDay(new Date(iso))) / 864e5);
+const timeOf = (iso) => new Date(iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+const dayMonth = (iso) => (iso ? new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }) : '');
+const shortDate = (iso) => {
+  const d = dayDiff(iso);
+  if (d === 0) return timeOf(iso);
+  if (d === 1) return 'вчера';
+  return new Date(iso).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+};
+const dayLabel = (iso) => {
+  const d = dayDiff(iso);
+  if (d === 0) return 'Сегодня';
+  if (d === 1) return 'Вчера';
+  return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: new Date(iso).getFullYear() === new Date().getFullYear() ? undefined : 'numeric' });
+};
+const closeInTime = (a, b) => new Date(b.createdAt) - new Date(a.createdAt) < 5 * 60 * 1000;
+
+// ─── Открытый диалог ───
+const selectedChatId = ref(null);
+const selectedChat = computed(() => allChats.value.find((c) => c.id === selectedChatId.value) || null);
+const isExample = computed(() => selectedChatId.value === 'ex-chat');
+const roomMessages = computed(() => (isExample.value ? exampleMessages.value : chatStore.messages[selectedChatId.value] || []));
+const loadingRoom = ref(false);
+const grouped = computed(() => {
+  const out = [];
+  for (const m of roomMessages.value) {
+    const key = new Date(m.createdAt).toDateString();
+    let g = out[out.length - 1];
+    if (!g || g.day !== key) {
+      g = { day: key, label: dayLabel(m.createdAt), items: [] };
+      out.push(g);
+    }
+    g.items.push(m);
+  }
+  return out;
+});
+const isOwn = (m) => sameId(m.senderId, myId.value);
+const isRead = (m) => {
+  if (isExample.value) return true;
+  const at = chatStore.otherReadAt[selectedChatId.value];
+  return Boolean(at) && new Date(at) >= new Date(m.createdAt);
+};
+
+const scroller = ref(null);
+const newBelow = ref(false);
+const atBottom = () => {
+  const el = scroller.value;
+  return !el || el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+};
+const scrollToBottom = (smooth = false) => {
+  const el = scroller.value;
+  if (el) el.scrollTo({ top: el.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+  newBelow.value = false;
+};
+const onFeedScroll = () => { if (atBottom()) newBelow.value = false; };
+
+const confirmClose = ref(false);
+const selectChat = async (id) => {
+  selectedChatId.value = id;
+  confirmClose.value = false;
+  if (id === 'ex-chat') {
+    await nextTick();
+    scrollToBottom();
+    return;
+  }
+  const first = !chatStore.messages[id];
+  loadingRoom.value = first;
+  const res = await chatStore.loadMessages(id);
+  loadingRoom.value = false;
+  if (!res.success) toast.error(res.message || 'Не удалось загрузить переписку');
+  await nextTick();
+  scrollToBottom();
+  chatStore.markRead(id);
+};
+
+// Новые сообщения: если пользователь внизу — докручиваем, иначе показываем кнопку
+const refreshRoom = async () => {
+  const id = selectedChatId.value;
+  if (!id || isExample.value || document.hidden) return;
+  const wasBottom = atBottom();
+  const res = await chatStore.loadMessages(id);
+  if (!res.success || !res.added || id !== selectedChatId.value) return;
+  await nextTick();
+  if (wasBottom) {
+    scrollToBottom(true);
+    chatStore.markRead(id);
+  } else newBelow.value = true;
+};
+watch(newBelow, (v) => { if (!v && selectedChatId.value && !isExample.value) chatStore.markRead(selectedChatId.value); });
+
+// ─── Отправка ───
+const message = ref('');
+const sending = ref(false);
+const input = ref(null);
+const quickReplies = computed(() => (userStore.isCarrier
+  ? ['Машина на загрузке', 'Груз в пути', 'Груз доставлен, документы отправил']
+  : ['Когда будете на загрузке?', 'Пришлите фото после погрузки', 'Спасибо, груз получен']));
+const autosize = () => {
+  const el = input.value;
+  if (!el) return;
+  el.style.height = 'auto';
+  el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
+};
+const focusInput = () => nextTick(() => { input.value?.focus(); autosize(); });
+const exampleNotice = () => toast.success('Это пример — настоящий чат откроется, когда заказчик одобрит заявку');
+
+const onEnter = (e) => {
+  if (e.isComposing) return; // ввод через IME ещё не закончен
+  e.preventDefault();
+  sendText();
+};
+const sendText = async () => {
+  if (isExample.value) return exampleNotice();
+  const text = message.value.trim();
+  if (!text || sending.value) return null;
+  sending.value = true;
+  message.value = '';
+  await nextTick();
+  autosize();
+  const res = await chatStore.sendMessage(selectedChatId.value, text, 'text');
+  sending.value = false;
+  if (!res.success) {
+    message.value = text;
+    toast.error(res.message || 'Не удалось отправить сообщение');
+    return null;
+  }
+  await nextTick();
+  scrollToBottom(true);
+  return null;
+};
+
+// ─── Голосовые ───
 const isRecording = ref(false);
 const recordingTime = ref(0);
-const playingMsgId = ref(null);
-const audioRefs = ref({});
-let mediaRecorder = null;
-let audioChunks = [];
-let timerInterval = null;
-
-const myChats = computed(() => chatStore.chats);
-const selectedChatId = ref(null);
-const selectedChat = computed(() => myChats.value.find(c => c.id === selectedChatId.value));
-
-const personName = (p) => p ? `${p.firstName || ''} ${p.lastName || ''}`.trim() || p.company || 'Пользователь' : 'Пользователь';
-const isMeCustomer = (chat) => chat.customerId?.id === userStore.user?.id;
-const getInterlocutorName = (chat) => personName(isMeCustomer(chat) ? chat.carrierId : chat.customerId);
-const getInterlocutorInitials = (chat) => getInterlocutorName(chat).split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2) || '?';
-
-// Стабильная «волна» голосового сообщения вместо случайной при каждой перерисовке
-const waveHeight = (id, i) => {
-	const seed = String(id).split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-	return 25 + Math.abs(Math.sin(seed * 0.37 + i * 1.7)) * 75;
-};
-
-const selectChat = (chatId) => {
-	selectedChatId.value = chatId;
-	nextTick(() => scrollToBottom());
-};
-
-const scrollToBottom = () => {
-	if (messagesContainer.value) {
-		messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
-	}
-};
-
-watch(() => selectedChat.value?.messages.length, () => {
-	nextTick(() => scrollToBottom());
-});
-
-const sendText = async () => {
-	const text = newMessage.value.trim();
-	if (!text || !selectedChatId.value) return;
-	newMessage.value = '';
-	const res = await chatStore.sendMessage(selectedChatId.value, text, 'text');
-	if (!res.success) {
-		newMessage.value = text;
-		toast.error(res.message || 'Не удалось отправить сообщение');
-	}
-};
-
-const setAudioRef = (id, el) => {
-	if (el) audioRefs.value[id] = el;
-};
-
-const togglePlay = (msg) => {
-	if (playingMsgId.value === msg.id) {
-		audioRefs.value[msg.id].pause();
-		playingMsgId.value = null;
-	} else {
-		if (playingMsgId.value && audioRefs.value[playingMsgId.value]) {
-			audioRefs.value[playingMsgId.value].pause();
-		}
-		audioRefs.value[msg.id].play();
-		playingMsgId.value = msg.id;
-	}
-};
-
-const stopPlay = () => {
-	playingMsgId.value = null;
-};
+let recorder = null;
+let recordTimer = 0;
+const stopStream = () => recorder?.stream?.getTracks().forEach((t) => t.stop());
 
 const startRecording = async () => {
-	try {
-		const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-		mediaRecorder = new MediaRecorder(stream);
-		audioChunks = [];
-		mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-		mediaRecorder.onstop = () => {
-			const blob = new Blob(audioChunks, { type: 'audio/webm' });
-			const reader = new FileReader();
-			reader.onloadend = () => {
-				chatStore.sendMessage(selectedChatId.value, reader.result, 'voice', recordingTime.value).then((res) => { if (!res.success) toast.error(res.message || 'Не удалось отправить запись'); });
-			};
-			reader.readAsDataURL(blob);
-			stream.getTracks().forEach(t => t.stop());
-		};
-		mediaRecorder.start();
-		isRecording.value = true;
-		recordingTime.value = 0;
-		timerInterval = setInterval(() => recordingTime.value++, 1000);
-	} catch (err) {
-		toast.error('Нет доступа к микрофону');
-	}
+  if (isExample.value) return exampleNotice();
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    recorder = new MediaRecorder(stream);
+    const chunks = [];
+    const chatId = selectedChatId.value;
+    recorder.ondataavailable = (e) => chunks.push(e.data);
+    recorder.onstop = () => {
+      stopStream();
+      if (!recorder?.send) return;
+      const reader = new FileReader();
+      const duration = recordingTime.value;
+      reader.onloadend = async () => {
+        const res = await chatStore.sendMessage(chatId, reader.result, 'voice', duration);
+        if (!res.success) toast.error(res.message || 'Не удалось отправить запись');
+        else { await nextTick(); scrollToBottom(true); }
+      };
+      reader.readAsDataURL(new Blob(chunks, { type: recorder.mimeType || 'audio/webm' }));
+    };
+    recorder.start();
+    isRecording.value = true;
+    recordingTime.value = 0;
+    recordTimer = setInterval(() => {
+      recordingTime.value += 1;
+      if (recordingTime.value >= 180) stopRecording(true); // не больше 3 минут
+    }, 1000);
+  } catch {
+    toast.error('Нет доступа к микрофону');
+  }
+  return null;
 };
-
 const stopRecording = (send) => {
-	if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-		if (!send) {
-			mediaRecorder.ondataavailable = null;
-			mediaRecorder.onstop = null;
-			mediaRecorder.stop();
-			mediaRecorder.stream.getTracks().forEach(t => t.stop());
-		} else {
-			mediaRecorder.stop();
-		}
-	}
-	clearInterval(timerInterval);
-	isRecording.value = false;
+  clearInterval(recordTimer);
+  isRecording.value = false;
+  if (recorder && recorder.state !== 'inactive') {
+    recorder.send = send;
+    recorder.stop();
+  } else stopStream();
 };
 
+const player = new Audio();
+const playingId = ref(null);
+const progress = ref(0);
+player.addEventListener('timeupdate', () => { progress.value = player.duration ? player.currentTime / player.duration : 0; });
+player.addEventListener('ended', () => { playingId.value = null; progress.value = 0; });
+const togglePlay = (msg) => {
+  if (playingId.value === msg.id) {
+    player.pause();
+    playingId.value = null;
+    return;
+  }
+  if (!msg.text?.startsWith('data:audio/')) return exampleNotice();
+  player.src = msg.text;
+  progress.value = 0;
+  player.play().then(() => { playingId.value = msg.id; }).catch(() => toast.error('Не удалось воспроизвести запись'));
+};
+const waveHeight = (id, i) => {
+  const seed = String(id).split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  return 22 + Math.abs(Math.sin(seed * 0.37 + i * 1.7)) * 78;
+};
+const formatDuration = (sec = 0) => `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
+
+// ─── Завершение ───
 const closeCurrentChat = async () => {
-	if (!confirm('Вы уверены, что хотите завершить этот чат?')) return;
-	const res = await chatStore.closeChat(selectedChatId.value);
-	if (res.success) toast.success('Чат завершён');
-	else toast.error(res.message);
+  confirmClose.value = false;
+  if (isExample.value) return exampleNotice();
+  const res = await chatStore.closeChat(selectedChatId.value);
+  if (res.success) toast.success('Чат завершён');
+  else toast.error(res.message || 'Не удалось завершить чат');
+  return null;
 };
 
-const formatDuration = (sec) => {
-	const m = Math.floor(sec / 60).toString().padStart(2, '0');
-	const s = (sec % 60).toString().padStart(2, '0');
-	return `${m}:${s}`;
-};
-
-const formatTime = (dateStr) => {
-	const d = new Date(dateStr);
-	return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-};
-
-const handleLogout = () => {
-	userStore.logout();
-	router.push('/');
-};
-
-let pollTimer = null;
+// ─── Опрос сервера ───
+let listTimer = 0;
+let roomTimer = 0;
 onMounted(async () => {
-	await chatStore.fetchChats();
-	if (!selectedChatId.value && myChats.value.length && window.innerWidth > 768) selectChat(myChats.value[0].id);
-	pollTimer = setInterval(() => chatStore.fetchChats(), 5000);
+  await chatStore.fetchChats();
+  // на компьютере сразу открываем первый диалог, на телефоне — показываем список
+  if (!selectedChatId.value && allChats.value.length && window.innerWidth > 900) selectChat(allChats.value[0].id);
+  listTimer = setInterval(() => { if (!document.hidden) chatStore.fetchChats(); }, 10000);
+  roomTimer = setInterval(refreshRoom, 3000);
 });
 onUnmounted(() => {
-	clearInterval(pollTimer);
-	clearInterval(timerInterval);
+  clearInterval(listTimer);
+  clearInterval(roomTimer);
+  clearInterval(recordTimer);
+  if (recorder && recorder.state !== 'inactive') { recorder.send = false; recorder.stop(); }
+  stopStream();
+  player.pause();
 });
 </script>
 
 <style scoped>
-.profile-layout { display: flex; min-height: 100vh; background: var(--bg-primary); color: var(--text-primary); }
-.sidebar { width: 280px; background: rgba(255, 255, 255, 0.02); border-right: 1px solid var(--border-color); padding: 24px 20px; display: flex; flex-direction: column; gap: 24px; position: sticky; top: 0; height: 100vh; overflow-y: auto; backdrop-filter: blur(10px); }
-.sidebar-header { padding: 8px 12px; }
-.logo-area { display: flex; align-items: center; gap: 20px; cursor: pointer; text-decoration: none; min-height: 90px; }
-.logo-icon { width: 90px; height: 90px; flex-shrink: 0; }
-.logo-icon img { width: 100%; height: 100%; object-fit: contain; }
-.logo-text { display: flex; flex-direction: column; line-height: 1.1; margin-left: -30px; }
-.logo-cargo { font-size: 28px; font-weight: 800; letter-spacing: 1.5px; color: var(--text-primary); }
-.logo-express { font-size: 28px; font-weight: 800; color: var(--accent-color); letter-spacing: 1.5px; }
-.user-card { display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; transition: all 0.3s ease; }
-.user-card:hover { border-color: rgba(var(--accent-rgb), 0.3); }
-.user-avatar-lg { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: 700; flex-shrink: 0; }
-.user-info { overflow: hidden; flex: 1; }
-.user-name-lg { font-size: 15px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.user-role { font-size: 12px; color: var(--accent-color); font-weight: 600; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
-.user-email { font-size: 13px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
-.sidebar-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
-.nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; color: var(--text-secondary); text-decoration: none; font-size: 14px; font-weight: 500; transition: all 0.2s ease; cursor: pointer; position: relative; }
-.nav-link svg { width: 20px; height: 20px; flex-shrink: 0; }
-.nav-link span { flex: 1; }
-.nav-link:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-primary); transform: translateX(2px); }
-.nav-link.active { background: rgba(var(--accent-rgb), 0.1); color: var(--accent-color); font-weight: 600; }
-.nav-link.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 60%; background: var(--accent-color); border-radius: 0 3px 3px 0; }
-.nav-link.logout { color: var(--danger); margin-top: auto; }
-.nav-link.logout:hover { background: rgba(var(--danger-rgb), 0.1); color: var(--danger); }
+.chat { --list-w: 360px; flex: 1; display: grid; grid-template-columns: var(--list-w) minmax(0, 1fr); height: calc(100dvh - 64px); min-height: 0; background: var(--bg-primary); color: var(--text-primary); }
 
-.main-content { flex: 1; display: flex; height: calc(100vh - 64px); overflow: hidden; }
-.chat-layout { padding: 0; max-width: 100%; }
+/* ─── Список ─── */
+.list { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--border-color); background: var(--bg-card); }
+.list__head { display: flex; align-items: center; gap: 10px; padding: 22px 20px 14px; }
+.list__head h2 { font-size: 22px; }
+.list__unread { padding: 2px 9px; border-radius: 999px; background: var(--accent-color); color: var(--text-on-accent, #04120A); font-size: 12px; font-weight: 800; }
+.list__search { display: flex; align-items: center; gap: 8px; margin: 0 16px; height: 42px; padding: 0 14px; border-radius: 14px; border: 1px solid var(--border-color); background: var(--bg-input, var(--bg-primary)); color: var(--text-muted); transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+.list__search:focus-within { border-color: rgba(var(--accent-rgb), 0.6); box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.1); }
+.list__search svg { width: 17px; height: 17px; flex-shrink: 0; }
+.list__search input { flex: 1; min-width: 0; border: 0; outline: none; background: none; color: var(--text-primary); font-size: 14px; }
+.list__tabs { display: flex; gap: 4px; margin: 12px 16px 6px; padding: 4px; border-radius: 12px; background: var(--bg-primary); }
+.list__tabs button { flex: 1; display: inline-flex; justify-content: center; align-items: center; gap: 6px; height: 32px; border: 0; border-radius: 9px; background: none; color: var(--text-secondary); font-size: 12.5px; font-weight: 700; cursor: pointer; transition: background 0.2s ease, color 0.2s ease; }
+.list__tabs button.on { background: var(--bg-card); color: var(--text-primary); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08); }
+.list__tabs span { padding: 0 6px; border-radius: 999px; background: rgba(var(--accent-rgb), 0.15); color: var(--accent-color); font-size: 11px; }
+.list__items { flex: 1; overflow-y: auto; padding: 8px 10px 16px; display: flex; flex-direction: column; gap: 2px; }
+.example-note { margin: 4px 6px 8px; padding: 12px 14px; border-radius: 14px; border: 1px dashed rgba(var(--accent-rgb), 0.45); background: rgba(var(--accent-rgb), 0.06); color: var(--text-secondary); font-size: 13px; line-height: 1.5; }
+.ex-chip { display: inline-block; margin-right: 6px; padding: 2px 8px; border-radius: 999px; background: rgba(242, 184, 75, 0.16); color: #C98A12; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+.skeleton { height: 72px; margin: 4px 6px; border-radius: 14px; background: linear-gradient(90deg, var(--bg-primary) 25%, rgba(var(--accent-rgb), 0.06) 50%, var(--bg-primary) 75%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+.item { display: flex; gap: 12px; align-items: center; width: 100%; padding: 12px; border: 0; border-radius: 16px; background: none; color: inherit; text-align: left; cursor: pointer; transition: background 0.2s ease; }
+.item:hover { background: var(--surface-hover, rgba(var(--accent-rgb), 0.05)); }
+.item.on { background: rgba(var(--accent-rgb), 0.1); }
+.avatar { display: grid; place-items: center; flex-shrink: 0; width: 46px; height: 46px; border-radius: 50%; color: #fff; font-weight: 800; font-size: 15px; letter-spacing: 0.02em; }
+.item__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.item__top { display: flex; justify-content: space-between; gap: 8px; }
+.item__top b { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item__top time { flex-shrink: 0; font-size: 12px; color: var(--text-muted); }
+.item.unread .item__top time { color: var(--accent-color); font-weight: 700; }
+.item__route { font-size: 12px; font-weight: 700; color: var(--accent-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item__bottom { display: flex; align-items: center; gap: 8px; }
+.item__preview { flex: 1; min-width: 0; font-size: 13px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item.unread .item__preview { color: var(--text-primary); font-weight: 600; }
+.item__badge { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; display: grid; place-items: center; background: var(--accent-color); color: var(--text-on-accent, #04120A); font-size: 11px; font-weight: 800; }
+.item__closed { font-size: 11px; font-weight: 700; color: var(--text-muted); }
+.list__empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 48px 16px; color: var(--text-muted); text-align: center; }
+.list__empty svg { width: 36px; height: 36px; opacity: 0.5; }
 
-.chat-sidebar { width: 340px; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; background: rgba(255, 255, 255, 0.01); }
-.chat-sidebar-header { padding: 24px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; }
-.chat-sidebar-header h2 { font-size: 20px; font-weight: 700; margin: 0; }
-.chat-count { background: rgba(var(--accent-rgb), 0.15); color: var(--accent-color); font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 10px; }
-.chat-list { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
-.chat-empty { text-align: center; padding: 40px 20px; color: var(--text-muted); }
-.chat-empty svg { opacity: 0.3; margin-bottom: 12px; }
-.chat-item { padding: 16px; border-radius: 16px; cursor: pointer; transition: all 0.2s ease; border: 1px solid transparent; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.chat-item:hover { background: rgba(255, 255, 255, 0.03); }
-.chat-item.active { background: rgba(var(--accent-rgb), 0.08); border-color: rgba(var(--accent-rgb), 0.3); }
-.chat-item-header { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
-.chat-item-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #2563eb); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: 700; flex-shrink: 0; }
-.chat-item-info { min-width: 0; }
-.chat-item-name { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.chat-item-route { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
-.chat-item-status { font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; white-space: nowrap; }
-.chat-item-status.active { background: rgba(var(--accent-rgb), 0.15); color: var(--accent-color); }
-.chat-item-status.closed { background: rgba(var(--danger-rgb), 0.15); color: var(--danger); }
+/* ─── Переписка ─── */
+.room { position: relative; display: flex; flex-direction: column; min-height: 0; min-width: 0; background:
+  radial-gradient(60% 50% at 100% 0%, rgba(var(--accent-rgb), 0.06), transparent 70%),
+  var(--bg-primary); }
+.room__head { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--border-color); background: var(--bg-card); }
+.room__back { display: none !important; }
+.room__who { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.room__who b { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.room__who span { font-size: 12.5px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.room__actions { display: flex; align-items: center; gap: 8px; }
+.icon-btn { display: grid; place-items: center; flex-shrink: 0; width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-secondary); cursor: pointer; transition: color 0.2s ease, border-color 0.2s ease; }
+.icon-btn:hover { color: var(--accent-color); border-color: rgba(var(--accent-rgb), 0.45); }
+.icon-btn svg { width: 19px; height: 19px; }
+.ghost-danger { height: 40px; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(var(--danger-rgb), 0.25); background: rgba(var(--danger-rgb), 0.06); color: var(--danger); font-weight: 700; font-size: 13px; cursor: pointer; }
+.ghost-danger:hover { background: rgba(var(--danger-rgb), 0.12); }
+.close-wrap { position: relative; }
+.confirm { position: absolute; right: 0; top: calc(100% + 8px); z-index: 5; width: 260px; padding: 14px; border-radius: 16px; background: var(--bg-card-solid, var(--bg-card)); border: 1px solid var(--border-color); box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.4); }
+.confirm p { font-size: 13.5px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.5; }
+.confirm div { display: flex; justify-content: flex-end; gap: 8px; }
+.confirm button { height: 34px; padding: 0 12px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; }
+.confirm__no { border: 1px solid var(--border-color); background: none; color: var(--text-primary); }
+.confirm__yes { border: 0; background: var(--danger); color: #fff; }
+.closed-chip { padding: 8px 12px; border-radius: 10px; background: rgba(var(--danger-rgb), 0.08); color: var(--danger); font-size: 12.5px; font-weight: 700; }
 
-.chat-main { flex: 1; display: flex; flex-direction: column; background: var(--bg-primary); }
-.empty-chat { align-items: center; justify-content: center; }
-.empty-chat-content { text-align: center; color: var(--text-muted); }
-.empty-chat-content svg { opacity: 0.2; margin-bottom: 20px; }
-.empty-chat-content h3 { font-size: 22px; color: var(--text-primary); margin-bottom: 8px; }
+.order { display: flex; align-items: center; gap: 12px; margin: 12px 20px 0; padding: 10px 14px; border-radius: 14px; border: 1px solid var(--border-color); background: var(--bg-card); }
+.order__icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 11px; background: rgba(var(--accent-rgb), 0.12); color: var(--accent-color); flex-shrink: 0; }
+.order__icon svg { width: 18px; height: 18px; }
+.order__main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.order__main b { font-size: 14px; }
+.order__main span { font-size: 12.5px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.order__price { font-family: var(--font-display); color: var(--accent-color); white-space: nowrap; }
 
-.chat-header { padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px); }
-.chat-header-info { display: flex; align-items: center; gap: 14px; }
-.chat-header-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #2563eb); display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; font-weight: 700; }
-.chat-header-name { font-size: 17px; font-weight: 700; }
-.chat-header-route { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
-.btn-close-chat { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; background: rgba(var(--danger-rgb), 0.1); color: var(--danger); border: 1px solid rgba(var(--danger-rgb), 0.2); border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
-.btn-close-chat:hover { background: rgba(var(--danger-rgb), 0.2); transform: translateY(-1px); }
-.chat-closed-badge { padding: 8px 16px; background: rgba(var(--danger-rgb), 0.1); color: var(--danger); border-radius: 10px; font-size: 13px; font-weight: 600; }
+.feed { flex: 1; min-height: 0; overflow-y: auto; padding: 12px 20px 20px; display: flex; flex-direction: column; overscroll-behavior: contain; }
+.feed__loading { margin: auto; color: var(--text-muted); font-size: 14px; }
+.day { position: sticky; top: 6px; z-index: 1; display: flex; justify-content: center; margin: 14px 0 8px; pointer-events: none; }
+.day span { padding: 5px 12px; border-radius: 999px; background: var(--bg-card); border: 1px solid var(--border-color); font-size: 12px; font-weight: 700; color: var(--text-secondary); box-shadow: 0 4px 12px -6px rgba(0, 0, 0, 0.15); }
+.msg { display: flex; margin-top: 10px; }
+.msg.chain { margin-top: 3px; }
+.msg.own { justify-content: flex-end; }
+.bubble { position: relative; max-width: min(560px, 78%); padding: 9px 12px 7px 14px; border-radius: 18px; background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04); animation: msg-in 0.35s ease; }
+@keyframes msg-in { from { opacity: 0; } to { opacity: 1; } }
+.msg:not(.own):not(.chain) .bubble { border-top-left-radius: 6px; }
+.msg.own .bubble { background: linear-gradient(135deg, #22A862, #1A8C52); border-color: transparent; color: #fff; }
+.msg.own:not(.chain) .bubble { border-top-right-radius: 6px; }
+.bubble__text { display: inline; font-size: 15px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+.bubble__meta { float: right; display: inline-flex; align-items: center; gap: 3px; margin: 8px 0 -2px 12px; font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+.msg.own .bubble__meta { color: rgba(255, 255, 255, 0.75); }
+.bubble__meta svg { width: 15px; height: 15px; }
+.bubble__meta svg.read { color: #B8FFD9; }
+.voice { display: flex; align-items: center; gap: 10px; min-width: 220px; padding-top: 2px; }
+.voice__play { display: grid; place-items: center; flex-shrink: 0; width: 38px; height: 38px; border-radius: 50%; border: 0; background: rgba(var(--accent-rgb), 0.14); color: var(--accent-color); cursor: pointer; }
+.msg.own .voice__play { background: rgba(255, 255, 255, 0.22); color: #fff; }
+.voice__play svg { width: 16px; height: 16px; fill: currentColor; }
+.voice__wave { --p: 0; flex: 1; display: flex; align-items: center; gap: 2px; height: 28px; -webkit-mask: linear-gradient(90deg, #000 calc(var(--p) * 100%), rgba(0, 0, 0, 0.45) calc(var(--p) * 100%)); mask: linear-gradient(90deg, #000 calc(var(--p) * 100%), rgba(0, 0, 0, 0.45) calc(var(--p) * 100%)); }
+.voice__wave span { flex: 1; min-height: 3px; border-radius: 2px; background: currentColor; }
+.msg:not(.own) .voice__wave { color: var(--accent-color); }
+.voice__time { font-size: 12px; font-variant-numeric: tabular-nums; opacity: 0.8; }
+.feed__closed { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 20px auto 0; padding: 10px 16px; border-radius: 12px; background: rgba(var(--danger-rgb), 0.07); color: var(--danger); font-size: 13px; font-weight: 600; }
+.feed__closed svg { width: 16px; height: 16px; }
+.to-bottom { position: absolute; left: 50%; bottom: 150px; transform: translateX(-50%); z-index: 3; display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 999px; border: 0; background: var(--accent-color); color: var(--text-on-accent, #04120A); font-weight: 700; font-size: 13px; cursor: pointer; box-shadow: 0 10px 24px -10px rgba(var(--accent-rgb), 0.8); }
+.to-bottom svg { width: 16px; height: 16px; }
 
-.chat-messages { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
-.message-row { display: flex; max-width: 75%; }
-.message-row.own { align-self: flex-end; }
-.message-bubble { padding: 12px 16px; border-radius: 18px; position: relative; }
-.message-row:not(.own) .message-bubble { background: var(--bg-card); border: 1px solid var(--border-color); border-bottom-left-radius: 4px; }
-.message-row.own .message-bubble { background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); color: white; border-bottom-right-radius: 4px; }
-.message-text { font-size: 15px; line-height: 1.5; word-break: break-word; }
-.message-time { font-size: 11px; opacity: 0.6; margin-top: 6px; text-align: right; }
+.composer { padding: 10px 20px 14px; border-top: 1px solid var(--border-color); background: var(--bg-card); }
+.quick { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
+.quick::-webkit-scrollbar { display: none; }
+.quick button { flex-shrink: 0; height: 30px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-secondary); font-size: 12.5px; font-weight: 600; cursor: pointer; transition: border-color 0.2s ease, color 0.2s ease; }
+.quick button:hover { border-color: rgba(var(--accent-rgb), 0.5); color: var(--accent-color); }
+.composer__row { display: flex; align-items: flex-end; gap: 8px; }
+.composer textarea { flex: 1; min-height: 44px; max-height: 160px; padding: 11px 14px; border-radius: 14px; border: 1px solid var(--border-color); background: var(--bg-input, var(--bg-primary)); color: var(--text-primary); font: inherit; font-size: 15px; line-height: 1.4; resize: none; outline: none; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+.composer textarea:focus { border-color: rgba(var(--accent-rgb), 0.6); box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.1); }
+.composer .icon-btn { width: 44px; height: 44px; border-radius: 14px; }
+.send { display: grid; place-items: center; flex-shrink: 0; width: 44px; height: 44px; border-radius: 14px; border: 0; background: var(--accent-gradient, var(--accent-color)); color: var(--text-on-accent, #04120A); cursor: pointer; transition: opacity 0.2s ease, box-shadow 0.2s ease; }
+.send:not(:disabled):hover { box-shadow: 0 10px 24px -10px rgba(var(--accent-rgb), 0.8); }
+.send:disabled { opacity: 0.4; cursor: default; }
+.send svg { width: 20px; height: 20px; }
+.composer__hint { margin-top: 6px; font-size: 11.5px; color: var(--text-muted); }
+.recording { display: flex; align-items: center; gap: 12px; height: 44px; }
+.recording__dot { width: 10px; height: 10px; border-radius: 50%; background: var(--danger); animation: rec 1.2s ease-in-out infinite; }
+@keyframes rec { 50% { opacity: 0.3; } }
+.recording__time { font-weight: 800; font-variant-numeric: tabular-nums; }
+.recording__hint { flex: 1; color: var(--text-muted); font-size: 13px; }
+.recording__cancel { height: 40px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--border-color); background: none; color: var(--text-secondary); font-weight: 700; cursor: pointer; }
 
-.message-voice { display: flex; align-items: center; gap: 12px; min-width: 180px; }
-.voice-play-btn { width: 32px; height: 32px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); border: none; color: inherit; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; flex-shrink: 0; }
-.message-row:not(.own) .voice-play-btn { background: rgba(var(--accent-rgb), 0.15); color: var(--accent-color); }
-.voice-play-btn:hover { transform: scale(1.1); }
-.voice-wave { flex: 1; display: flex; align-items: center; gap: 2px; height: 24px; }
-.voice-wave span { flex: 1; background: currentColor; opacity: 0.4; border-radius: 2px; min-width: 2px; }
-.voice-duration { font-size: 12px; font-weight: 600; opacity: 0.8; white-space: nowrap; }
-audio { display: none; }
+.room--empty { align-items: center; justify-content: center; text-align: center; color: var(--text-muted); }
+.room--empty svg { width: 56px; height: 56px; opacity: 0.35; margin-bottom: 14px; }
+.room--empty h3 { font-size: 20px; color: var(--text-primary); margin-bottom: 6px; }
 
-.chat-closed-notice { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 16px; background: rgba(var(--danger-rgb), 0.05); border: 1px dashed rgba(var(--danger-rgb), 0.2); border-radius: 12px; color: var(--danger); font-size: 14px; font-weight: 500; margin-top: auto; }
+.pop-enter-active, .pop-leave-active { transition: opacity 0.2s ease; }
+.pop-enter-from, .pop-leave-to { opacity: 0; }
 
-.chat-input-area { padding: 20px 24px; border-top: 1px solid var(--border-color); background: rgba(255, 255, 255, 0.02); }
-.input-row { display: flex; align-items: center; gap: 12px; }
-.icon-btn { width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; flex-shrink: 0; }
-.icon-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
-.mic-btn:hover { background: rgba(var(--danger-rgb), 0.1); border-color: var(--danger); color: var(--danger); }
-.send-btn { background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); border: none; color: white; }
-.send-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.3); color: white; }
-.send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
-.chat-input { flex: 1; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 16px; color: var(--text-primary); font-size: 15px; outline: none; transition: all 0.2s ease; }
-.chat-input:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.1); }
-
-.recording-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(var(--danger-rgb), 0.08); border: 1px solid rgba(var(--danger-rgb), 0.2); border-radius: 16px; animation: pulseRec 2s infinite; }
-@keyframes pulseRec { 0%, 100% { border-color: rgba(var(--danger-rgb), 0.2); } 50% { border-color: rgba(var(--danger-rgb), 0.5); } }
-.recording-indicator { display: flex; align-items: center; gap: 12px; }
-.recording-dot { width: 12px; height: 12px; background: var(--danger); border-radius: 50%; animation: blink 1s infinite; }
-@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-.recording-time { font-size: 20px; font-weight: 700; color: var(--danger); font-variant-numeric: tabular-nums; }
-.recording-actions { display: flex; gap: 10px; }
-.btn-cancel-rec { padding: 8px 16px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); border-radius: 10px; color: var(--text-secondary); font-size: 13px; font-weight: 600; cursor: pointer; }
-.btn-send-rec { display: flex; align-items: center; gap: 6px; padding: 8px 16px; background: linear-gradient(135deg, var(--accent-color), var(--accent-strong)); border: none; border-radius: 10px; color: white; font-size: 13px; font-weight: 600; cursor: pointer; }
-
-@media (max-width: 1024px) {
-	.sidebar { display: none; }
-	.chat-sidebar { width: 280px; }
+/* ─── Телефон и планшет: список и переписка по очереди ─── */
+@media (max-width: 900px) {
+  .chat { grid-template-columns: 1fr; height: calc(100dvh - 64px); }
+  .chat.is-open .list { display: none; }
+  .chat:not(.is-open) .room { display: none; }
+  .room__back { display: grid !important; }
+  .room__head { padding: 10px 12px; gap: 10px; }
+  .room__head .avatar { width: 40px; height: 40px; font-size: 14px; }
+  .order { margin: 10px 12px 0; }
+  .feed { padding: 8px 12px 16px; }
+  .bubble { max-width: 86%; }
+  .composer { padding: 8px 12px calc(10px + env(safe-area-inset-bottom)); }
+  .composer__hint { display: none; }
+  .to-bottom { bottom: 120px; }
 }
-@media (max-width: 768px) {
-	.chat-layout { flex-direction: column; }
-	.chat-sidebar { width: 100%; height: 40vh; border-right: none; border-bottom: 1px solid var(--border-color); }
-	.chat-main { height: 60vh; }
-	.message-row { max-width: 90%; }
+@media (max-width: 480px) {
+  .ghost-danger { padding: 0 10px; }
+  .room__actions .icon-btn { display: none; }
+  .voice { min-width: 180px; }
 }
 </style>

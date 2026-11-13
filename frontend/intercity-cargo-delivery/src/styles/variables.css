@@ -49,7 +49,7 @@
   --hero-muted: rgba(242, 246, 244, 0.68);
 
   /* Типографика */
-  --font-display: 'Unbounded', 'Manrope', system-ui, sans-serif;
+  --font-display: 'Tektur', 'Manrope', system-ui, sans-serif;
   --font-body: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   /* Формы */
@@ -98,4 +98,34 @@
   --shadow-card: 0 1px 2px rgba(14, 26, 21, 0.05), 0 16px 40px -24px rgba(14, 26, 21, 0.25);
   --shadow-glow: 0 10px 30px -10px rgba(24, 166, 90, 0.4);
   --grid-line: rgba(14, 26, 21, 0.05);
+}
+
+/* Тёмные блоки (шапки страниц, плашки-призывы) остаются тёмными в любой теме:
+   внутри них токены всегда «ночные» */
+.hero,
+.page-hero,
+.cta-card,
+.cta-fullwidth,
+.carriers,
+.is-dark {
+  --bg-card: rgba(255, 255, 255, 0.05);
+  --bg-card-solid: #0F1720;
+  --bg-elevated: #0D141C;
+  --bg-input: rgba(255, 255, 255, 0.05);
+  --surface-hover: rgba(255, 255, 255, 0.06);
+  --text-primary: #EEF3F1;
+  --text-secondary: #A9B5B0;
+  --text-muted: #6E7B76;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.18);
+  --accent-color: #2DC071;
+  --accent-rgb: 45, 192, 113;
+  --text-on-accent: #04130A;
+}
+
+.not-found {
+  --text-primary: #EEF3F1;
+  --text-secondary: #A9B5B0;
+  --bg-primary: #070B11;
+  --border-strong: rgba(255, 255, 255, 0.18);
 }
